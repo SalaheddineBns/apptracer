@@ -8,6 +8,10 @@ spring:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:apptracer}
     username: ${POSTGRES_USER:apptracer}
     password: ${POSTGRES_PASSWORD:}
+  web:
+    # Messages de validation et d'erreur en français
+    locale: fr
+    locale-resolver: fixed
   jpa:
     open-in-view: false
     hibernate:

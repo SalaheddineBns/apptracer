@@ -1,0 +1,86 @@
+package com.apptracer.common.error;
+
+import java.util.List;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+/**
+ * Traduit les exceptions en ProblemDetail. Les 401 / 403 de sécurité sont produits en amont par
+ * {@code ProblemDetailAuthenticationEntryPoint} et {@code ProblemDetailAccessDeniedHandler}.
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+  /** Règle de gestion violée : 409 avec le code de la RG. */
+  @ExceptionHandler(BusinessException.class)
+  ResponseEntity<ProblemDetail> handleBusiness(BusinessException ex) {
+    ProblemDetail problem =
+        ProblemDetails.of(
+            HttpStatus.CONFLICT,
+            "business-rule",
+            "Règle de gestion violée",
+            ex.getMessage(),
+            ex.getRgCode(),
+            ex.getErrors());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+  }
+
+  /** Conflit de version ({@code @Version}) : 409 sans code de RG. */
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  ResponseEntity<ProblemDetail> handleOptimisticLocking(
+      ObjectOptimisticLockingFailureException ex) {
+    ProblemDetail problem =
+        ProblemDetails.of(
+            HttpStatus.CONFLICT,
+            "concurrent-modification",
+            "Modification concurrente",
+            "Cet élément a été modifié par quelqu'un d'autre. Rechargez la page puis recommencez.",
+            null,
+            List.of());
+    return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+  }
+
+  /** Bean Validation sur un corps de requête : 400 avec {@code errors[]} par champ. */
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    List<ApiFieldError> errors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(e -> new ApiFieldError(e.getField(), e.getDefaultMessage()))
+            .toList();
+    return ResponseEntity.badRequest().body(validationProblem(errors));
+  }
+
+  /** Corps illisible (JSON invalide, enum ou date inconnue) : 400. */
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      HttpMessageNotReadableException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    return ResponseEntity.badRequest().body(validationProblem(List.of()));
+  }
+
+  private static ProblemDetail validationProblem(List<ApiFieldError> errors) {
+    return ProblemDetails.of(
+        HttpStatus.BAD_REQUEST,
+        "validation",
+        "Requête invalide",
+        "La requête est invalide. Corrigez les champs signalés.",
+        null,
+        errors);
+  }
+}

@@ -2,13 +2,11 @@ package com.apptracer.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 /**
  * Socle de sécurité : API sans session, tout est protégé sauf la documentation OpenAPI.
@@ -19,7 +17,11 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 public class SecurityConfig {
 
   @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+  SecurityFilterChain securityFilterChain(
+      HttpSecurity http,
+      ProblemDetailAuthenticationEntryPoint entryPoint,
+      ProblemDetailAccessDeniedHandler accessDeniedHandler)
+      throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
@@ -29,7 +31,9 @@ public class SecurityConfig {
                     .anyRequest()
                     .authenticated())
         .exceptionHandling(
-            e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+            e ->
+                e.authenticationEntryPoint(entryPoint) // RG-03-09 : 401
+                    .accessDeniedHandler(accessDeniedHandler)) // RG-03-09 : 403
         .build();
   }
 }
