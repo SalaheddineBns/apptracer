@@ -1,0 +1,1 @@
+-- Migration initiale volontairement vide : le schéma métier arrive avec les SFD.

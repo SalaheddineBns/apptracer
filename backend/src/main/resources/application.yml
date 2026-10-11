@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: apptracer
+  config:
+    # Variables locales partagées avec docker-compose (fichier .env à la racine du dépôt)
+    import: optional:file:../.env[.properties]
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:apptracer}
+    username: ${POSTGRES_USER:apptracer}
+    password: ${POSTGRES_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  autoconfigure:
+    # Pas d'utilisateur en mémoire généré par défaut : l'authentification viendra avec le JWT
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+server:
+  port: 8080
