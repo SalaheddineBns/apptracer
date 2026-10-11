@@ -1,12 +1,20 @@
 import { registerLocaleData } from '@angular/common';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import localeFr from '@angular/common/locales/fr';
-import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  LOCALE_ID,
+  provideAppInitializer,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { PRIMEUI_LICENSE } from '../environments/primeui-license';
 import { provideApiBasePath } from './core/api/api.config';
+import { authInterceptor } from './core/auth/auth.interceptor';
+import { AuthStore } from './core/auth/auth.store';
 import { errorInterceptor } from './core/errors/error.interceptor';
 import { AppTracerPreset } from './core/theme/apptracer.preset';
 import { routes } from './app.routes';
@@ -17,8 +25,9 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    // Ordre = du plus externe au plus interne. T-03-13 ajoutera l'intercepteur JWT APRÈS errorInterceptor.
-    provideHttpClient(withInterceptors([errorInterceptor])),
+    // Ordre = du plus externe au plus interne : l'intercepteur JWT renouvelle et rejoue avant que le 401 n'atteigne errorInterceptor.
+    provideHttpClient(withInterceptors([errorInterceptor, authInterceptor])),
+    provideAppInitializer(() => inject(AuthStore).init()),
     provideApiBasePath(),
     MessageService,
     ConfirmationService,
