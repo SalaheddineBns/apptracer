@@ -50,6 +50,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
   }
 
+  @ExceptionHandler(ResourceNotFoundException.class)
+  ResponseEntity<ProblemDetail> handleNotFound(ResourceNotFoundException ex) {
+    ProblemDetail problem =
+        ProblemDetails.of(
+            HttpStatus.NOT_FOUND,
+            "not-found",
+            "Ressource introuvable",
+            ex.getMessage(),
+            null,
+            List.of());
+    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
+  }
+
+  @ExceptionHandler(InvalidRequestException.class)
+  ResponseEntity<ProblemDetail> handleInvalidRequest(InvalidRequestException ex) {
+    return ResponseEntity.badRequest()
+        .body(
+            ProblemDetails.of(
+                HttpStatus.BAD_REQUEST,
+                "validation",
+                "Requête invalide",
+                ex.getMessage(),
+                null,
+                ex.getErrors()));
+  }
+
   /** Conflit de version ({@code @Version}) : 409 sans code de RG. */
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
   ResponseEntity<ProblemDetail> handleOptimisticLocking(
