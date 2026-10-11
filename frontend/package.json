@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "license:ensure": "node scripts/ensure-primeui-license.mjs",
+    "postinstall": "npm run license:ensure",
+    "prestart": "npm run license:ensure",
+    "prebuild": "npm run license:ensure",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
