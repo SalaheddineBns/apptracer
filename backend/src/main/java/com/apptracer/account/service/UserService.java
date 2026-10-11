@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +25,13 @@ public class UserService {
 
   private final UserRepository users;
   private final PasswordEncoder passwordEncoder;
+  private final SessionRevoker sessionRevoker;
 
-  public UserService(UserRepository users, PasswordEncoder passwordEncoder) {
+  public UserService(
+      UserRepository users, PasswordEncoder passwordEncoder, SessionRevoker sessionRevoker) {
     this.users = users;
     this.passwordEncoder = passwordEncoder;
+    this.sessionRevoker = sessionRevoker;
   }
 
   /**
@@ -77,5 +81,68 @@ public class UserService {
     return users
         .findById(id)
         .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable."));
+  }
+
+  /**
+   * RG-03-11 : seuls le prénom, le nom et le rôle sont modifiables (ni e-mail, ni mot de passe).
+   * {@code actorId} est l'ADMIN connecté, lu dans le token.
+   */
+  @Transactional
+  public User update(
+      Long actorId, Long id, String firstName, String lastName, Role role, long version) {
+    User user = get(id);
+    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    if (user.getVersion() != version) {
+      throw new ObjectOptimisticLockingFailureException(User.class, id);
+    }
+    // RG-03-13 : un ADMIN ne peut pas retirer son propre rôle ADMIN
+    if (actorId.equals(id) && user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+      throw BusinessException.onField(
+          "RG-03-13",
+          "Vous ne pouvez pas retirer votre propre rôle ADMIN.",
+          "role",
+          "Votre propre rôle ADMIN ne peut pas être retiré.");
+    }
+    boolean roleChanged = user.getRole() != role;
+    user.setFirstName(firstName.strip());
+    user.setLastName(lastName.strip());
+    user.setRole(role); // RG-03-10 : exactement un rôle
+    // RG-00-04 : updated_at / updated_by renseignés par l'audit JPA
+    User saved = users.saveAndFlush(user);
+    if (roleChanged) {
+      // RG-03-14 : un changement de rôle révoque tous les refresh tokens du compte
+      sessionRevoker.revokeAllOnRoleChange(id);
+    }
+    return saved;
+  }
+
+  /** Sans effet si le compte est déjà inactif. */
+  @Transactional
+  public User deactivate(Long actorId, Long id) {
+    User user = get(id);
+    // RG-03-13 : un ADMIN ne peut pas désactiver son propre compte
+    if (actorId.equals(id)) {
+      throw new BusinessException("RG-03-13", "Vous ne pouvez pas désactiver votre propre compte.");
+    }
+    if (!user.isActive()) {
+      return user;
+    }
+    // RG-03-05 : un compte inactif ne peut ni se connecter ni renouveler sa session
+    user.setActive(false);
+    User saved = users.saveAndFlush(user);
+    // RG-03-14 : la désactivation révoque tous les refresh tokens du compte
+    sessionRevoker.revokeAllOnDeactivation(id);
+    return saved;
+  }
+
+  /** Sans effet si le compte est déjà actif. Les jetons révoqués ne sont pas restaurés. */
+  @Transactional
+  public User reactivate(Long id) {
+    User user = get(id);
+    if (user.isActive()) {
+      return user;
+    }
+    user.setActive(true);
+    return users.saveAndFlush(user);
   }
 }

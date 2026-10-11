@@ -2,6 +2,7 @@ package com.apptracer.account.api;
 
 import com.apptracer.account.domain.User;
 import com.apptracer.account.service.UserService;
+import com.apptracer.security.CurrentUserProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -18,6 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,8 +33,11 @@ public class UserController {
 
   private final UserService userService;
   private final UserMapper mapper;
+  private final CurrentUserProvider currentUser;
 
-  public UserController(UserService userService, UserMapper mapper) {
+  public UserController(
+      UserService userService, UserMapper mapper, CurrentUserProvider currentUser) {
+    this.currentUser = currentUser;
     this.userService = userService;
     this.mapper = mapper;
   }
@@ -113,5 +118,89 @@ public class UserController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public UserResponse getUser(@PathVariable Long id) {
     return mapper.toResponse(userService.get(id));
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "updateUser",
+      summary = "Modifier le prénom, le nom et le rôle d'un compte")
+  @ApiResponse(responseCode = "200", description = "Compte modifié")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Requête invalide",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-03-09, RG-03-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Compte introuvable",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "Règle RG-03-13 violée, ou compte modifié entre-temps (conflit de version)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public UserResponse updateUser(
+      @PathVariable Long id, @Valid @RequestBody UpdateUserRequest request) {
+    return mapper.toResponse(
+        userService.update(
+            currentUser.currentUserId(),
+            id,
+            request.firstName(),
+            request.lastName(),
+            request.role(),
+            request.version()));
+  }
+
+  @PostMapping("/{id}/deactivation")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(operationId = "deactivateUser", summary = "Désactiver un compte")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Compte désactivé (sans effet s'il l'était déjà)")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-03-09, RG-03-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Compte introuvable",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "409",
+      description = "Désactivation de son propre compte (RG-03-13)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public UserResponse deactivateUser(@PathVariable Long id) {
+    return mapper.toResponse(userService.deactivate(currentUser.currentUserId(), id));
+  }
+
+  @PostMapping("/{id}/reactivation")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(operationId = "reactivateUser", summary = "Réactiver un compte")
+  @ApiResponse(responseCode = "200", description = "Compte réactivé (sans effet s'il l'était déjà)")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-03-09, RG-03-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Compte introuvable",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public UserResponse reactivateUser(@PathVariable Long id) {
+    return mapper.toResponse(userService.reactivate(id));
   }
 }

@@ -44,4 +44,20 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
       @Param("hash") String hash,
       @Param("now") Instant now,
       @Param("reason") RevocationReason reason);
+
+  /**
+   * RG-03-14 : révoque tous les jetons encore actifs d'un compte, dans la transaction de
+   * l'appelant.
+   */
+  @Modifying(flushAutomatically = true)
+  @Query(
+      """
+      update RefreshToken t
+         set t.revokedAt = :now, t.revocationReason = :reason
+       where t.userId = :userId and t.revokedAt is null
+      """)
+  int revokeAllActiveByUser(
+      @Param("userId") Long userId,
+      @Param("now") Instant now,
+      @Param("reason") RevocationReason reason);
 }

@@ -1,5 +1,6 @@
 package com.apptracer.auth.service;
 
+import com.apptracer.account.service.SessionRevoker;
 import com.apptracer.auth.domain.RefreshToken;
 import com.apptracer.auth.domain.RevocationReason;
 import com.apptracer.auth.repository.RefreshTokenRepository;
@@ -13,7 +14,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RefreshTokenService {
+public class RefreshTokenService implements SessionRevoker {
 
   private static final int TOKEN_BYTES = 32; // 256 bits
 
@@ -65,5 +66,18 @@ public class RefreshTokenService {
   public void revoke(String rawToken) {
     repository.revokeActive(
         TokenHasher.sha256Hex(rawToken), Instant.now(clock), RevocationReason.LOGOUT);
+  }
+
+  /** RG-03-14 : désactivation d'un compte. */
+  @Override
+  public void revokeAllOnDeactivation(Long userId) {
+    repository.revokeAllActiveByUser(
+        userId, Instant.now(clock), RevocationReason.ACCOUNT_DEACTIVATED);
+  }
+
+  /** RG-03-14 : changement de rôle d'un compte. */
+  @Override
+  public void revokeAllOnRoleChange(Long userId) {
+    repository.revokeAllActiveByUser(userId, Instant.now(clock), RevocationReason.ROLE_CHANGED);
   }
 }
