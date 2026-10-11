@@ -1,7 +1,10 @@
 package com.apptracer.security;
 
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 /** L'utilisateur courant vient toujours du token (claim {@code sub}), jamais d'un paramètre. */
@@ -15,5 +18,21 @@ public class CurrentUserProvider {
       throw new IllegalStateException("Aucun utilisateur authentifié");
     }
     return Long.valueOf(authentication.getName());
+  }
+
+  /** Identifiant de la session courante (claim {@code sid} de l'access token), s'il est présent. */
+  public Optional<UUID> currentSessionId() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication instanceof JwtAuthenticationToken jwt) {
+      String sid = jwt.getToken().getClaimAsString(AccessTokenService.CLAIM_SESSION_ID);
+      if (sid != null) {
+        try {
+          return Optional.of(UUID.fromString(sid));
+        } catch (IllegalArgumentException e) {
+          return Optional.empty();
+        }
+      }
+    }
+    return Optional.empty();
   }
 }

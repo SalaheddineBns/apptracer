@@ -60,4 +60,21 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
       @Param("userId") Long userId,
       @Param("now") Instant now,
       @Param("reason") RevocationReason reason);
+
+  /**
+   * RG-03-15 : révoque les jetons actifs d'un compte autres que ceux de la session courante, dans
+   * la transaction de l'appelant.
+   */
+  @Modifying(flushAutomatically = true)
+  @Query(
+      """
+      update RefreshToken t
+         set t.revokedAt = :now, t.revocationReason = :reason
+       where t.userId = :userId and t.sessionId <> :sessionId and t.revokedAt is null
+      """)
+  int revokeActiveByUserExceptSession(
+      @Param("userId") Long userId,
+      @Param("sessionId") java.util.UUID sessionId,
+      @Param("now") Instant now,
+      @Param("reason") RevocationReason reason);
 }

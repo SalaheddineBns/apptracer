@@ -80,4 +80,18 @@ public class RefreshTokenService implements SessionRevoker {
   public void revokeAllOnRoleChange(Long userId) {
     repository.revokeAllActiveByUser(userId, Instant.now(clock), RevocationReason.ROLE_CHANGED);
   }
+
+  /**
+   * RG-03-15 : change de mot de passe, révoque les autres sessions du compte. Sans session courante
+   * connue, toutes les sessions sont révoquées.
+   */
+  public void revokeOtherSessions(Long userId, UUID currentSessionId) {
+    Instant now = Instant.now(clock);
+    if (currentSessionId == null) {
+      repository.revokeAllActiveByUser(userId, now, RevocationReason.PASSWORD_CHANGED);
+    } else {
+      repository.revokeActiveByUserExceptSession(
+          userId, currentSessionId, now, RevocationReason.PASSWORD_CHANGED);
+    }
+  }
 }
