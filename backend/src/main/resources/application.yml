@@ -26,6 +26,13 @@ server:
   port: 8080
 
 app:
+  bootstrap:
+    admin:
+      # RG-03-16 : compte ADMIN initial, créé au démarrage seulement si aucun ADMIN n'existe
+      email: ${ADMIN_EMAIL:}
+      password: ${ADMIN_PASSWORD:}
+      first-name: ${ADMIN_FIRST_NAME:}
+      last-name: ${ADMIN_LAST_NAME:}
   security:
     jwt:
       # RG-03-06 : JWT_SECRET est obligatoire (au moins 32 octets), sans valeur par défaut
