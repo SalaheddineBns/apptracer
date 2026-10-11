@@ -1,0 +1,61 @@
+package com.apptracer.auth.api;
+
+import com.apptracer.auth.service.AuthService;
+import com.apptracer.security.CurrentUserProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.ProblemDetail;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/v1/auth")
+@Tag(name = "Authentication")
+public class AuthController {
+
+  private final AuthService authService;
+  private final CurrentUserProvider currentUser;
+  private final AuthMapper mapper;
+
+  public AuthController(
+      AuthService authService, CurrentUserProvider currentUser, AuthMapper mapper) {
+    this.authService = authService;
+    this.currentUser = currentUser;
+    this.mapper = mapper;
+  }
+
+  @PostMapping("/login")
+  @Operation(operationId = "login", summary = "Se connecter avec son e-mail et son mot de passe")
+  @ApiResponse(responseCode = "200", description = "Connexion réussie")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Requête invalide",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Identifiants invalides (RG-03-04, RG-03-05)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public AuthTokensResponse login(@Valid @RequestBody LoginRequest request) {
+    return mapper.toResponse(authService.login(request.email(), request.password()));
+  }
+
+  @GetMapping("/me")
+  @PreAuthorize("isAuthenticated()")
+  @Operation(operationId = "getCurrentUser", summary = "Lire le compte connecté")
+  @ApiResponse(responseCode = "200", description = "Compte connecté")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public CurrentUserResponse getCurrentUser() {
+    return mapper.toResponse(authService.getCurrentUser(currentUser.currentUserId()));
+  }
+}

@@ -36,6 +36,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
   }
 
+  /** RG-03-04 / RG-03-05 : réponse d'échec unique, quelle que soit la cause. */
+  @ExceptionHandler(InvalidCredentialsException.class)
+  ResponseEntity<ProblemDetail> handleInvalidCredentials(InvalidCredentialsException ex) {
+    ProblemDetail problem =
+        ProblemDetails.of(
+            HttpStatus.UNAUTHORIZED,
+            "invalid-credentials",
+            "Identifiants invalides",
+            ex.getMessage(),
+            "RG-03-04",
+            List.of());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
+  }
+
   /** Conflit de version ({@code @Version}) : 409 sans code de RG. */
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
   ResponseEntity<ProblemDetail> handleOptimisticLocking(
