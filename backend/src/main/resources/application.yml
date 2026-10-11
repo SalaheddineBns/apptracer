@@ -19,8 +19,16 @@ spring:
   flyway:
     enabled: true
   autoconfigure:
-    # Pas d'utilisateur en mémoire généré par défaut : l'authentification viendra avec le JWT
+    # Pas d'utilisateur en mémoire généré par défaut : l'authentification passe par le JWT
     exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
 
 server:
   port: 8080
+
+app:
+  security:
+    jwt:
+      # RG-03-06 : JWT_SECRET est obligatoire (au moins 32 octets), sans valeur par défaut
+      secret: ${JWT_SECRET:}
+      access-ttl: ${JWT_ACCESS_TTL:15m}
+      refresh-ttl: ${JWT_REFRESH_TTL:7d}
