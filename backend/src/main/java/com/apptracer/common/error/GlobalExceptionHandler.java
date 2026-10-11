@@ -1,6 +1,7 @@
 package com.apptracer.common.error;
 
 import java.util.List;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -48,6 +49,33 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             null,
             List.of());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+  }
+
+  /**
+   * Contraintes SQL connues, traduites comme le contrôle de service équivalent (filet de sécurité
+   * en cas de requêtes concurrentes). Toute autre violation est relancée (500).
+   */
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {
+    if (violates(ex, "ux_users_email_lower")) {
+      // RG-03-01
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-03-01",
+              "Un compte existe déjà avec cet e-mail.",
+              "email",
+              "Cet e-mail est déjà utilisé."));
+    }
+    throw ex;
+  }
+
+  private static boolean violates(Throwable ex, String constraint) {
+    for (Throwable t = ex; t != null; t = t.getCause()) {
+      if (t.getMessage() != null && t.getMessage().contains(constraint)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Bean Validation sur un corps de requête : 400 avec {@code errors[]} par champ. */
