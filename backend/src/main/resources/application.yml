@@ -25,6 +25,10 @@ spring:
 server:
   port: 8080
 
+springdoc:
+  # L'API répond en JSON : sans cela le contrat déclare */* et le client généré reçoit des Blob
+  default-produces-media-type: application/json
+
 app:
   bootstrap:
     admin:

@@ -27,7 +27,7 @@
           "200" : {
             "description" : "Compte",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserResponse"
                 }
@@ -37,7 +37,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -47,7 +47,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -57,7 +57,7 @@
           "404" : {
             "description" : "Compte introuvable",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -93,7 +93,7 @@
           "200" : {
             "description" : "Compte modifié",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserResponse"
                 }
@@ -103,7 +103,7 @@
           "400" : {
             "description" : "Requête invalide",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -113,7 +113,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -123,7 +123,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -133,7 +133,7 @@
           "404" : {
             "description" : "Compte introuvable",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -143,7 +143,7 @@
           "409" : {
             "description" : "Règle RG-03-13 violée, ou compte modifié entre-temps (conflit de version)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -175,7 +175,7 @@
           "400" : {
             "description" : "Nouveau mot de passe invalide (RG-03-02)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -185,7 +185,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -195,7 +195,7 @@
           "409" : {
             "description" : "Ancien mot de passe incorrect (RG-03-15)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -247,7 +247,7 @@
           "200" : {
             "description" : "Page de comptes",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/PageUserResponse"
                 }
@@ -257,7 +257,7 @@
           "400" : {
             "description" : "Paramètre de pagination ou de tri invalide",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -267,7 +267,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -277,7 +277,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -304,7 +304,7 @@
           "201" : {
             "description" : "Compte créé",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserResponse"
                 }
@@ -314,7 +314,7 @@
           "400" : {
             "description" : "Requête invalide (RG-03-01 format, RG-03-02)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -324,7 +324,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -334,7 +334,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -344,7 +344,7 @@
           "409" : {
             "description" : "E-mail déjà utilisé (RG-03-01)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -372,7 +372,7 @@
           "200" : {
             "description" : "Compte réactivé (sans effet s'il l'était déjà)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserResponse"
                 }
@@ -382,7 +382,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -392,7 +392,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -402,7 +402,7 @@
           "404" : {
             "description" : "Compte introuvable",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -430,7 +430,7 @@
           "200" : {
             "description" : "Compte désactivé (sans effet s'il l'était déjà)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/UserResponse"
                 }
@@ -440,7 +440,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -450,7 +450,7 @@
           "403" : {
             "description" : "Rôle insuffisant (RG-03-09, RG-03-11)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -460,7 +460,7 @@
           "404" : {
             "description" : "Compte introuvable",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -470,7 +470,7 @@
           "409" : {
             "description" : "Désactivation de son propre compte (RG-03-13)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -499,7 +499,7 @@
           "200" : {
             "description" : "Nouveau couple de jetons",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AuthTokensResponse"
                 }
@@ -509,7 +509,7 @@
           "400" : {
             "description" : "Requête invalide",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -519,7 +519,7 @@
           "401" : {
             "description" : "Refresh token refusé (RG-03-05, RG-03-07)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -551,7 +551,7 @@
           "400" : {
             "description" : "Requête invalide",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -580,7 +580,7 @@
           "200" : {
             "description" : "Connexion réussie",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/AuthTokensResponse"
                 }
@@ -590,7 +590,7 @@
           "400" : {
             "description" : "Requête invalide",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -600,7 +600,7 @@
           "401" : {
             "description" : "Identifiants invalides (RG-03-04, RG-03-05)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
@@ -619,7 +619,7 @@
           "200" : {
             "description" : "Compte connecté",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/CurrentUserResponse"
                 }
@@ -629,7 +629,7 @@
           "401" : {
             "description" : "Access token absent ou invalide (RG-03-09)",
             "content" : {
-              "*/*" : {
+              "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/ProblemDetail"
                 }
