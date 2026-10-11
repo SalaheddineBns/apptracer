@@ -8,12 +8,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -45,6 +47,35 @@ public class AuthController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public AuthTokensResponse login(@Valid @RequestBody LoginRequest request) {
     return mapper.toResponse(authService.login(request.email(), request.password()));
+  }
+
+  @PostMapping("/refresh")
+  @Operation(
+      operationId = "refreshSession",
+      summary = "Renouveler la session avec un refresh token (usage unique)")
+  @ApiResponse(responseCode = "200", description = "Nouveau couple de jetons")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Requête invalide",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Refresh token refusé (RG-03-05, RG-03-07)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public AuthTokensResponse refreshSession(@Valid @RequestBody RefreshSessionRequest request) {
+    return mapper.toResponse(authService.refreshSession(request.refreshToken()));
+  }
+
+  @PostMapping("/logout")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @Operation(operationId = "logout", summary = "Se déconnecter (révoque le refresh token)")
+  @ApiResponse(responseCode = "204", description = "Déconnecté")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Requête invalide",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public void logout(@Valid @RequestBody LogoutRequest request) {
+    authService.logout(request.refreshToken());
   }
 
   @GetMapping("/me")

@@ -3,6 +3,7 @@ package com.apptracer.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -13,6 +14,7 @@ import com.apptracer.account.domain.Role;
 import com.apptracer.account.domain.User;
 import com.apptracer.account.repository.UserRepository;
 import com.apptracer.auth.domain.RefreshToken;
+import com.apptracer.auth.domain.RevocationReason;
 import com.apptracer.auth.repository.RefreshTokenRepository;
 import com.apptracer.auth.service.AuthService;
 import com.apptracer.auth.service.LoginResult;
@@ -133,5 +135,58 @@ class AuthServiceTest {
     assertThat(stored.getUserId()).isEqualTo(5L);
     assertThat(stored.getIssuedAt()).isEqualTo(NOW);
     assertThat(stored.getExpiresAt()).isEqualTo(NOW.plus(Duration.ofDays(7)));
+  }
+
+  private RefreshToken storedToken(Long userId, UUID sessionId) {
+    return new RefreshToken(
+        userId, sessionId, "h".repeat(64), NOW.minusSeconds(60), NOW.plusSeconds(60));
+  }
+
+  @Test
+  @DisplayName("RG-03-07 : la rotation émet un nouveau couple de jetons dans la même session")
+  void refreshRotatesWithinSameSession() throws Exception {
+    UUID sid = UUID.randomUUID();
+    when(refreshRepo.revokeUsable(anyString(), eq(NOW), eq(RevocationReason.ROTATED)))
+        .thenReturn(1);
+    when(refreshRepo.findByTokenHash(anyString())).thenReturn(Optional.of(storedToken(5L, sid)));
+    when(users.findById(5L)).thenReturn(Optional.of(user(true, Role.USER)));
+    when(accessTokens.issue(5L, Role.USER, sid)).thenReturn("new-access");
+
+    LoginResult result = service.refreshSession("old-token");
+
+    assertThat(result.accessToken()).isEqualTo("new-access");
+    assertThat(result.refreshToken()).isNotBlank().isNotEqualTo("old-token");
+    ArgumentCaptor<RefreshToken> captor = ArgumentCaptor.forClass(RefreshToken.class);
+    verify(refreshRepo).save(captor.capture());
+    assertThat(captor.getValue().getSessionId()).isEqualTo(sid);
+  }
+
+  @Test
+  @DisplayName("RG-03-07 : un jeton inconnu, déjà utilisé ou expiré est refusé")
+  void unusableRefreshTokenIsRejected() {
+    when(refreshRepo.revokeUsable(anyString(), any(), any())).thenReturn(0);
+    assertThatThrownBy(() -> service.refreshSession("used-token"))
+        .isInstanceOf(InvalidCredentialsException.class);
+    verify(refreshRepo, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("RG-03-05 : un compte inactif ne peut pas renouveler sa session")
+  void inactiveAccountCannotRefresh() throws Exception {
+    when(refreshRepo.revokeUsable(anyString(), any(), any())).thenReturn(1);
+    when(refreshRepo.findByTokenHash(anyString()))
+        .thenReturn(Optional.of(storedToken(5L, UUID.randomUUID())));
+    when(users.findById(5L)).thenReturn(Optional.of(user(false, Role.USER)));
+
+    assertThatThrownBy(() -> service.refreshSession("token"))
+        .isInstanceOf(InvalidCredentialsException.class);
+    verify(refreshRepo, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("RG-03-08 : la déconnexion révoque le refresh token présenté (raison LOGOUT)")
+  void logoutRevokesPresentedToken() {
+    service.logout("token");
+    verify(refreshRepo).revokeActive(anyString(), eq(NOW), eq(RevocationReason.LOGOUT));
   }
 }

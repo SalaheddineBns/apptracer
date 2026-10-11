@@ -2,6 +2,7 @@ package com.apptracer.auth.service;
 
 import com.apptracer.account.domain.User;
 import com.apptracer.account.repository.UserRepository;
+import com.apptracer.auth.domain.RefreshToken;
 import com.apptracer.common.error.InvalidCredentialsException;
 import com.apptracer.security.AccessTokenService;
 import java.util.UUID;
@@ -54,5 +55,30 @@ public class AuthService {
   @Transactional(readOnly = true)
   public User getCurrentUser(Long userId) {
     return users.findById(userId).orElseThrow(InvalidCredentialsException::new);
+  }
+
+  /**
+   * RG-03-07 : rotation à usage unique. Tout échec (jeton inconnu, déjà utilisé, révoqué, expiré,
+   * compte inactif) lève la même exception. En cas de compte inactif la transaction est annulée.
+   */
+  @Transactional
+  public LoginResult refreshSession(String rawRefreshToken) {
+    RefreshToken old =
+        refreshTokens.consume(rawRefreshToken).orElseThrow(InvalidCredentialsException::new);
+    User user = users.findById(old.getUserId()).orElseThrow(InvalidCredentialsException::new);
+    // RG-03-05 : un compte inactif ne peut pas renouveler sa session
+    if (!user.isActive()) {
+      throw new InvalidCredentialsException();
+    }
+    // RG-03-07 : nouveau couple de jetons, même session
+    String accessToken = accessTokens.issue(user.getId(), user.getRole(), old.getSessionId());
+    String refreshToken = refreshTokens.issue(user.getId(), old.getSessionId());
+    return new LoginResult(accessToken, refreshToken, user);
+  }
+
+  /** RG-03-08 : la déconnexion révoque le refresh token de la session courante. */
+  @Transactional
+  public void logout(String rawRefreshToken) {
+    refreshTokens.revoke(rawRefreshToken);
   }
 }

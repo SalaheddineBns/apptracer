@@ -1,12 +1,14 @@
 package com.apptracer.auth.service;
 
 import com.apptracer.auth.domain.RefreshToken;
+import com.apptracer.auth.domain.RevocationReason;
 import com.apptracer.auth.repository.RefreshTokenRepository;
 import com.apptracer.security.JwtProperties;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -44,5 +46,24 @@ public class RefreshTokenService {
             now,
             now.plus(properties.refreshTtl())));
     return token;
+  }
+
+  /**
+   * RG-03-07 : consomme un refresh token (usage unique). Renvoie le jeton consommé, ou vide s'il
+   * est inconnu, déjà utilisé, révoqué ou expiré.
+   */
+  public Optional<RefreshToken> consume(String rawToken) {
+    String hash = TokenHasher.sha256Hex(rawToken);
+    int updated = repository.revokeUsable(hash, Instant.now(clock), RevocationReason.ROTATED);
+    if (updated == 0) {
+      return Optional.empty();
+    }
+    return repository.findByTokenHash(hash);
+  }
+
+  /** RG-03-08 : révoque le refresh token présenté ; idempotent. */
+  public void revoke(String rawToken) {
+    repository.revokeActive(
+        TokenHasher.sha256Hex(rawToken), Instant.now(clock), RevocationReason.LOGOUT);
   }
 }
