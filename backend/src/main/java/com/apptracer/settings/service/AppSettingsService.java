@@ -4,6 +4,8 @@ import com.apptracer.account.domain.User;
 import com.apptracer.account.repository.UserRepository;
 import com.apptracer.settings.domain.AppSettings;
 import com.apptracer.settings.repository.AppSettingsRepository;
+import java.time.Clock;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +17,12 @@ public class AppSettingsService {
 
   private final AppSettingsRepository settings;
   private final UserRepository users;
+  private final Clock clock;
 
-  public AppSettingsService(AppSettingsRepository settings, UserRepository users) {
+  public AppSettingsService(AppSettingsRepository settings, UserRepository users, Clock clock) {
     this.settings = settings;
     this.users = users;
+    this.clock = clock;
   }
 
   /**
@@ -36,7 +40,32 @@ public class AppSettingsService {
    */
   @Transactional(readOnly = true)
   public AppSettingsView read(boolean includeLastModification) {
+    return toView(load(), includeLastModification);
+  }
+
+  /**
+   * RG-06-02 : bornes et pas contrôlés en amont (Bean Validation), la contrainte de base reste le
+   * filet. RG-06-03 : réservé à l'ADMIN (contrôlé par le contrôleur). RG-06-04 : seule la ligne de
+   * paramètres est écrite, aucune saisie n'est lue ni recalculée. L'auteur vient du jeton et la
+   * date de l'horloge applicative, jamais de la requête.
+   */
+  @Transactional
+  public AppSettingsView update(int minutes, long version, long adminId) {
     AppSettings s = load();
+    // Modification concurrente : la version lue par l'ADMIN n'est plus celle de la base
+    if (s.getVersion() != version) {
+      throw new ObjectOptimisticLockingFailureException(AppSettings.class, s.getId());
+    }
+    // RG-06-06 : valeur identique, sans effet et non tracée (ni auteur, ni date, ni version)
+    if (s.getStandardDayMinutes() == minutes) {
+      return toView(s, true);
+    }
+    // RG-06-05, RG-00-04 : dernière modification tracée, seulement quand la valeur change
+    s.changeStandardDayMinutes(minutes, clock.instant(), adminId);
+    return toView(settings.saveAndFlush(s), true);
+  }
+
+  private AppSettingsView toView(AppSettings s, boolean includeLastModification) {
     if (!includeLastModification || s.getUpdatedAt() == null) {
       return new AppSettingsView(s.getStandardDayMinutes(), s.getVersion(), null, null);
     }

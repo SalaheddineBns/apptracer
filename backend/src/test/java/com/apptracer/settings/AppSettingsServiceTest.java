@@ -1,8 +1,12 @@
 package com.apptracer.settings;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -14,17 +18,22 @@ import com.apptracer.settings.service.AppSettingsService;
 import com.apptracer.settings.service.AppSettingsView;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 class AppSettingsServiceTest {
 
+  private static final Clock CLOCK =
+      Clock.fixed(Instant.parse("2026-06-01T10:00:00Z"), ZoneId.of("Europe/Paris"));
   private final AppSettingsRepository repository = mock(AppSettingsRepository.class);
   private final UserRepository users = mock(UserRepository.class);
-  private final AppSettingsService service = new AppSettingsService(repository, users);
+  private final AppSettingsService service = new AppSettingsService(repository, users, CLOCK);
   private final Instant at = Instant.parse("2026-05-04T08:30:00Z");
 
   private static AppSettings settings(int minutes) throws Exception {
@@ -90,5 +99,71 @@ class AppSettingsServiceTest {
     assertThat(view.lastModifiedAt()).isNull();
     assertThat(view.lastModifiedBy()).isNull();
     org.mockito.Mockito.verify(users, org.mockito.Mockito.never()).findById(anyLong());
+  }
+
+  private void stubAuthor() {
+    User author = mock(User.class);
+    when(author.getId()).thenReturn(9L);
+    when(author.getFirstName()).thenReturn("Ada");
+    when(author.getLastName()).thenReturn("Admin");
+    when(users.findById(9L)).thenReturn(Optional.of(author));
+    when(repository.saveAndFlush(any(AppSettings.class))).thenAnswer(i -> i.getArgument(0));
+  }
+
+  @Test
+  @DisplayName(
+      "RG-06-05 : un changement de valeur trace l'horloge applicative et l'auteur du jeton")
+  void changeIsTraced() {
+    stubAuthor();
+
+    AppSettingsView view = service.update(450, 0, 9L);
+
+    assertThat(view.standardDayMinutes()).isEqualTo(450);
+    assertThat(view.lastModifiedAt()).isEqualTo(CLOCK.instant());
+    assertThat(view.lastModifiedBy().id()).isEqualTo(9L);
+    verify(repository).saveAndFlush(any(AppSettings.class));
+  }
+
+  @Test
+  @DisplayName("RG-06-06 : une valeur identique n'écrit rien et conserve la trace précédente")
+  void identicalValueIsNoOp() throws Exception {
+    AppSettings s = settings(450);
+    s.changeStandardDayMinutes(450, at, 9L);
+    when(repository.findById(AppSettings.SINGLETON_ID)).thenReturn(Optional.of(s));
+    stubAuthor();
+
+    AppSettingsView view = service.update(450, 0, 9L);
+
+    verify(repository, never()).saveAndFlush(any());
+    assertThat(view.lastModifiedAt()).isEqualTo(at);
+    assertThat(s.getUpdatedAt()).isEqualTo(at);
+  }
+
+  @Test
+  @DisplayName("RG-06-06 : valeur identique sur une installation neuve, toujours aucune trace")
+  void identicalValueOnFreshInstallation() {
+    AppSettingsView view = service.update(420, 0, 9L);
+
+    verify(repository, never()).saveAndFlush(any());
+    assertThat(view.lastModifiedAt()).isNull();
+    assertThat(view.lastModifiedBy()).isNull();
+  }
+
+  @Test
+  @DisplayName("Modification concurrente : une version périmée est refusée sans écriture")
+  void staleVersionRejected() {
+    assertThatThrownBy(() -> service.update(450, 5, 9L))
+        .isInstanceOf(ObjectOptimisticLockingFailureException.class);
+    verify(repository, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-06-04 : la modification n'écrit que la ligne de paramètres")
+  void onlySettingsRowWritten() {
+    stubAuthor();
+    service.update(450, 0, 9L);
+    verify(repository).findById(AppSettings.SINGLETON_ID);
+    verify(repository).saveAndFlush(any(AppSettings.class));
+    org.mockito.Mockito.verifyNoMoreInteractions(repository);
   }
 }
