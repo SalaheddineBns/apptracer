@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, input, signal } from '@angular/core';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, effect, input, signal } from '@angular/core';
+import { FormControl, FormResetEvent, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { FieldError } from './field-error';
@@ -57,4 +57,16 @@ export class PasswordField {
   readonly subject = input('le mot de passe');
 
   protected readonly visible = signal(false);
+
+  constructor() {
+    // Un mot de passe ne s'affiche que sur demande explicite : toute réinitialisation du formulaire le masque de nouveau.
+    effect((onCleanup) => {
+      const subscription = this.control().events.subscribe((event) => {
+        if (event instanceof FormResetEvent) {
+          this.visible.set(false);
+        }
+      });
+      onCleanup(() => subscription.unsubscribe());
+    });
+  }
 }

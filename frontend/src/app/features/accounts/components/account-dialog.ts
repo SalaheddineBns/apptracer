@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, model, output, signal, untracked } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -79,6 +79,15 @@ export class AccountDialog {
   private originCy: string | null = null;
 
   constructor() {
+    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && this.submitting()) {
+        event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener('keydown', blockEscapeWhileSubmitting, true);
+    inject(DestroyRef).onDestroy(() => window.removeEventListener('keydown', blockEscapeWhileSubmitting, true));
+
     effect(() => {
       if (this.visible()) {
         untracked(() => this.prepare());

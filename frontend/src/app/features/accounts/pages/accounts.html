@@ -10,7 +10,9 @@
     } @else if (!store.loaded()) {
       <app-loading-state [rows]="6" />
     } @else if (store.total() === 0) {
-      <app-empty-state message="Aucun compte à afficher." />
+      <app-empty-state message="Aucun compte à afficher.">
+        <p-button type="button" label="Nouveau compte" (onClick)="openCreate()" data-cy="btn-nouveau-compte-vide" />
+      </app-empty-state>
     } @else {
         <p-table
           [value]="store.users()"
@@ -27,11 +29,12 @@
           [sortField]="store.sortField()"
           [sortOrder]="store.sortOrder()"
           dataKey="id"
+          class="text-sm"
           data-cy="table-comptes"
         >
           <ng-template #header>
             <tr>
-              <th pSortableColumn="lastName" scope="col">Nom <p-sort-icon field="lastName" /></th>
+              <th pFrozenColumn pSortableColumn="lastName" scope="col">Nom <p-sort-icon field="lastName" /></th>
               <th pSortableColumn="email" scope="col">E-mail <p-sort-icon field="email" /></th>
               <th pSortableColumn="role" scope="col">Rôle <p-sort-icon field="role" /></th>
               <th pSortableColumn="active" scope="col">Statut <p-sort-icon field="active" /></th>
@@ -40,7 +43,7 @@
           </ng-template>
           <ng-template #body let-user>
             <tr [attr.data-cy]="'ligne-compte-' + user.id">
-              <td>
+              <td pFrozenColumn>
                 {{ fullName(user) }}
                 @if (isSelf(user)) {
                   <span class="text-xs text-muted-color" data-cy="indicateur-vous">(vous)</span>

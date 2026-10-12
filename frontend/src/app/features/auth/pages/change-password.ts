@@ -54,6 +54,11 @@ export class ChangePasswordPage {
     this.auth.changePassword(currentPassword, newPassword).subscribe({
       next: () => {
         this.submitting.set(false);
+        // Le blur du champ actif marque le contrôle « touched » : on le retire avant de réinitialiser, sinon
+        // « La confirmation est obligatoire. » apparaît à la première tabulation suivant le succès.
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
         this.form.reset();
         this.messages.add({ severity: 'success', summary: 'Mot de passe modifié', detail: 'Votre mot de passe a été modifié.', life: 3000 });
       },

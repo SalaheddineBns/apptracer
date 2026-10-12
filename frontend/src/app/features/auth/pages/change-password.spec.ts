@@ -103,6 +103,24 @@ describe('ChangePasswordPage', () => {
     expect(input('champ-ancien-mot-de-passe').value).toBe('');
   });
 
+  it('succès : le formulaire revient à son état initial, sans erreur à la tabulation suivante, et les champs repartent masqués', async () => {
+    changeMyPassword.mockReturnValue(of(null));
+    await open();
+    await fill('ancien', 'nouveau-mdp-123', 'nouveau-mdp-123');
+    root.querySelector<HTMLButtonElement>('[data-cy="btn-afficher-nouveau-mot-de-passe"] button')?.click();
+    await whenStable();
+    expect(input('champ-nouveau-mot-de-passe').type).toBe('text');
+    input('champ-confirmation-mot-de-passe').focus();
+    await submit();
+    // Une tabulation retire le focus du champ actif.
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await whenStable();
+    expect(error('champ-confirmation-mot-de-passe')).toBeNull();
+    expect(input('champ-nouveau-mot-de-passe').type).toBe('password');
+  });
+
   it('chaque champ a un bouton Afficher / Masquer au nom accessible distinct', async () => {
     await open();
     const labels = Array.from(root.querySelectorAll('[data-cy^="btn-afficher-"] button')).map((b) => b.getAttribute('aria-label'));

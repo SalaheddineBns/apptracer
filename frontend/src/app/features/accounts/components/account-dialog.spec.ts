@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { Role, UserResponse, UsersService } from '../../../core/api/generated';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { AccountDialog } from './account-dialog';
@@ -170,5 +170,38 @@ describe('AccountDialog', () => {
     await fixture.whenStable();
     expect(fixture.componentInstance.visible()).toBe(false);
     expect(createUser).not.toHaveBeenCalled();
+  });
+
+  it('le mot de passe initial repart masqué à chaque ouverture, même après « Afficher »', async () => {
+    await open(null);
+    el('btn-afficher-mot-de-passe-initial')?.querySelector('button')?.click();
+    await fixture.whenStable();
+    expect(input('champ-mot-de-passe-initial').type).toBe('text');
+    fixture.componentInstance.visible.set(false);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    fixture.componentInstance.visible.set(true);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(input('champ-mot-de-passe-initial').type).toBe('password');
+  });
+
+  it('pendant l’envoi, le dialogue ne peut être fermé ni par Échap, ni par « Annuler », ni par la croix', async () => {
+    createUser.mockReturnValue(new Subject());
+    await open(null);
+    await fillCreate();
+    await submit();
+    expect(createUser).toHaveBeenCalledTimes(1);
+    expect(el('btn-annuler-dialogue')?.querySelector('button')?.disabled).toBe(true);
+    expect(document.body.querySelector('.p-dialog-close-button')).toBeNull();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+    el('dialogue-compte')?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.visible()).toBe(true);
+  });
+
+  it('la croix du dialogue a un nom accessible « Fermer » quand aucun envoi n’est en cours', async () => {
+    await open(null);
+    expect(document.body.querySelector('.p-dialog-close-button')?.getAttribute('aria-label')).toBe('Fermer');
   });
 });

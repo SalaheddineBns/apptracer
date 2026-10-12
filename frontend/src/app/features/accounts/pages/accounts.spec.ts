@@ -53,6 +53,8 @@ describe('AccountsPage', () => {
   };
 
   beforeEach(() => {
+    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     for (const fn of [listUsers, deactivateUser, reactivateUser, confirm, add]) {
       fn.mockReset();
     }
@@ -163,5 +165,31 @@ describe('AccountsPage', () => {
     expect(page['dialogVisible']()).toBe(true);
     expect(page['editing']()?.id).toBe(2);
     expect(cy('btn-modifier-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Modifier le compte de Prénom2 Nom2');
+  });
+
+  it('une seule requête GET /users au chargement, et une seule par tri ou changement de page', async () => {
+    listUsers.mockReturnValue(pageOf([account(2), account(3)]));
+    await open();
+    expect(listUsers).toHaveBeenCalledTimes(1);
+    root.querySelectorAll<HTMLElement>('th')[1]?.click();
+    await whenStable();
+    expect(listUsers).toHaveBeenCalledTimes(2);
+    // Un événement identique à l'état courant (réémission de p-table) ne recharge pas.
+    page['onLazyLoad']({ first: 0, rows: 20, sortField: 'email', sortOrder: 1 });
+    expect(listUsers).toHaveBeenCalledTimes(2);
+  });
+
+  it('l’état vide propose l’action « Nouveau compte »', async () => {
+    listUsers.mockReturnValue(pageOf([]));
+    await open();
+    await click('btn-nouveau-compte-vide');
+    expect(page['dialogVisible']()).toBe(true);
+  });
+
+  it('la confirmation de désactivation n’a pas de croix de fermeture', async () => {
+    listUsers.mockReturnValue(pageOf([account(2)]));
+    await open();
+    await click('btn-desactiver-2');
+    expect(confirm.mock.calls[0][0].closable).toBe(false);
   });
 });

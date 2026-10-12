@@ -59,7 +59,11 @@ export class AccountsStore {
     });
   }
 
+  /** Charge une page / un tri. Sans effet si les paramètres sont ceux de l'état courant (p-table réémet son état à l'initialisation). */
   query(page: number, size: number, field: AccountSortField, order: 1 | -1): void {
+    if (page === this.page() && size === this.size() && field === this.sortField() && order === this.sortOrder()) {
+      return;
+    }
     this.page.set(page);
     this.size.set(size);
     this.sortField.set(field);

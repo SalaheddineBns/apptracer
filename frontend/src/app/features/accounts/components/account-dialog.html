@@ -4,6 +4,8 @@
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
+  [closable]="!submitting()"
+  closeAriaLabel="Fermer"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
   (onShow)="firstNameInput.focus()"
   (onHide)="onHide()"
@@ -64,7 +66,7 @@
     }
 
     <div class="flex justify-end gap-2">
-      <p-button type="button" label="Annuler" [text]="true" severity="secondary" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="button" label="Annuler" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
       <p-button type="submit" label="Enregistrer" [loading]="submitting()" data-cy="btn-enregistrer" />
     </div>
   </form>

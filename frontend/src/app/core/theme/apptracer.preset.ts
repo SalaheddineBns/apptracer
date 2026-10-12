@@ -29,5 +29,23 @@ export const AppTracerPreset = definePreset(Aura, {
     message: {
       error: { color: 'light-dark({red.700}, {red.400})' },
     },
+    // Contraste AA du bouton danger (blanc sur red.500 = 3,76:1) : le clair part de 600, le sombre reste celui d'Aura.
+    button: {
+      root: {
+        danger: {
+          background: 'light-dark({red.600}, {red.400})',
+          borderColor: 'light-dark({red.600}, {red.400})',
+          hoverBackground: 'light-dark({red.700}, {red.300})',
+          hoverBorderColor: 'light-dark({red.700}, {red.300})',
+          activeBackground: 'light-dark({red.800}, {red.200})',
+          activeBorderColor: 'light-dark({red.800}, {red.200})',
+        },
+      },
+    },
+    // Contraste AA des titres de toast (jetons Aura `toast.success.color` green.600 et `toast.error.color` red.600 en clair).
+    toast: {
+      success: { color: 'light-dark({green.700}, {green.500})' },
+      error: { color: 'light-dark({red.700}, {red.400})' },
+    },
   },
 });
