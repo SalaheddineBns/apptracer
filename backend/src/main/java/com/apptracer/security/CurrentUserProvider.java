@@ -20,6 +20,14 @@ public class CurrentUserProvider {
     return Long.valueOf(authentication.getName());
   }
 
+  /** Vrai si l'utilisateur authentifié a le rôle ADMIN (authority {@code ROLE_ADMIN}). */
+  public boolean isAdmin() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return authentication != null
+        && authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+  }
+
   /** Identifiant de la session courante (claim {@code sid} de l'access token), s'il est présent. */
   public Optional<UUID> currentSessionId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
