@@ -115,6 +115,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
               "code",
               "Ce code est déjà utilisé."));
     }
+    if (violates(ex, "ux_projects_code")) {
+      // RG-02-01
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-02-01",
+              "Un projet existe déjà avec ce code.",
+              "code",
+              "Ce code est déjà utilisé."));
+    }
     throw ex;
   }
 
