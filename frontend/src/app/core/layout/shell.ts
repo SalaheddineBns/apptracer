@@ -31,6 +31,8 @@ export class Shell {
   // RG-03-10 : « Mon journal » pour USER et MANAGER (hiérarchie), « Comptes » pour ADMIN uniquement.
   protected readonly showJournal = computed(() => this.auth.hasRole(Role.User));
   protected readonly showAccounts = computed(() => this.auth.hasRole(Role.Admin));
+  // RG-02-08, CA-02-09 : « Types d'activité » réservé à l'ADMIN.
+  protected readonly showActivityTypes = computed(() => this.auth.hasRole(Role.Admin));
 
   protected readonly menuItems: MenuItem[] = [
     { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },

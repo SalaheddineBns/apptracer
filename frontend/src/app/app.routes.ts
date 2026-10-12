@@ -28,6 +28,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),
       },
       {
+        path: 'admin/types-activite',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/referentials/pages/activity-types').then((m) => m.ActivityTypesPage),
+      },
+      {
         path: 'compte/mot-de-passe',
         loadComponent: () => import('./features/auth/pages/change-password').then((m) => m.ChangePasswordPage),
       },
