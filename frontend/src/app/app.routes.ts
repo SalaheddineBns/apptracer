@@ -29,10 +29,8 @@ export const routes: Routes = [
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPlaceholderPage),
       },
       {
-        // Provisoire, remplacée par SFD-03 E3 (T-03-16).
         path: 'compte/mot-de-passe',
-        loadComponent: () =>
-          import('./features/auth/pages/change-password-placeholder').then((m) => m.ChangePasswordPlaceholderPage),
+        loadComponent: () => import('./features/auth/pages/change-password').then((m) => m.ChangePasswordPage),
       },
     ],
   },

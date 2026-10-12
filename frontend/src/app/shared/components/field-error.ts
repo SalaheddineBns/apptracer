@@ -13,13 +13,15 @@ import { SERVER_ERROR_KEY } from '../forms/apply-field-errors';
   selector: 'app-field-error',
   template: `
     @if (message(); as text) {
-      <small class="text-xs text-red-700 dark:text-red-400" data-cy="field-error" role="alert">{{ text }}</small>
+      <small class="text-xs text-red-700 dark:text-red-400" [attr.data-cy]="cy()" role="alert">{{ text }}</small>
     }
   `,
 })
 export class FieldError {
   readonly control = input.required<AbstractControl | null>();
   readonly messages = input<Record<string, string>>({});
+  /** `data-cy` du message (par défaut `field-error`). */
+  readonly cy = input('field-error');
 
   private readonly state = toSignal(
     toObservable(this.control).pipe(

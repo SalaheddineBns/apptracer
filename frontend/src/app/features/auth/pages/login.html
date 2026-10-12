@@ -25,31 +25,15 @@
         <app-field-error [control]="form.controls.email" [messages]="emailMessages" />
       </div>
 
-      <div class="flex flex-col gap-2">
-        <div class="flex items-center justify-between gap-2">
-          <label for="login-password" class="text-sm font-medium text-color">Mot de passe <span aria-hidden="true">*</span></label>
-          <p-button
-            type="button"
-            [text]="true"
-            size="small"
-            [label]="passwordVisible() ? 'Masquer' : 'Afficher'"
-            [ariaLabel]="passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
-            (onClick)="passwordVisible.set(!passwordVisible())"
-            data-cy="btn-afficher-mot-de-passe"
-          />
-        </div>
-        <input
-          pInputText
-          id="login-password"
-          [type]="passwordVisible() ? 'text' : 'password'"
-          formControlName="password"
-          autocomplete="current-password"
-          fluid
-          required
-          data-cy="champ-mot-de-passe"
-        />
-        <app-field-error [control]="form.controls.password" [messages]="passwordMessages" />
-      </div>
+      <app-password-field
+        [control]="form.controls.password"
+        inputId="login-password"
+        label="Mot de passe"
+        autocomplete="current-password"
+        fieldCy="champ-mot-de-passe"
+        toggleCy="btn-afficher-mot-de-passe"
+        [messages]="passwordMessages"
+      />
 
       <p-button
         type="submit"

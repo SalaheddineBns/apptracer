@@ -9,11 +9,12 @@ import { safeReturnUrl } from '../../../core/auth/return-url';
 import { homeUrlFor } from '../../../core/auth/roles';
 import { toProblem } from '../../../core/errors/problem';
 import { FieldError } from '../../../shared/components/field-error';
+import { PasswordField } from '../../../shared/components/password-field';
 
 /** SFD-03 E1 Connexion. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError, PasswordField],
   selector: 'app-login',
   templateUrl: './login.html',
 })
@@ -22,7 +23,6 @@ export class LoginPage {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly passwordVisible = signal(false);
   protected readonly submitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
 

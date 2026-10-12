@@ -108,7 +108,7 @@ describe('LoginPage', () => {
     await open();
     await submit();
     expect(login).not.toHaveBeenCalled();
-    expect(root.querySelectorAll('[data-cy="field-error"]').length).toBe(2);
+    expect(root.querySelectorAll('[role="alert"]').length).toBe(2);
 
     await fill('pas-un-email', 'x');
     await submit();

@@ -61,6 +61,14 @@ export class AuthStore {
     );
   }
 
+  /**
+   * RG-03-15 : change le mot de passe de l'utilisateur connecté (ancien mot de passe exigé). La session
+   * courante reste valide, seules les autres sessions sont révoquées par le back.
+   */
+  changePassword(currentPassword: string, newPassword: string): Observable<void> {
+    return this.api.changeMyPassword({ currentPassword, newPassword }).pipe(map(() => undefined));
+  }
+
   /** RG-03-08 : révoque le refresh token côté serveur, puis purge locale et retour à `/login` (CA-03-08). */
   logout(): Observable<void> {
     const refreshToken = this.refreshToken;
