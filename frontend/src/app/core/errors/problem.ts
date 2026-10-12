@@ -10,6 +10,8 @@ export interface Problem {
   readonly status: number;
   readonly detail: string;
   readonly code: string | null;
+  /** URI du type de problème (ex. `.../concurrent-modification`). */
+  readonly type: string | null;
   readonly fieldErrors: readonly FieldError[];
 }
 
@@ -33,21 +35,23 @@ function readFieldErrors(value: unknown): FieldError[] {
 
 export function toProblem(error: unknown): Problem {
   if (!(error instanceof HttpErrorResponse)) {
-    return { status: 0, detail: DEFAULT_ERROR_MESSAGE, code: null, fieldErrors: [] };
+    return { status: 0, detail: DEFAULT_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
   }
   if (error.status === 0) {
-    return { status: 0, detail: NETWORK_ERROR_MESSAGE, code: null, fieldErrors: [] };
+    return { status: 0, detail: NETWORK_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
   }
   const body: unknown = error.error;
   if (!isRecord(body)) {
-    return { status: error.status, detail: DEFAULT_ERROR_MESSAGE, code: null, fieldErrors: [] };
+    return { status: error.status, detail: DEFAULT_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
   }
   const detail = body['detail'];
   const code = body['code'];
+  const type = body['type'];
   return {
     status: error.status,
     detail: typeof detail === 'string' && detail.length > 0 ? detail : DEFAULT_ERROR_MESSAGE,
     code: typeof code === 'string' ? code : null,
+    type: typeof type === 'string' ? type : null,
     fieldErrors: readFieldErrors(body['errors']),
   };
 }

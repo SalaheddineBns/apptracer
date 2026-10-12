@@ -1,0 +1,71 @@
+<p-dialog
+  [header]="isEdit() ? 'Modifier le compte' : 'Nouveau compte'"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onShow)="firstNameInput.focus()"
+  (onHide)="onHide()"
+  data-cy="dialogue-compte"
+>
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="form-compte">
+    <div class="flex flex-col gap-2">
+      <label for="account-first-name" class="text-sm font-medium text-color">Prénom <span aria-hidden="true">*</span></label>
+      <input pInputText #firstNameInput id="account-first-name" formControlName="firstName" autocomplete="off" fluid required data-cy="champ-prenom" />
+      <app-field-error [control]="form.controls.firstName" [messages]="firstNameMessages" cy="erreur-champ-prenom" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="account-last-name" class="text-sm font-medium text-color">Nom <span aria-hidden="true">*</span></label>
+      <input pInputText id="account-last-name" formControlName="lastName" autocomplete="off" fluid required data-cy="champ-nom" />
+      <app-field-error [control]="form.controls.lastName" [messages]="lastNameMessages" cy="erreur-champ-nom" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="account-email" class="text-sm font-medium text-color">E-mail <span aria-hidden="true">*</span></label>
+      <input pInputText id="account-email" type="email" formControlName="email" autocomplete="off" fluid required data-cy="champ-email-compte" />
+      @if (isEdit()) {
+        <small class="text-xs text-muted-color">L’e-mail ne peut pas être modifié.</small>
+      }
+      <app-field-error [control]="form.controls.email" [messages]="emailMessages" cy="erreur-champ-email-compte" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="account-role" class="text-sm font-medium text-color">Rôle <span aria-hidden="true">*</span></label>
+      <p-select
+        formControlName="role"
+        [options]="roleOptions"
+        optionLabel="label"
+        optionValue="value"
+        inputId="account-role"
+        appendTo="body"
+        fluid
+        data-cy="champ-role"
+      />
+      @if (isSelf()) {
+        <small class="text-xs text-muted-color">Vous ne pouvez pas modifier votre propre rôle.</small>
+      }
+      <app-field-error [control]="form.controls.role" [messages]="roleMessages" cy="erreur-champ-role" />
+    </div>
+
+    @if (!isEdit()) {
+      <app-password-field
+        [control]="form.controls.initialPassword"
+        inputId="account-initial-password"
+        label="Mot de passe initial"
+        subject="le mot de passe initial"
+        autocomplete="new-password"
+        fieldCy="champ-mot-de-passe-initial"
+        toggleCy="btn-afficher-mot-de-passe-initial"
+        hint="12 caractères minimum, avec au moins une lettre et un chiffre."
+        [messages]="passwordMessages"
+      />
+    }
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" [text]="true" severity="secondary" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="submit" label="Enregistrer" [loading]="submitting()" data-cy="btn-enregistrer" />
+    </div>
+  </form>
+</p-dialog>

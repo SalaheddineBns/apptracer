@@ -151,4 +151,17 @@ describe('AccountsPage', () => {
     page['onLazyLoad']({ first: 0, rows: 10, sortField: 'passwordHash', sortOrder: 1 });
     expect(listUsers).toHaveBeenLastCalledWith(0, 10, ['role,asc'], 'body', false, expect.anything());
   });
+
+  it('« Nouveau compte » et « Modifier » ouvrent le dialogue en création puis en modification', async () => {
+    listUsers.mockReturnValue(pageOf([account(2)]));
+    await open();
+    await click('btn-nouveau-compte');
+    expect(page['dialogVisible']()).toBe(true);
+    expect(page['editing']()).toBeNull();
+    page['dialogVisible'].set(false);
+    await click('btn-modifier-2');
+    expect(page['dialogVisible']()).toBe(true);
+    expect(page['editing']()?.id).toBe(2);
+    expect(cy('btn-modifier-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Modifier le compte de Prénom2 Nom2');
+  });
 });

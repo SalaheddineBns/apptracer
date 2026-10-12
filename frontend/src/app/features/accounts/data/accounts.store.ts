@@ -1,7 +1,7 @@
 import { HttpContext } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { UserResponse, UsersService } from '../../../core/api/generated';
+import { CreateUserRequest, UpdateUserRequest, UserResponse, UsersService } from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
 
@@ -65,6 +65,16 @@ export class AccountsStore {
     this.sortField.set(field);
     this.sortOrder.set(order);
     this.load();
+  }
+
+  /** RG-03-11, RG-03-12 : création par un ADMIN. La liste est rechargée (pagination et tri côté serveur). */
+  create(request: CreateUserRequest): Observable<UserResponse> {
+    return this.api.createUser(request).pipe(tap(() => this.load()));
+  }
+
+  /** RG-03-11, RG-03-13 : modification (prénom, nom, rôle) avec la version reçue. */
+  update(id: number, request: UpdateUserRequest): Observable<UserResponse> {
+    return this.api.updateUser(id, request).pipe(tap((user) => this.replace(user)));
   }
 
   /** RG-03-11 / RG-03-14. Les erreurs (ex. 409 RG-03-13) sont affichées par l'intercepteur d'erreurs. */

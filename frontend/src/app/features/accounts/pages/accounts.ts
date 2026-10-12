@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
@@ -8,6 +8,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { AccountDialog, AccountSaved } from '../components/account-dialog';
 import { AccountsStore, isAccountSortField } from '../data/accounts.store';
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -24,7 +25,7 @@ const ROLE_SEVERITIES: Record<Role, 'secondary' | 'info' | 'contrast'> = {
 /** SFD-03 E4 Comptes (ADMIN). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState],
+  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, AccountDialog],
   selector: 'app-accounts',
   templateUrl: './accounts.html',
 })
@@ -37,8 +38,26 @@ export class AccountsPage {
   protected readonly first = computed(() => this.store.page() * this.store.size());
   protected readonly rowsPerPage = [10, 20, 50];
 
+  protected readonly dialogVisible = signal(false);
+  /** Compte en cours de modification ; `null` pour une création. */
+  protected readonly editing = signal<UserResponse | null>(null);
+
   constructor() {
     this.store.load();
+  }
+
+  protected openCreate(): void {
+    this.editing.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  protected openEdit(user: UserResponse): void {
+    this.editing.set(user);
+    this.dialogVisible.set(true);
+  }
+
+  protected onSaved(event: AccountSaved): void {
+    this.notify(event.mode === 'create' ? `Le compte de ${this.fullName(event.user)} est créé.` : `Le compte de ${this.fullName(event.user)} est modifié.`);
   }
 
   protected roleLabel(role: Role): string {

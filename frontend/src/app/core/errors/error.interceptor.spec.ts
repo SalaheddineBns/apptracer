@@ -64,6 +64,6 @@ describe('errorInterceptor', () => {
     controller
       .expectOne('/api/v1/x')
       .flush({ detail: 'd', code: 'RG-03-15', errors: [{ field: 'oldPassword', message: 'm' }, { bad: 1 }] }, { status: 400, statusText: 'x' });
-    expect(problem).toEqual({ status: 400, detail: 'd', code: 'RG-03-15', fieldErrors: [{ field: 'oldPassword', message: 'm' }] });
+    expect(problem).toEqual({ status: 400, detail: 'd', code: 'RG-03-15', type: null, fieldErrors: [{ field: 'oldPassword', message: 'm' }] });
   });
 });
