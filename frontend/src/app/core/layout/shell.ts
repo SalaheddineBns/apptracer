@@ -57,6 +57,9 @@ export class Shell {
   // RG-02-08, CA-02-09 : « Projets » réservé à l'ADMIN.
   protected readonly showProjects = computed(() => this.auth.hasRole(Role.Admin));
 
+  // RG-06-03, CA-06-07 : « Paramètres » réservé à l'ADMIN.
+  protected readonly showSettings = computed(() => this.auth.hasRole(Role.Admin));
+
   protected readonly menuItems: MenuItem[] = [
     { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },
     { label: 'Se déconnecter', dataCy: 'menu-se-deconnecter', command: () => this.logout() },

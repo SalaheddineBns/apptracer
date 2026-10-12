@@ -1,0 +1,228 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { FormGroup } from '@angular/forms';
+import { TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
+import { of, Subject, throwError } from 'rxjs';
+import { AppSettingsResponse, AppSettingsService } from '../../../core/api/generated';
+import {
+  fromMinutes,
+  STANDARD_DAY_MESSAGE,
+  standardDayValidator,
+  toMinutes,
+} from '../standard-day';
+import { SettingsPage } from './settings';
+
+const settings = (
+  minutes: number,
+  version = 0,
+  over: Partial<AppSettingsResponse> = {},
+): AppSettingsResponse => ({
+  standardDayMinutes: minutes,
+  version,
+  lastModifiedAt: null,
+  lastModifiedBy: undefined,
+  ...over,
+});
+
+describe('SettingsPage', () => {
+  const getAppSettings = vi.fn();
+  const updateAppSettings = vi.fn();
+  const add = vi.fn();
+  let root: HTMLElement;
+  let page: { form: FormGroup };
+  let whenStable: () => Promise<unknown>;
+
+  async function open(): Promise<void> {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: AppSettingsService, useValue: { getAppSettings, updateAppSettings } },
+        { provide: MessageService, useValue: { add } },
+      ],
+    });
+    const fixture = TestBed.createComponent(SettingsPage);
+    root = fixture.nativeElement as HTMLElement;
+    page = fixture.componentInstance as unknown as { form: FormGroup };
+    whenStable = () => fixture.whenStable();
+    await whenStable();
+  }
+
+  const cy = (name: string) => root.querySelector<HTMLElement>(`[data-cy="${name}"]`);
+  const button = () => cy('btn-enregistrer')?.querySelector('button') as HTMLButtonElement;
+  async function enter(hours: number | null, minutes: number | null): Promise<void> {
+    page.form.setValue({ hours, minutes });
+    page.form.markAsDirty();
+    await whenStable();
+  }
+  async function submit(): Promise<void> {
+    (cy('form-parametres') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    await whenStable();
+  }
+
+  beforeEach(() => {
+    for (const fn of [getAppSettings, updateAppSettings, add]) {
+      fn.mockReset();
+    }
+    TestBed.resetTestingModule();
+  });
+
+  it('état de chargement : squelette tant que la valeur n’est pas arrivée', async () => {
+    getAppSettings.mockReturnValue(new Subject());
+    await open();
+    expect(cy('etat-chargement')).not.toBeNull();
+    expect(cy('form-parametres')).toBeNull();
+  });
+
+  it('état d’erreur : message et « Réessayer » qui recharge la valeur', async () => {
+    getAppSettings.mockReturnValueOnce(
+      throwError(() => new HttpErrorResponse({ status: 500, error: { detail: 'Panne serveur' } })),
+    );
+    await open();
+    expect(cy('etat-erreur')?.textContent).toContain('Panne serveur');
+    getAppSettings.mockReturnValue(of(settings(420)));
+    (cy('btn-reessayer')?.querySelector('button') as HTMLButtonElement).click();
+    await whenStable();
+    expect(cy('form-parametres')).not.toBeNull();
+    expect(cy('etat-erreur')).toBeNull();
+  });
+
+  it('état nominal : la valeur du back est affichée en heures et minutes (420 min = 7 h 00), jamais modifiée', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    expect(getAppSettings).toHaveBeenCalledTimes(1);
+    expect(page.form.getRawValue()).toEqual({ hours: 7, minutes: 0 });
+    expect(root.querySelector('label[for="standard-day-hours"]')?.textContent).toContain('Heures');
+    expect(root.querySelector('label[for="standard-day-minutes"]')?.textContent).toContain(
+      'Minutes',
+    );
+    expect(cy('derniere-modification')?.textContent).toContain('Jamais modifiée');
+    expect(cy('aide-parametres')?.textContent).toContain('ne sont pas recalculées');
+  });
+
+  it('RG-06-06 : « Enregistrer » est inactif tant que la valeur n’a pas changé, sans requête', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    expect(button().disabled).toBe(true);
+    await submit();
+    expect(updateAppSettings).not.toHaveBeenCalled();
+    await enter(7, 30);
+    expect(button().disabled).toBe(false);
+    await enter(7, 0);
+    expect(button().disabled).toBe(true);
+  });
+
+  it('CA-06-02 : enregistrer 7 h 30 envoie 450 minutes, affiche la valeur et la dernière modification (heure de Paris)', async () => {
+    getAppSettings.mockReturnValue(of(settings(420, 2)));
+    updateAppSettings.mockReturnValue(
+      of(
+        settings(450, 3, {
+          lastModifiedAt: '2026-10-12T12:05:00Z',
+          lastModifiedBy: { id: 1, firstName: 'Ada', lastName: 'Martin' },
+        }),
+      ),
+    );
+    await open();
+    await enter(7, 30);
+    await submit();
+    expect(updateAppSettings.mock.calls[0][0]).toEqual({ standardDayMinutes: 450, version: 2 });
+    expect(page.form.getRawValue()).toEqual({ hours: 7, minutes: 30 });
+    expect(cy('derniere-modification')?.textContent).toContain('Ada Martin');
+    expect(cy('derniere-modification')?.textContent).toContain('12/10/2026 à 14:05');
+    expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', life: 3000 }));
+  });
+
+  it('CA-06-05 : 7 h 10 met le champ en erreur et ne lance aucune requête', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    await enter(7, 10);
+    await submit();
+    expect(updateAppSettings).not.toHaveBeenCalled();
+    expect(cy('erreur-duree')?.textContent).toContain(STANDARD_DAY_MESSAGE);
+  });
+
+  it('un 400 du back sur standardDayMinutes s’affiche sous le champ, sans toast', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    updateAppSettings.mockReturnValue(
+      throwError(
+        () =>
+          new HttpErrorResponse({
+            status: 400,
+            error: {
+              detail: 'Invalide',
+              errors: [{ field: 'standardDayMinutes', message: 'Message du back' }],
+            },
+          }),
+      ),
+    );
+    await open();
+    await enter(7, 30);
+    await submit();
+    expect(cy('erreur-duree')?.textContent).toContain('Message du back');
+    expect(add).not.toHaveBeenCalled();
+  });
+
+  it('modification concurrente (409) : message clair et le formulaire reprend la valeur rechargée', async () => {
+    getAppSettings
+      .mockReturnValueOnce(of(settings(420, 0)))
+      .mockReturnValueOnce(of(settings(480, 1)));
+    updateAppSettings.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 409, error: { detail: 'Conflit' } })),
+    );
+    await open();
+    await enter(7, 30);
+    await submit();
+    expect(cy('message-conflit')?.textContent).toContain('Un autre administrateur');
+    expect(page.form.getRawValue()).toEqual({ hours: 8, minutes: 0 });
+    expect(add).not.toHaveBeenCalled();
+  });
+
+  it('clics rapprochés : une seule requête, bouton en chargement pendant l’appel', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    updateAppSettings.mockReturnValue(new Subject());
+    await open();
+    await enter(7, 30);
+    await submit();
+    await submit();
+    await submit();
+    expect(updateAppSettings).toHaveBeenCalledTimes(1);
+    expect(button().disabled).toBe(true);
+  });
+
+  it('dernière modification sans auteur renvoyé : la date seule, aucun auteur inventé', async () => {
+    getAppSettings.mockReturnValue(
+      of(
+        settings(450, 1, { lastModifiedAt: '2026-01-15T08:00:00Z', lastModifiedBy: null as never }),
+      ),
+    );
+    await open();
+    expect(cy('derniere-modification')?.textContent).toContain('le 15/01/2026 à 09:00');
+  });
+});
+
+describe('standard-day (RG-06-02)', () => {
+  const check = (hours: number | null, minutes: number | null) =>
+    standardDayValidator({ value: { hours, minutes } } as never);
+
+  it.each([
+    [1, 0],
+    [24, 0],
+    [7, 30],
+    [7, 0],
+  ])('%i h %i accepté', (h, m) => expect(check(h, m)).toBeNull());
+
+  it.each([
+    [0, 45],
+    [24, 15],
+    [7, 10],
+    [0, 0],
+    [7, 75],
+    [-1, 0],
+    [null, 30],
+    [7, null],
+    [7.5, 0],
+  ])('%s h %s refusé', (h, m) => expect(check(h, m)).not.toBeNull());
+
+  it('conversions heures/minutes', () => {
+    expect(toMinutes({ hours: 7, minutes: 30 })).toBe(450);
+    expect(fromMinutes(420)).toEqual({ hours: 7, minutes: 0 });
+  });
+});

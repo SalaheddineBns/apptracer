@@ -38,6 +38,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/referentials/pages/projects').then((m) => m.ProjectsPage),
       },
       {
+        path: 'admin/parametres',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/settings/pages/settings').then((m) => m.SettingsPage),
+      },
+      {
         path: 'compte/mot-de-passe',
         loadComponent: () => import('./features/auth/pages/change-password').then((m) => m.ChangePasswordPage),
       },
