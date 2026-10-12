@@ -14,6 +14,7 @@
     "lint": "ng lint",
     "e2e": "start-server-and-test start http://localhost:4200 cy:run",
     "e2e:stack": "node scripts/e2e-stack.mjs",
+    "demo:stack": "node scripts/e2e-stack.mjs --serve",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "api:generate": "openapi-generator-cli generate -i ../docs/api/openapi.json -g typescript-angular -o src/app/core/api/generated --additional-properties=providedInRoot=true,stringEnums=true"

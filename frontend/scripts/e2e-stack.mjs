@@ -160,6 +160,12 @@ try {
     240000,
   );
 
+  if (process.argv.includes('--serve')) {
+    // Mode démonstration : la pile reste en marche pour un essai manuel, jusqu'à Ctrl+C.
+    log(`pile prête : http://localhost:${webPort} (Ctrl+C pour arrêter)`);
+    await new Promise(() => {});
+  }
+
   log('Cypress');
   const cypress = spawnSync('npx', ['cypress', 'run', ...process.argv.slice(2)], {
     cwd: frontendDir,
