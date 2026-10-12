@@ -204,4 +204,17 @@ describe('AccountDialog', () => {
     await open(null);
     expect(document.body.querySelector('.p-dialog-close-button')?.getAttribute('aria-label')).toBe('Fermer');
   });
+
+  it("ne reprend pas le focus à la fin de l'animation si la saisie a déjà commencé", async () => {
+    await open(null);
+    const dialog = fixture.componentInstance as unknown as { focusFirstField(field: HTMLInputElement): void };
+
+    input('champ-email-compte').focus();
+    dialog.focusFirstField(input('champ-prenom'));
+    expect(document.activeElement).toBe(input('champ-email-compte'));
+
+    (document.activeElement as HTMLElement).blur();
+    dialog.focusFirstField(input('champ-prenom'));
+    expect(document.activeElement).toBe(input('champ-prenom'));
+  });
 });

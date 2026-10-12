@@ -121,6 +121,18 @@ export class AccountDialog {
     }
   }
 
+  /**
+   * Focus initial sur le premier champ. `onShow` arrive à la fin de l'animation d'ouverture :
+   * si l'utilisateur saisit déjà dans le formulaire, on ne lui reprend pas le focus.
+   */
+  protected focusFirstField(firstField: HTMLInputElement): void {
+    const active = document.activeElement;
+    if (active !== firstField && active instanceof HTMLElement && firstField.form?.contains(active)) {
+      return;
+    }
+    firstField.focus();
+  }
+
   protected close(): void {
     this.visible.set(false);
   }

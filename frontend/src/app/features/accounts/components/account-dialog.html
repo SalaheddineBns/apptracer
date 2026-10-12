@@ -7,7 +7,7 @@
   [closable]="!submitting()"
   closeAriaLabel="Fermer"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
-  (onShow)="firstNameInput.focus()"
+  (onShow)="focusFirstField(firstNameInput)"
   (onHide)="onHide()"
   data-cy="dialogue-compte"
 >
