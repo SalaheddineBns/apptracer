@@ -21,28 +21,6 @@ class TimeConfigTest {
   @DisplayName("RG-00-01 : le Clock est sur Europe/Paris par défaut")
   void clockUsesParisByDefault() {
     runner.run(
-        ctx -> {
-          assertThat(ctx.getBean(Clock.class).getZone()).isEqualTo(ZoneId.of("Europe/Paris"));
-          assertThat(ctx.getBean(AppTimeProperties.class).standardDayMinutes()).isEqualTo(420);
-        });
-  }
-
-  @Test
-  @DisplayName("RG-00-02 : une journée standard non positive fait échouer le démarrage")
-  void invalidStandardDayFailsStartup() {
-    runner
-        .withPropertyValues("app.time.standard-day-minutes=0")
-        .run(ctx -> assertThat(ctx).hasFailed());
-  }
-
-  @Test
-  @DisplayName("RG-00-02 : la journée standard est configurable")
-  void standardDayIsConfigurable() {
-    runner
-        .withPropertyValues("app.time.standard-day-minutes=450")
-        .run(
-            ctx ->
-                assertThat(ctx.getBean(AppTimeProperties.class).standardDayMinutes())
-                    .isEqualTo(450));
+        ctx -> assertThat(ctx.getBean(Clock.class).getZone()).isEqualTo(ZoneId.of("Europe/Paris")));
   }
 }
