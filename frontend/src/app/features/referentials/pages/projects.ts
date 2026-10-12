@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -7,12 +7,13 @@ import { ProjectResponse } from '../../../core/api/generated';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { ProjectDialog, ProjectSaved } from '../components/project-dialog';
 import { ProjectsStore } from '../data/projects.store';
 
 /** SFD-02 E3 Projets (ADMIN) et E5 confirmation de désactivation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState],
+  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, ProjectDialog],
   selector: 'app-projects',
   templateUrl: './projects.html',
 })
@@ -21,9 +22,30 @@ export class ProjectsPage {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
+  protected readonly dialogVisible = signal(false);
+  /** Projet en cours de modification ; `null` pour une création. */
+  protected readonly editing = signal<ProjectResponse | null>(null);
+
   constructor() {
     // Une seule requête par ouverture de l'écran : la liste de l'ADMIN (avec les inactifs) est toujours relue.
     this.store.load();
+  }
+
+  protected openCreate(): void {
+    this.editing.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  protected openEdit(project: ProjectResponse): void {
+    this.editing.set(project);
+    this.dialogVisible.set(true);
+  }
+
+  protected onSaved(event: ProjectSaved): void {
+    this.notify(
+      event.mode === 'create' ? 'Projet créé' : 'Projet mis à jour',
+      event.mode === 'create' ? `Le projet « ${event.project.name} » est créé.` : `Le projet « ${event.project.name} » est modifié.`,
+    );
   }
 
   /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
@@ -35,16 +57,16 @@ export class ProjectsPage {
       rejectLabel: 'Annuler',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.store.deactivate(project.id).subscribe(() => this.notify(`Le projet « ${project.name} » est désactivé.`)),
+      accept: () => this.store.deactivate(project.id).subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est désactivé.`)),
     });
   }
 
   /** RG-02-05 : réversible, sans confirmation. */
   protected reactivate(project: ProjectResponse): void {
-    this.store.reactivate(project.id).subscribe(() => this.notify(`Le projet « ${project.name} » est réactivé.`));
+    this.store.reactivate(project.id).subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est réactivé.`));
   }
 
-  private notify(detail: string): void {
-    this.messages.add({ severity: 'success', summary: 'Projet mis à jour', detail, life: 3000 });
+  private notify(summary: string, detail: string): void {
+    this.messages.add({ severity: 'success', summary, detail, life: 3000 });
   }
 }

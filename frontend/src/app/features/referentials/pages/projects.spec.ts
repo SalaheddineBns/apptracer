@@ -22,6 +22,7 @@ describe('ProjectsPage', () => {
   const confirm = vi.fn();
   const add = vi.fn();
   let root: HTMLElement;
+  let fixtureRef: ReturnType<typeof TestBed.createComponent<ProjectsPage>>;
   let whenStable: () => Promise<unknown>;
 
   async function open(): Promise<void> {
@@ -33,6 +34,7 @@ describe('ProjectsPage', () => {
       ],
     });
     const fixture = TestBed.createComponent(ProjectsPage);
+    fixtureRef = fixture;
     root = fixture.nativeElement as HTMLElement;
     whenStable = () => fixture.whenStable();
     await whenStable();
@@ -130,6 +132,33 @@ describe('ProjectsPage', () => {
     expect(cy('statut-projet-1')?.textContent).toContain('Actif');
     expect(store.activeItems().map((p) => p.id)).toEqual([1, 2]);
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', life: 3000 }));
+  });
+
+  it('« Nouveau projet » (en-tête et état vide) et « Modifier » ouvrent le dialogue E4', async () => {
+    listProjects.mockReturnValue(of([project(1, { name: 'Alpha' })]));
+    await open();
+    expect(cy('btn-modifier-projet-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Modifier le projet Alpha');
+    await click('btn-nouveau-projet');
+    const page = fixtureRef.componentInstance as unknown as { dialogVisible(): boolean; editing(): unknown };
+    expect(page.dialogVisible()).toBe(true);
+    expect(page.editing()).toBeNull();
+    await click('btn-modifier-projet-1');
+    expect(page.editing()).toEqual(expect.objectContaining({ id: 1 }));
+  });
+
+  it('l’état vide propose « Nouveau projet »', async () => {
+    listProjects.mockReturnValue(of([]));
+    await open();
+    expect(cy('btn-nouveau-projet-vide')).not.toBeNull();
+  });
+
+  it('le toast de création a le titre « Projet créé », celui d’une modification « Projet mis à jour »', async () => {
+    listProjects.mockReturnValue(of([]));
+    await open();
+    const page = fixtureRef.componentInstance as unknown as { onSaved(e: { mode: 'create' | 'update'; project: ProjectResponse }): void };
+    page.onSaved({ mode: 'create', project: project(1) });
+    page.onSaved({ mode: 'update', project: project(1) });
+    expect(add.mock.calls.map((c) => c[0].summary)).toEqual(['Projet créé', 'Projet mis à jour']);
   });
 
   it('les actions par ligne nomment le projet dans leur aria-label', async () => {

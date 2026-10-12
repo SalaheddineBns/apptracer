@@ -13,15 +13,13 @@ import { TAG_COLOR_OPTIONS } from '../../../shared/activity-type.ui';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { FieldError } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
+import { REFERENTIAL_CODE_MESSAGES, referentialCodeValidators } from '../../../shared/forms/referential-code';
 import { ActivityTypesStore } from '../data/activity-types.store';
 
 export interface ActivityTypeSaved {
   readonly mode: 'create' | 'update';
   readonly type: ActivityTypeResponse;
 }
-
-/** RG-02-01 : majuscules, chiffres et `_`, de 2 à 30 caractères. */
-export const ACTIVITY_TYPE_CODE_PATTERN = /^[A-Z0-9_]{2,30}$/;
 
 /** SFD-02 E2 Dialogue type : création (type = null) ou modification d'un type d'activité existant. */
 @Component({
@@ -47,7 +45,7 @@ export class ActivityTypeDialog {
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     // RG-02-01 : format du code (le back reste la référence), immuable après la création.
-    code: ['', [Validators.required, Validators.pattern(ACTIVITY_TYPE_CODE_PATTERN)]],
+    code: ['', referentialCodeValidators],
     // SFD-02 données : libellé obligatoire, 100 caractères au plus.
     label: ['', [Validators.required, Validators.maxLength(100)]],
     // RG-02-04 : couleur de la palette.
@@ -62,10 +60,7 @@ export class ActivityTypeDialog {
     return { label: value.label?.trim() || 'Aperçu', color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
   });
 
-  protected readonly codeMessages = {
-    required: 'Le code est obligatoire.',
-    pattern: 'Le code doit contenir de 2 à 30 caractères : majuscules, chiffres et _ (ex. REUNION_CLIENT).',
-  };
+  protected readonly codeMessages = REFERENTIAL_CODE_MESSAGES;
   protected readonly labelMessages = {
     required: 'Le libellé est obligatoire.',
     maxlength: 'Le libellé ne doit pas dépasser 100 caractères.',

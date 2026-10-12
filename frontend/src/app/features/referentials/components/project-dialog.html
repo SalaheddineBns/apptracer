@@ -1,0 +1,36 @@
+<p-dialog
+  [header]="isEdit() ? 'Modifier le projet' : 'Nouveau projet'"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!submitting()"
+  closeAriaLabel="Fermer"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onShow)="focusFirstField(projectForm)"
+  (onHide)="onHide()"
+>
+  <form #projectForm class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="dialogue-projet">
+    <div class="flex flex-col gap-2">
+      <label for="project-code" class="text-sm font-medium text-color">Code <span aria-hidden="true">*</span></label>
+      <input pInputText id="project-code" formControlName="code" autocomplete="off" fluid required data-cy="champ-code-projet" />
+      @if (isEdit()) {
+        <small class="text-xs text-muted-color">Le code ne peut pas être modifié après la création.</small>
+      } @else {
+        <small class="text-xs text-muted-color">Majuscules, chiffres et _, de 2 à 30 caractères (ex. PORTAIL_CLIENT).</small>
+      }
+      <app-field-error [control]="form.controls.code" [messages]="codeMessages" cy="erreur-champ-code-projet" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="project-name" class="text-sm font-medium text-color">Nom <span aria-hidden="true">*</span></label>
+      <input pInputText id="project-name" formControlName="name" autocomplete="off" fluid required data-cy="champ-nom-projet" />
+      <app-field-error [control]="form.controls.name" [messages]="nameMessages" cy="erreur-champ-nom-projet" />
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="submit" label="Enregistrer" [loading]="submitting()" data-cy="btn-enregistrer" />
+    </div>
+  </form>
+</p-dialog>
