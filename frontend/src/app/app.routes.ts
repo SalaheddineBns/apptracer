@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
 import { Role } from './core/api/generated';
-import { authGuard, guestGuard, roleGuard } from './core/auth/auth.guards';
+import { authGuard, guestGuard, homeRedirectGuard, roleGuard } from './core/auth/auth.guards';
 
-// Les autres routes de l'architecture §7.2 (coquille, `/`, comptes, `**`) arrivent avec T-03-15 et T-03-17.
 export const routes: Routes = [
   {
     path: 'login',
@@ -10,10 +9,32 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/pages/login').then((m) => m.LoginPage),
   },
   {
-    // Route provisoire, remplacée par la vraie page SFD-01 (T-01-11).
-    path: 'journal',
-    canActivate: [authGuard, roleGuard(Role.User)],
-    loadComponent: () =>
-      import('./features/time-entries/pages/journal').then((m) => m.JournalPlaceholderPage),
+    // Coquille (en-tête E2) : enveloppe toutes les pages protégées.
+    path: '',
+    canActivate: [authGuard],
+    loadComponent: () => import('./core/layout/shell').then((m) => m.Shell),
+    children: [
+      // `/` : redirection vers l'accueil du rôle (chaque accueil passe son propre roleGuard : pas de boucle).
+      { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
+      {
+        // Provisoire, remplacée par la vraie page SFD-01 (T-01-11).
+        path: 'journal',
+        canActivate: [roleGuard(Role.User)],
+        loadComponent: () => import('./features/time-entries/pages/journal').then((m) => m.JournalPlaceholderPage),
+      },
+      {
+        // Provisoire, remplacée par la vraie page SFD-03 E4 (T-03-17).
+        path: 'admin/comptes',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPlaceholderPage),
+      },
+      {
+        // Provisoire, remplacée par SFD-03 E3 (T-03-16).
+        path: 'compte/mot-de-passe',
+        loadComponent: () =>
+          import('./features/auth/pages/change-password-placeholder').then((m) => m.ChangePasswordPlaceholderPage),
+      },
+    ],
   },
+  { path: '**', redirectTo: '' },
 ];

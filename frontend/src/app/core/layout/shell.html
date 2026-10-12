@@ -1,0 +1,68 @@
+<div class="min-h-screen flex flex-col bg-surface-50 dark:bg-surface-950">
+  <header class="bg-surface-0 dark:bg-surface-900 border-b border-surface-200 dark:border-surface-700">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+      <span class="text-lg font-medium text-primary">AppTracer</span>
+
+      <nav aria-label="Navigation principale" class="order-last sm:order-none w-full sm:w-auto sm:flex-1">
+        <ul class="flex items-center gap-2 list-none m-0 p-0">
+          @if (showJournal()) {
+            <li>
+              <a
+                routerLink="/journal"
+                routerLinkActive="bg-surface-100 dark:bg-surface-800 font-medium"
+                ariaCurrentWhenActive="page"
+                class="block rounded-md px-3 py-2 text-sm text-color no-underline hover:bg-surface-100 dark:hover:bg-surface-800"
+                data-cy="nav-mon-journal"
+                >Mon journal</a
+              >
+            </li>
+          }
+          @if (showAccounts()) {
+            <li>
+              <a
+                routerLink="/admin/comptes"
+                routerLinkActive="bg-surface-100 dark:bg-surface-800 font-medium"
+                ariaCurrentWhenActive="page"
+                class="block rounded-md px-3 py-2 text-sm text-color no-underline hover:bg-surface-100 dark:hover:bg-surface-800"
+                data-cy="nav-comptes"
+                >Comptes</a
+              >
+            </li>
+          }
+        </ul>
+      </nav>
+
+      <div class="flex items-center">
+        <p-button
+          type="button"
+          [text]="true"
+          severity="secondary"
+          [ariaLabel]="'Menu utilisateur de ' + fullName()"
+          aria-haspopup="menu"
+          (onClick)="menu.toggle($event)"
+          data-cy="btn-menu-utilisateur"
+        >
+          <span class="flex items-center gap-2">
+            <p-avatar [label]="initials()" shape="circle" size="normal" aria-hidden="true" />
+            <span class="text-sm max-w-40 truncate" data-cy="nom-utilisateur">{{ fullName() }}</span>
+          </span>
+        </p-button>
+        <p-menu #menu [popup]="true" [model]="menuItems" appendTo="body">
+          <ng-template #item let-item>
+            <a
+              pRipple
+              class="flex items-center px-3 py-2 text-sm text-color cursor-pointer no-underline"
+              [attr.data-cy]="item.dataCy"
+              >{{ item.label }}</a
+            >
+          </ng-template>
+        </p-menu>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto w-full p-6 flex-1">
+    <router-outlet />
+  </main>
+</div>
+<p-confirmdialog />

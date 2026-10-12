@@ -31,3 +31,11 @@ export const guestGuard: CanActivateFn = () => {
   const user = auth.user();
   return user ? router.createUrlTree([homeUrlFor(user.role)]) : true;
 };
+
+/** Route `/` : redirection vers l'accueil du rôle (sous `authGuard`, l'utilisateur est connu). */
+export const homeRedirectGuard: CanActivateFn = () => {
+  const auth = inject(AuthStore);
+  const router = inject(Router);
+  const user = auth.user();
+  return router.createUrlTree([user ? homeUrlFor(user.role) : '/login']);
+};
