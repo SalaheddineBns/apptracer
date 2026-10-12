@@ -26,6 +26,7 @@ describe('composants partagés', () => {
     control.markAsTouched();
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain('Champ obligatoire');
+    expect(fixture.nativeElement.querySelector('[data-cy="field-error"]').className).toContain('text-red-700');
   });
 
   it('FieldError : affiche immédiatement une erreur serveur posée par applyFieldErrors', async () => {

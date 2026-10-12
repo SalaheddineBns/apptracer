@@ -13,7 +13,7 @@ import { SERVER_ERROR_KEY } from '../forms/apply-field-errors';
   selector: 'app-field-error',
   template: `
     @if (message(); as text) {
-      <small class="text-xs text-red-500" data-cy="field-error" role="alert">{{ text }}</small>
+      <small class="text-xs text-red-700 dark:text-red-400" data-cy="field-error" role="alert">{{ text }}</small>
     }
   `,
 })

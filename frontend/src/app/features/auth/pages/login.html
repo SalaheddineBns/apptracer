@@ -1,0 +1,63 @@
+<main class="min-h-screen flex items-center justify-center bg-surface-50 dark:bg-surface-950 p-4">
+  <section class="w-full max-w-sm bg-surface-0 dark:bg-surface-900 rounded-xl p-6 flex flex-col gap-6">
+    <header class="flex flex-col gap-2">
+      <p class="text-lg font-medium text-primary">AppTracer</p>
+      <h1 class="text-2xl font-semibold text-color">Connexion</h1>
+    </header>
+
+    <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="form-connexion">
+      @if (errorMessage(); as message) {
+        <p-message severity="error" data-cy="message-erreur-connexion" role="alert">{{ message }}</p-message>
+      }
+
+      <div class="flex flex-col gap-2">
+        <label for="login-email" class="text-sm font-medium text-color">E-mail <span aria-hidden="true">*</span></label>
+        <input
+          pInputText
+          id="login-email"
+          type="email"
+          formControlName="email"
+          autocomplete="username"
+          fluid
+          required
+          data-cy="champ-email"
+        />
+        <app-field-error [control]="form.controls.email" [messages]="emailMessages" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center justify-between gap-2">
+          <label for="login-password" class="text-sm font-medium text-color">Mot de passe <span aria-hidden="true">*</span></label>
+          <p-button
+            type="button"
+            [text]="true"
+            size="small"
+            [label]="passwordVisible() ? 'Masquer' : 'Afficher'"
+            [ariaLabel]="passwordVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            (onClick)="passwordVisible.set(!passwordVisible())"
+            data-cy="btn-afficher-mot-de-passe"
+          />
+        </div>
+        <input
+          pInputText
+          id="login-password"
+          [type]="passwordVisible() ? 'text' : 'password'"
+          formControlName="password"
+          autocomplete="current-password"
+          fluid
+          required
+          data-cy="champ-mot-de-passe"
+        />
+        <app-field-error [control]="form.controls.password" [messages]="passwordMessages" />
+      </div>
+
+      <p-button
+        type="submit"
+        label="Se connecter"
+        [loading]="submitting()"
+        fluid
+        data-cy="btn-se-connecter"
+      />
+    </form>
+  </section>
+</main>

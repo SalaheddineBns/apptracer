@@ -53,7 +53,9 @@ export class AuthStore {
   }
 
   login(email: string, password: string): Observable<CurrentUserResponse> {
-    return this.api.login({ email, password }).pipe(
+    // Les erreurs de connexion sont affichées par l'écran (message générique RG-03-04), pas dans un toast.
+    const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
+    return this.api.login({ email, password }, 'body', false, { context }).pipe(
       tap((tokens) => this.storeSession(tokens)),
       map((tokens) => tokens.user),
     );
