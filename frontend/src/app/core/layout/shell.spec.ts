@@ -4,7 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
-import { AuthenticationService, Role } from '../api/generated';
+import { AuthenticationService, Role, UsersService } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
 
 const user = (role: Role) => ({ id: 1, email: 'ada@x.fr', firstName: 'Ada', lastName: 'Martin', role });
@@ -12,6 +12,7 @@ const user = (role: Role) => ({ id: 1, email: 'ada@x.fr', firstName: 'Ada', last
 describe('coquille applicative (E2) et routes', () => {
   const getCurrentUser = vi.fn();
   const logout = vi.fn();
+  const listUsers = vi.fn();
   let harness: RouterTestingHarness;
 
   async function start(role: Role | null): Promise<void> {
@@ -27,6 +28,7 @@ describe('coquille applicative (E2) et routes', () => {
         MessageService,
         ConfirmationService,
         { provide: AuthenticationService, useValue: { getCurrentUser, logout } },
+        { provide: UsersService, useValue: { listUsers } },
       ],
     });
     await TestBed.inject(AuthStore).init();
@@ -40,6 +42,8 @@ describe('coquille applicative (E2) et routes', () => {
   beforeEach(() => {
     getCurrentUser.mockReset();
     logout.mockReset();
+    listUsers.mockReset();
+    listUsers.mockReturnValue(of({ content: [], page: 0, size: 20, totalElements: 0 }));
   });
 
   it.each([
@@ -62,6 +66,7 @@ describe('coquille applicative (E2) et routes', () => {
     expect(cy('nav-comptes')).toBeNull();
     await harness.navigateByUrl('/admin/comptes');
     expect(url()).toBe('/journal');
+    expect(listUsers).not.toHaveBeenCalled();
   });
 
   it('CA-03-08 : « Se déconnecter » révoque le refresh token et redirige vers /login', async () => {

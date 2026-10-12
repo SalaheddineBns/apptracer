@@ -65,4 +65,9 @@
     <router-outlet />
   </main>
 </div>
-<p-confirmdialog />
+<p-confirmdialog
+  [pt]="{
+    pcAcceptButton: { root: { 'data-cy': 'btn-confirmer' } },
+    pcRejectButton: { root: { 'data-cy': 'btn-annuler' } }
+  }"
+/>

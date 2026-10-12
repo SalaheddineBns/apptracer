@@ -23,10 +23,9 @@ export const routes: Routes = [
         loadComponent: () => import('./features/time-entries/pages/journal').then((m) => m.JournalPlaceholderPage),
       },
       {
-        // Provisoire, remplacée par la vraie page SFD-03 E4 (T-03-17).
         path: 'admin/comptes',
         canActivate: [roleGuard(Role.Admin)],
-        loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPlaceholderPage),
+        loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),
       },
       {
         path: 'compte/mot-de-passe',
