@@ -56,7 +56,8 @@ class ReferentialListControllerTest {
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN"
             + " ('TRAVAIL_PROJET','REUNION','LECTURE_SFD','REVUE_MR','FORMATION','AUTRE')");
-    jdbc.execute("UPDATE activity_types SET active = TRUE");
+    jdbc.execute(
+        "UPDATE activity_types SET active = TRUE, version = 0, created_by = NULL, updated_by = NULL");
     jdbc.execute("DELETE FROM refresh_tokens");
     jdbc.execute("DELETE FROM users");
   }

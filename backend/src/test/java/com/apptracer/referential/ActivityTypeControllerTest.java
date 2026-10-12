@@ -63,6 +63,8 @@ class ActivityTypeControllerTest {
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN"
             + " ('TRAVAIL_PROJET','REUNION','LECTURE_SFD','REVUE_MR','FORMATION','AUTRE')");
+    jdbc.execute(
+        "UPDATE activity_types SET active = TRUE, version = 0, created_by = NULL, updated_by = NULL");
     jdbc.execute("DELETE FROM refresh_tokens");
     jdbc.execute("DELETE FROM users");
   }
@@ -270,5 +272,112 @@ class ActivityTypeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(updateBody("x", false, 0)))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName(
+      "RG-02-06 : un type désactivé disparaît pour USER et MANAGER, reste visible inactif pour l'ADMIN, puis revient réactivé")
+  void deactivationLifecycle() throws Exception {
+    ActivityType t = types.findByCode("FORMATION").orElseThrow();
+    String url = "/api/v1/activity-types/" + t.getId();
+
+    mockMvc
+        .perform(as(post(url + "/deactivation"), admin, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.active").value(false))
+        .andExpect(jsonPath("$.code").value("FORMATION"));
+    assertThat(types.findById(t.getId()).orElseThrow().getUpdatedBy()).isEqualTo(admin.getId());
+
+    for (User u : new User[] {plainUser, manager}) {
+      mockMvc
+          .perform(as(get("/api/v1/activity-types"), u, null))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.length()").value(5))
+          .andExpect(jsonPath("$[?(@.code == 'FORMATION')]").isEmpty());
+    }
+    mockMvc
+        .perform(as(get("/api/v1/activity-types"), admin, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(6))
+        .andExpect(jsonPath("$[?(@.code == 'FORMATION')].active").value(false));
+
+    mockMvc
+        .perform(as(post(url + "/reactivation"), admin, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.active").value(true));
+    mockMvc
+        .perform(as(get("/api/v1/activity-types"), plainUser, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(6))
+        .andExpect(jsonPath("$[?(@.code == 'FORMATION')].active").value(true));
+  }
+
+  @Test
+  @DisplayName("RG-02-05 : désactivation et réactivation redondantes répondent 200 sans effet")
+  void redundantToggleIs200() throws Exception {
+    Long id = types.findByCode("AUTRE").orElseThrow().getId();
+    mockMvc
+        .perform(as(post("/api/v1/activity-types/" + id + "/reactivation"), admin, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.active").value(true))
+        .andExpect(jsonPath("$.version").value(0));
+    mockMvc.perform(as(post("/api/v1/activity-types/" + id + "/deactivation"), admin, null));
+    mockMvc
+        .perform(as(post("/api/v1/activity-types/" + id + "/deactivation"), admin, null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.active").value(false))
+        .andExpect(jsonPath("$.version").value(1));
+  }
+
+  @Test
+  @DisplayName("RG-02-05 : aucun endpoint de suppression n'est exposé")
+  void noDeleteEndpoint() throws Exception {
+    Long id = types.findByCode("AUTRE").orElseThrow().getId();
+    mockMvc
+        .perform(
+            as(
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete(
+                    "/api/v1/activity-types/" + id),
+                admin,
+                null))
+        .andExpect(status().is4xxClientError());
+    assertThat(types.findByCode("AUTRE")).isPresent();
+  }
+
+  @Test
+  @DisplayName("CA-02-09 : USER et MANAGER reçoivent 403 sur désactivation et réactivation")
+  void nonAdminCannotToggle() throws Exception {
+    Long id = types.findByCode("AUTRE").orElseThrow().getId();
+    for (User u : new User[] {plainUser, manager}) {
+      mockMvc
+          .perform(as(post("/api/v1/activity-types/" + id + "/deactivation"), u, null))
+          .andExpect(status().isForbidden());
+      mockMvc
+          .perform(as(post("/api/v1/activity-types/" + id + "/reactivation"), u, null))
+          .andExpect(status().isForbidden());
+    }
+    assertThat(types.findByCode("AUTRE").orElseThrow().isActive()).isTrue();
+  }
+
+  @Test
+  @DisplayName("CA-02-11 : sans jeton, désactivation et réactivation répondent 401")
+  void toggleUnauthenticatedIs401() throws Exception {
+    mockMvc
+        .perform(post("/api/v1/activity-types/1/deactivation"))
+        .andExpect(status().isUnauthorized());
+    mockMvc
+        .perform(post("/api/v1/activity-types/1/reactivation"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName("RG-02-08 : 404 pour un identifiant inconnu à la désactivation et à la réactivation")
+  void toggleUnknownIs404() throws Exception {
+    mockMvc
+        .perform(as(post("/api/v1/activity-types/999999/deactivation"), admin, null))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(as(post("/api/v1/activity-types/999999/reactivation"), admin, null))
+        .andExpect(status().isNotFound());
   }
 }

@@ -137,4 +137,44 @@ public class ActivityTypeController {
         service.update(
             id, request.label(), request.projectRequired(), request.color(), request.version()));
   }
+
+  @PostMapping("/{id}/deactivation")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(operationId = "deactivateActivityType", summary = "Désactiver un type d'activité")
+  @ApiResponse(responseCode = "200", description = "Type désactivé (sans effet s'il l'était déjà)")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-02-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Type introuvable",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public ActivityTypeResponse deactivateActivityType(@PathVariable Long id) {
+    return mapper.toResponse(service.deactivate(id));
+  }
+
+  @PostMapping("/{id}/reactivation")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(operationId = "reactivateActivityType", summary = "Réactiver un type d'activité")
+  @ApiResponse(responseCode = "200", description = "Type réactivé (sans effet s'il l'était déjà)")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-02-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Type introuvable",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public ActivityTypeResponse reactivateActivityType(@PathVariable Long id) {
+    return mapper.toResponse(service.reactivate(id));
+  }
 }

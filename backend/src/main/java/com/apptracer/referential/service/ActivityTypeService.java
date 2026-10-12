@@ -73,6 +73,31 @@ public class ActivityTypeService {
    * RG-02-09 : un ADMIN voit actifs et inactifs, les autres seulement les actifs (RG-02-06) ; tri
    * alphabétique par libellé (RG-02-10).
    */
+  /**
+   * RG-02-05 : jamais supprimé, seulement désactivé. Sans effet si le type est déjà inactif.
+   * RG-02-08 : réservé à l'ADMIN (contrôlé par le contrôleur).
+   */
+  @Transactional
+  public ActivityType deactivate(Long id) {
+    return setActive(id, false);
+  }
+
+  /** RG-02-05 : réactivable. Sans effet si le type est déjà actif. */
+  @Transactional
+  public ActivityType reactivate(Long id) {
+    return setActive(id, true);
+  }
+
+  private ActivityType setActive(Long id, boolean active) {
+    ActivityType type = get(id);
+    if (type.isActive() == active) {
+      return type;
+    }
+    type.setActive(active);
+    // RG-00-04 : updated_at / updated_by via l'audit JPA
+    return types.saveAndFlush(type);
+  }
+
   @Transactional(readOnly = true)
   public List<ActivityType> list(boolean admin) {
     return admin ? types.findAllSorted() : types.findActiveSorted();

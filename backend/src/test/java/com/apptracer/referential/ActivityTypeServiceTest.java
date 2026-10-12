@@ -118,6 +118,29 @@ class ActivityTypeServiceTest {
   }
 
   @Test
+  @DisplayName("RG-02-05 : désactive puis réactive un type, sans jamais le supprimer")
+  void deactivateThenReactivate() {
+    ActivityType t = existing();
+    when(types.findById(1L)).thenReturn(Optional.of(t));
+    when(types.saveAndFlush(t)).thenReturn(t);
+    assertThat(service.deactivate(1L).isActive()).isFalse();
+    assertThat(service.reactivate(1L).isActive()).isTrue();
+    verify(types, never()).delete(any());
+    verify(types, never()).deleteById(any());
+  }
+
+  @Test
+  @DisplayName("RG-02-05 : désactiver un type déjà inactif, ou réactiver un actif, est sans effet")
+  void redundantToggleIsNoOp() {
+    ActivityType t = existing();
+    when(types.findById(1L)).thenReturn(Optional.of(t));
+    assertThat(service.reactivate(1L).isActive()).isTrue();
+    t.setActive(false);
+    assertThat(service.deactivate(1L).isActive()).isFalse();
+    verify(types, never()).saveAndFlush(any());
+  }
+
+  @Test
   @DisplayName("Un identifiant inconnu donne une ressource introuvable")
   void getUnknown() {
     when(types.findById(9L)).thenReturn(Optional.empty());
