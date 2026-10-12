@@ -153,6 +153,150 @@
         }
       }
     },
+    "/api/v1/projects/{id}" : {
+      "get" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Lire un projet",
+        "operationId" : "getProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Projet",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Projet introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Modifier le nom d'un projet",
+        "operationId" : "updateProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateProjectRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Projet modifié",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Projet introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Projet modifié entre-temps (conflit de version)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me/password" : {
       "put" : {
         "tags" : [ "Authentication" ],
@@ -194,6 +338,150 @@
           },
           "409" : {
             "description" : "Ancien mot de passe incorrect (RG-03-15)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-types/{id}" : {
+      "get" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Lire un type d'activité",
+        "operationId" : "getActivityType",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Type d'activité",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActivityTypeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Modifier le libellé, la couleur et « projet requis » d'un type",
+        "operationId" : "updateActivityType",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateActivityTypeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Type modifié",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActivityTypeResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Règle RG-02-07 violée, ou type modifié entre-temps (conflit de version)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -480,6 +768,221 @@
         }
       }
     },
+    "/api/v1/projects" : {
+      "get" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Lister les projets (actifs, ou tous pour un ADMIN)",
+        "operationId" : "listProjects",
+        "responses" : {
+          "200" : {
+            "description" : "Projets triés par nom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ProjectResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Créer un projet",
+        "operationId" : "createProject",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateProjectRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Projet créé",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide (RG-02-01 format)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé (RG-02-01)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/reactivation" : {
+      "post" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Réactiver un projet",
+        "operationId" : "reactivateProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Projet réactivé (sans effet s'il l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Projet introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}/deactivation" : {
+      "post" : {
+        "tags" : [ "Projects" ],
+        "summary" : "Désactiver un projet",
+        "operationId" : "deactivateProject",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Projet désactivé (sans effet s'il l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Projet introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/refresh" : {
       "post" : {
         "tags" : [ "Authentication" ],
@@ -610,6 +1113,221 @@
         }
       }
     },
+    "/api/v1/activity-types" : {
+      "get" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Lister les types d'activité (actifs, ou tous pour un ADMIN)",
+        "operationId" : "listActivityTypes",
+        "responses" : {
+          "200" : {
+            "description" : "Types triés par libellé",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ActivityTypeResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Créer un type d'activité",
+        "operationId" : "createActivityType",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateActivityTypeRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Type créé",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActivityTypeResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide (RG-02-01 format, RG-02-03, RG-02-04)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé (RG-02-01)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-types/{id}/reactivation" : {
+      "post" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Réactiver un type d'activité",
+        "operationId" : "reactivateActivityType",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Type réactivé (sans effet s'il l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActivityTypeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/activity-types/{id}/deactivation" : {
+      "post" : {
+        "tags" : [ "ActivityTypes" ],
+        "summary" : "Désactiver un type d'activité",
+        "operationId" : "deactivateActivityType",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Type désactivé (sans effet s'il l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ActivityTypeResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-02-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Type introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me" : {
       "get" : {
         "tags" : [ "Authentication" ],
@@ -725,6 +1443,44 @@
         },
         "required" : [ "active", "email", "firstName", "id", "lastName", "role", "version" ]
       },
+      "UpdateProjectRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "name", "version" ]
+      },
+      "ProjectResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "active", "code", "id", "name", "version" ]
+      },
       "ChangePasswordRequest" : {
         "type" : "object",
         "properties" : {
@@ -739,6 +1495,60 @@
           }
         },
         "required" : [ "currentPassword", "newPassword" ]
+      },
+      "TagColor" : {
+        "type" : "string",
+        "enum" : [ "INFO", "WARN", "SECONDARY", "CONTRAST", "SUCCESS" ]
+      },
+      "UpdateActivityTypeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "projectRequired" : {
+            "type" : "boolean"
+          },
+          "color" : {
+            "$ref" : "#/components/schemas/TagColor"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "color", "label", "projectRequired", "version" ]
+      },
+      "ActivityTypeResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "projectRequired" : {
+            "type" : "boolean"
+          },
+          "color" : {
+            "$ref" : "#/components/schemas/TagColor"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "active", "code", "color", "id", "label", "projectRequired", "version" ]
       },
       "CreateUserRequest" : {
         "type" : "object",
@@ -768,6 +1578,21 @@
           }
         },
         "required" : [ "email", "firstName", "initialPassword", "lastName", "role" ]
+      },
+      "CreateProjectRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "pattern" : "^[A-Z0-9_]{2,30}$"
+          },
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "code", "name" ]
       },
       "RefreshSessionRequest" : {
         "type" : "object",
@@ -842,6 +1667,27 @@
           }
         },
         "required" : [ "email", "password" ]
+      },
+      "CreateActivityTypeRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "pattern" : "^[A-Z0-9_]{2,30}$"
+          },
+          "label" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "projectRequired" : {
+            "type" : "boolean"
+          },
+          "color" : {
+            "$ref" : "#/components/schemas/TagColor"
+          }
+        },
+        "required" : [ "code", "color", "label", "projectRequired" ]
       },
       "PageUserResponse" : {
         "type" : "object",
