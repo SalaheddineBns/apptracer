@@ -1,0 +1,64 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-semibold text-color">Projets</h1>
+  </div>
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+    @if (store.error(); as message) {
+      <app-error-state [message]="message" (retry)="store.load()" />
+    } @else if (!store.loaded()) {
+      <app-loading-state [rows]="6" />
+    } @else if (store.items().length === 0) {
+      <app-empty-state message="Aucun projet à afficher." />
+    } @else {
+      <p-table [value]="store.items()" [loading]="store.loading()" [scrollable]="true" dataKey="id" class="text-sm" data-cy="table-projets">
+        <ng-template #header>
+          <tr>
+            <th pFrozenColumn scope="col">Code</th>
+            <th scope="col">Nom</th>
+            <th scope="col">Statut</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-project>
+          <tr [attr.data-cy]="'ligne-projet-' + project.id">
+            <td pFrozenColumn>{{ project.code }}</td>
+            <td>{{ project.name }}</td>
+            <td>
+              <p-tag
+                [value]="project.active ? 'Actif' : 'Inactif'"
+                [severity]="project.active ? 'success' : 'secondary'"
+                [attr.data-cy]="'statut-projet-' + project.id"
+              />
+            </td>
+            <td class="whitespace-nowrap">
+              @if (project.active) {
+                <p-button
+                  type="button"
+                  label="Désactiver"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  [ariaLabel]="'Désactiver le projet ' + project.name"
+                  (onClick)="confirmDeactivate(project)"
+                  [attr.data-cy]="'btn-desactiver-projet-' + project.id"
+                />
+              } @else {
+                <p-button
+                  type="button"
+                  label="Réactiver"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  [ariaLabel]="'Réactiver le projet ' + project.name"
+                  (onClick)="reactivate(project)"
+                  [attr.data-cy]="'btn-reactiver-projet-' + project.id"
+                />
+              }
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </section>
+</div>

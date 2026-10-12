@@ -4,7 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
-import { ActivityTypesService, AuthenticationService, Role, UsersService } from '../api/generated';
+import { ActivityTypesService, AuthenticationService, ProjectsService, Role, UsersService } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
 
 const user = (role: Role) => ({ id: 1, email: 'ada@x.fr', firstName: 'Ada', lastName: 'Martin', role });
@@ -14,6 +14,7 @@ describe('coquille applicative (E2) et routes', () => {
   const logout = vi.fn();
   const listUsers = vi.fn();
   const listActivityTypes = vi.fn();
+  const listProjects = vi.fn();
   let harness: RouterTestingHarness;
 
   async function start(role: Role | null): Promise<void> {
@@ -31,6 +32,7 @@ describe('coquille applicative (E2) et routes', () => {
         { provide: AuthenticationService, useValue: { getCurrentUser, logout } },
         { provide: UsersService, useValue: { listUsers } },
         { provide: ActivityTypesService, useValue: { listActivityTypes } },
+        { provide: ProjectsService, useValue: { listProjects } },
       ],
     });
     await TestBed.inject(AuthStore).init();
@@ -47,6 +49,8 @@ describe('coquille applicative (E2) et routes', () => {
     listUsers.mockReset();
     listActivityTypes.mockReset();
     listActivityTypes.mockReturnValue(of([]));
+    listProjects.mockReset();
+    listProjects.mockReturnValue(of([]));
     listUsers.mockReturnValue(of({ content: [], page: 0, size: 20, totalElements: 0 }));
   });
 
@@ -85,6 +89,20 @@ describe('coquille applicative (E2) et routes', () => {
     await harness.fixture.whenStable();
     expect(url()).toBe(shown ? '/admin/types-activite' : home);
     expect(listActivityTypes).toHaveBeenCalledTimes(shown ? 1 : 0);
+  });
+
+  it.each([
+    [Role.User, '/journal', false],
+    [Role.Manager, '/journal', false],
+    [Role.Admin, '/admin/comptes', true],
+  ])('CA-02-09 : %s, entrée « Projets » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
+    await start(role);
+    await harness.navigateByUrl(home);
+    expect(!!cy('nav-projets')).toBe(shown);
+    await harness.navigateByUrl('/admin/projets');
+    await harness.fixture.whenStable();
+    expect(url()).toBe(shown ? '/admin/projets' : home);
+    expect(listProjects).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
   it('Échap annule toute confirmation sans appeler accept, la croix est nommée « Fermer » et le focus revient au déclencheur', async () => {

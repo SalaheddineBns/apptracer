@@ -109,6 +109,15 @@ describe('AccountsPage', () => {
     expect(TestBed.inject(AccountsStore).users().find((u) => u.id === 1)?.active).toBe(true);
   });
 
+  it('le toast de création a le titre « Compte créé », celui d’une modification « Compte mis à jour »', async () => {
+    listUsers.mockReturnValue(pageOf([]));
+    await open();
+    const p = page as unknown as { onSaved(e: { mode: 'create' | 'update'; user: UserResponse }): void };
+    p.onSaved({ mode: 'create', user: account(2) });
+    p.onSaved({ mode: 'update', user: account(2) });
+    expect(add.mock.calls.map((c) => c[0].summary)).toEqual(['Compte créé', 'Compte mis à jour']);
+  });
+
   it('désactivation confirmée : appelle l’API, met à jour la ligne et affiche un toast', async () => {
     listUsers.mockReturnValue(pageOf([account(2)]));
     deactivateUser.mockReturnValue(of(account(2, { active: false })));

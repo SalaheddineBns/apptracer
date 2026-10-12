@@ -43,28 +43,31 @@ export class ActivityTypesPage {
   }
 
   protected onSaved(event: ActivityTypeSaved): void {
-    this.notify(event.mode === 'create' ? `Le type « ${event.type.label} » est créé.` : `Le type « ${event.type.label} » est modifié.`);
+    this.notify(
+      event.mode === 'create' ? 'Type créé' : 'Type mis à jour',
+      event.mode === 'create' ? `Le type « ${event.type.label} » est créé.` : `Le type « ${event.type.label} » est modifié.`,
+    );
   }
 
   /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
   protected confirmDeactivate(type: ActivityTypeResponse): void {
     this.confirmation.confirm({
       header: 'Désactiver le type',
-      message: `Désactiver le type « ${type.label} » ? Il ne sera plus proposé pour une nouvelle saisie. Les saisies existantes sont conservées.`,
+      message: `Désactiver le type « ${type.label} » ? Il ne sera plus proposé pour une nouvelle saisie ni pour la modification d'une saisie. Les saisies existantes sont conservées.`,
       acceptLabel: 'Désactiver',
       rejectLabel: 'Annuler',
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.store.deactivate(type.id).subscribe(() => this.notify(`Le type « ${type.label} » est désactivé.`)),
+      accept: () => this.store.deactivate(type.id).subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est désactivé.`)),
     });
   }
 
   /** RG-02-05 : réversible, sans confirmation. */
   protected reactivate(type: ActivityTypeResponse): void {
-    this.store.reactivate(type.id).subscribe(() => this.notify(`Le type « ${type.label} » est réactivé.`));
+    this.store.reactivate(type.id).subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est réactivé.`));
   }
 
-  private notify(detail: string): void {
-    this.messages.add({ severity: 'success', summary: 'Type mis à jour', detail, life: 3000 });
+  private notify(summary: string, detail: string): void {
+    this.messages.add({ severity: 'success', summary, detail, life: 3000 });
   }
 }

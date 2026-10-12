@@ -57,7 +57,10 @@ export class AccountsPage {
   }
 
   protected onSaved(event: AccountSaved): void {
-    this.notify(event.mode === 'create' ? `Le compte de ${this.fullName(event.user)} est créé.` : `Le compte de ${this.fullName(event.user)} est modifié.`);
+    this.notify(
+      event.mode === 'create' ? 'Compte créé' : 'Compte mis à jour',
+      event.mode === 'create' ? `Le compte de ${this.fullName(event.user)} est créé.` : `Le compte de ${this.fullName(event.user)} est modifié.`,
+    );
   }
 
   protected roleLabel(role: Role): string {
@@ -94,16 +97,16 @@ export class AccountsPage {
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>
-        this.store.deactivate(user.id).subscribe(() => this.notify(`Le compte de ${this.fullName(user)} est désactivé.`)),
+        this.store.deactivate(user.id).subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est désactivé.`)),
     });
   }
 
   /** Réactivation : réversible, sans confirmation. */
   protected reactivate(user: UserResponse): void {
-    this.store.reactivate(user.id).subscribe(() => this.notify(`Le compte de ${this.fullName(user)} est réactivé.`));
+    this.store.reactivate(user.id).subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est réactivé.`));
   }
 
-  private notify(detail: string): void {
-    this.messages.add({ severity: 'success', summary: 'Compte mis à jour', detail, life: 3000 });
+  private notify(summary: string, detail: string): void {
+    this.messages.add({ severity: 'success', summary, detail, life: 3000 });
   }
 }

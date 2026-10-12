@@ -33,6 +33,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/referentials/pages/activity-types').then((m) => m.ActivityTypesPage),
       },
       {
+        path: 'admin/projets',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/referentials/pages/projects').then((m) => m.ProjectsPage),
+      },
+      {
         path: 'compte/mot-de-passe',
         loadComponent: () => import('./features/auth/pages/change-password').then((m) => m.ChangePasswordPage),
       },

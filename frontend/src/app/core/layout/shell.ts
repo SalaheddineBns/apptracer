@@ -59,6 +59,8 @@ export class Shell {
   protected readonly showAccounts = computed(() => this.auth.hasRole(Role.Admin));
   // RG-02-08, CA-02-09 : « Types d'activité » réservé à l'ADMIN.
   protected readonly showActivityTypes = computed(() => this.auth.hasRole(Role.Admin));
+  // RG-02-08, CA-02-09 : « Projets » réservé à l'ADMIN.
+  protected readonly showProjects = computed(() => this.auth.hasRole(Role.Admin));
 
   protected readonly menuItems: MenuItem[] = [
     { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },

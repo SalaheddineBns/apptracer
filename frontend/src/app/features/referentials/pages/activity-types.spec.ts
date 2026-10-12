@@ -157,6 +157,15 @@ describe('ActivityTypesPage', () => {
     expect(cy('btn-nouveau-type-vide')).not.toBeNull();
   });
 
+  it('le toast de création a le titre « Type créé », celui d’une modification « Type mis à jour »', async () => {
+    listActivityTypes.mockReturnValue(of([]));
+    await open();
+    const page = fixtureRef.componentInstance as unknown as { onSaved(e: { mode: 'create' | 'update'; type: ActivityTypeResponse }): void };
+    page.onSaved({ mode: 'create', type: type(1) });
+    page.onSaved({ mode: 'update', type: type(1) });
+    expect(add.mock.calls.map((c) => c[0].summary)).toEqual(['Type créé', 'Type mis à jour']);
+  });
+
   it('les actions par ligne nomment le type dans leur aria-label', async () => {
     listActivityTypes.mockReturnValue(of([type(1, { label: 'Réunion' })]));
     await open();
