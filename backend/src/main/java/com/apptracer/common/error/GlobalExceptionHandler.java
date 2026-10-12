@@ -106,6 +106,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
               "email",
               "Cet e-mail est déjà utilisé."));
     }
+    if (violates(ex, "ux_activity_types_code")) {
+      // RG-02-01
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-02-01",
+              "Un type d'activité existe déjà avec ce code.",
+              "code",
+              "Ce code est déjà utilisé."));
+    }
     throw ex;
   }
 

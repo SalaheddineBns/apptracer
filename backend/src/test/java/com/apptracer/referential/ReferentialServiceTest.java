@@ -25,6 +25,7 @@ class ReferentialServiceTest {
 
   @Mock private ActivityTypeRepository types;
   @Mock private ProjectRepository projects;
+  @Mock private com.apptracer.referential.service.ActivityTypeUsageChecker usageChecker;
   @InjectMocks private ActivityTypeService typeService;
   @InjectMocks private ProjectService projectService;
 
