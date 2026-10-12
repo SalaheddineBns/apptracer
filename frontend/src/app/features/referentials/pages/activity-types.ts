@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -8,12 +8,13 @@ import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { ActivityTypeDialog, ActivityTypeSaved } from '../components/activity-type-dialog';
 import { ActivityTypesStore } from '../data/activity-types.store';
 
 /** SFD-02 E1 Types d'activité (ADMIN) et E5 confirmation de désactivation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, ActivityTypeTag, EmptyState, ErrorState, LoadingState],
+  imports: [TableModule, TagModule, ButtonModule, ActivityTypeTag, EmptyState, ErrorState, LoadingState, ActivityTypeDialog],
   selector: 'app-activity-types',
   templateUrl: './activity-types.html',
 })
@@ -22,9 +23,27 @@ export class ActivityTypesPage {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
+  protected readonly dialogVisible = signal(false);
+  /** Type en cours de modification ; `null` pour une création. */
+  protected readonly editing = signal<ActivityTypeResponse | null>(null);
+
   constructor() {
     // Une seule requête par ouverture de l'écran : la liste de l'ADMIN (avec les inactifs) est toujours relue.
     this.store.load();
+  }
+
+  protected openCreate(): void {
+    this.editing.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  protected openEdit(type: ActivityTypeResponse): void {
+    this.editing.set(type);
+    this.dialogVisible.set(true);
+  }
+
+  protected onSaved(event: ActivityTypeSaved): void {
+    this.notify(event.mode === 'create' ? `Le type « ${event.type.label} » est créé.` : `Le type « ${event.type.label} » est modifié.`);
   }
 
   /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */

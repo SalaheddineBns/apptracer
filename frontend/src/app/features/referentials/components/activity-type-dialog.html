@@ -1,0 +1,74 @@
+<p-dialog
+  [header]="isEdit() ? 'Modifier le type d’activité' : 'Nouveau type d’activité'"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!submitting()"
+  closeAriaLabel="Fermer"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onShow)="focusFirstField(typeForm)"
+  (onHide)="onHide()"
+>
+  <form #typeForm class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="dialogue-type-activite">
+    <div class="flex flex-col gap-2">
+      <label for="activity-type-code" class="text-sm font-medium text-color">Code <span aria-hidden="true">*</span></label>
+      <input pInputText id="activity-type-code" formControlName="code" autocomplete="off" fluid required data-cy="champ-code-type" />
+      @if (isEdit()) {
+        <small class="text-xs text-muted-color">Le code ne peut pas être modifié après la création.</small>
+      } @else {
+        <small class="text-xs text-muted-color">Majuscules, chiffres et _, de 2 à 30 caractères (ex. REUNION_CLIENT).</small>
+      }
+      <app-field-error [control]="form.controls.code" [messages]="codeMessages" cy="erreur-champ-code-type" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="activity-type-label" class="text-sm font-medium text-color">Libellé <span aria-hidden="true">*</span></label>
+      <input pInputText id="activity-type-label" formControlName="label" autocomplete="off" fluid required data-cy="champ-libelle-type" />
+      <app-field-error [control]="form.controls.label" [messages]="labelMessages" cy="erreur-champ-libelle-type" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span id="activity-type-color-label" class="text-sm font-medium text-color">Couleur <span aria-hidden="true">*</span></span>
+      <p-select
+        formControlName="color"
+        [options]="colorOptions"
+        optionLabel="label"
+        optionValue="value"
+        inputId="activity-type-color"
+        ariaLabelledBy="activity-type-color-label"
+        appendTo="body"
+        fluid
+        data-cy="champ-couleur-type"
+      >
+        <ng-template #selectedItem let-selected>
+          <app-activity-type-tag [label]="selected.label" [color]="selected.value" code="" />
+        </ng-template>
+        <ng-template #item let-option>
+          <app-activity-type-tag [label]="option.label" [color]="option.value" code="" />
+        </ng-template>
+      </p-select>
+      <app-field-error [control]="form.controls.color" [messages]="colorMessages" cy="erreur-champ-couleur-type" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <div class="flex items-center gap-2">
+        <p-checkbox formControlName="projectRequired" [binary]="true" inputId="activity-type-project-required" data-cy="champ-projet-requis-type" />
+        <label for="activity-type-project-required" class="text-sm text-color">Projet requis pour une saisie de ce type</label>
+      </div>
+      <app-field-error [control]="form.controls.projectRequired" cy="erreur-champ-projet-requis-type" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <span class="text-xs text-muted-color">Aperçu dans le journal</span>
+      <div data-cy="apercu-type">
+        <app-activity-type-tag [label]="preview().label" [color]="preview().color" [code]="preview().code" />
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="submit" label="Enregistrer" [loading]="submitting()" data-cy="btn-enregistrer" />
+    </div>
+  </form>
+</p-dialog>

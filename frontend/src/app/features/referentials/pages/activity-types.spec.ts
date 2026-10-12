@@ -23,6 +23,7 @@ describe('ActivityTypesPage', () => {
   const confirm = vi.fn();
   const add = vi.fn();
   let root: HTMLElement;
+  let fixtureRef: ReturnType<typeof TestBed.createComponent<ActivityTypesPage>>;
   let whenStable: () => Promise<unknown>;
 
   async function open(): Promise<void> {
@@ -34,6 +35,7 @@ describe('ActivityTypesPage', () => {
       ],
     });
     const fixture = TestBed.createComponent(ActivityTypesPage);
+    fixtureRef = fixture;
     root = fixture.nativeElement as HTMLElement;
     whenStable = () => fixture.whenStable();
     await whenStable();
@@ -135,6 +137,24 @@ describe('ActivityTypesPage', () => {
     expect(reactivateActivityType).toHaveBeenCalledWith(1);
     expect(cy('statut-type-1')?.textContent).toContain('Actif');
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', life: 3000 }));
+  });
+
+  it('« Nouveau type » (en-tête et état vide) et « Modifier » ouvrent le dialogue E2', async () => {
+    listActivityTypes.mockReturnValue(of([type(1, { label: 'Réunion' })]));
+    await open();
+    expect(cy('btn-modifier-type-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Modifier le type Réunion');
+    await click('btn-nouveau-type');
+    const page = fixtureRef.componentInstance as unknown as { dialogVisible(): boolean; editing(): unknown };
+    expect(page.dialogVisible()).toBe(true);
+    expect(page.editing()).toBeNull();
+    await click('btn-modifier-type-1');
+    expect(page.editing()).toEqual(expect.objectContaining({ id: 1 }));
+  });
+
+  it('l’état vide propose « Nouveau type »', async () => {
+    listActivityTypes.mockReturnValue(of([]));
+    await open();
+    expect(cy('btn-nouveau-type-vide')).not.toBeNull();
   });
 
   it('les actions par ligne nomment le type dans leur aria-label', async () => {
