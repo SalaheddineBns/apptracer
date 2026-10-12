@@ -87,6 +87,26 @@ describe('coquille applicative (E2) et routes', () => {
     expect(listActivityTypes).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
+  it('Échap annule toute confirmation sans appeler accept, la croix est nommée « Fermer » et le focus revient au déclencheur', async () => {
+    await start(Role.Admin);
+    await harness.navigateByUrl('/admin/comptes');
+    const opener = cy('nav-comptes') as HTMLElement;
+    opener.focus();
+    expect(document.activeElement).toBe(opener);
+    const accept = vi.fn();
+    const reject = vi.fn();
+    TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message: 'Message', accept, reject, acceptLabel: 'OK', rejectLabel: 'Annuler' });
+    await harness.fixture.whenStable();
+    expect(cy('btn-confirmer')).not.toBeNull();
+    expect(document.body.querySelector('.p-dialog-header button')?.getAttribute('aria-label')).toBe('Fermer');
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
+    await harness.fixture.whenStable();
+    await vi.waitFor(() => expect(cy('btn-confirmer')).toBeNull());
+    expect(accept).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(document.activeElement).toBe(opener));
+  });
+
   it('CA-03-08 : « Se déconnecter » révoque le refresh token et redirige vers /login', async () => {
     logout.mockReturnValue(of(null));
     await start(Role.User);

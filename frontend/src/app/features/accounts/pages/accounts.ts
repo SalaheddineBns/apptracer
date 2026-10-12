@@ -91,8 +91,6 @@ export class AccountsPage {
       message: `Désactiver le compte de ${this.fullName(user)} (${user.email}) ? Cette personne ne pourra plus se connecter et ses sessions seront fermées.`,
       acceptLabel: 'Désactiver',
       rejectLabel: 'Annuler',
-      // Pas de croix : sans nom accessible, et Échap / « Annuler » suffisent.
-      closable: false,
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>

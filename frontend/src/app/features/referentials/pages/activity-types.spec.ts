@@ -101,10 +101,11 @@ describe('ActivityTypesPage', () => {
     await click('btn-desactiver-type-1');
     expect(confirm).toHaveBeenCalledTimes(1);
     const options = confirm.mock.calls[0][0];
+    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    expect(options.closable).not.toBe(false);
     expect(options.message).toContain('Réunion');
     expect(options.message).toContain('plus proposé pour une nouvelle saisie');
     expect(options.message).toContain('saisies existantes sont conservées');
-    expect(options.closable).toBe(false);
     expect(deactivateActivityType).not.toHaveBeenCalled();
     expect(cy('statut-type-1')?.textContent).toContain('Actif');
   });

@@ -77,8 +77,11 @@
     <router-outlet />
   </main>
 </div>
+<!-- closable (défaut) : Échap annule toutes les confirmations ; p-confirmdialog ne transmet pas closeAriaLabel, la croix est nommée par pt. -->
 <p-confirmdialog
+  (onHide)="restoreFocus()"
   [pt]="{
+    pcCloseButton: { root: { 'aria-label': 'Fermer' } },
     pcAcceptButton: { root: { 'data-cy': 'btn-confirmer' } },
     pcRejectButton: { root: { 'data-cy': 'btn-annuler' } }
   }"

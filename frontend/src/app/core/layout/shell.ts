@@ -1,6 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -18,6 +20,30 @@ import { AuthStore } from '../auth/auth.store';
 export class Shell {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
+  private readonly document = inject(DOCUMENT);
+  private confirmOpener: HTMLElement | null = null;
+
+  constructor() {
+    // p-confirmdialog ne rend pas le focus à la fermeture : on le rend au bouton d'origine (clavier, accessibilité).
+    inject(ConfirmationService)
+      .requireConfirmation$.pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        const active = this.document.activeElement;
+        this.confirmOpener = active instanceof HTMLElement && active !== this.document.body ? active : null;
+      });
+  }
+
+  /** Fermeture de la confirmation (Échap, « Annuler », « Désactiver », croix) : le focus revient au déclencheur. */
+  protected restoreFocus(): void {
+    const opener = this.confirmOpener;
+    this.confirmOpener = null;
+    // Après la fermeture du dialogue (le piège à focus de PrimeNG reprend sinon le focus).
+    setTimeout(() => {
+      if (opener?.isConnected) {
+        opener.focus();
+      }
+    });
+  }
 
   protected readonly fullName = computed(() => {
     const user = this.auth.user();

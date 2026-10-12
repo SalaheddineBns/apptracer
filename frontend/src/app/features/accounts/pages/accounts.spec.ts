@@ -115,6 +115,8 @@ describe('AccountsPage', () => {
     await open();
     await click('btn-desactiver-2');
     expect(confirm).toHaveBeenCalledTimes(1);
+    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    expect(confirm.mock.calls[0][0].closable).not.toBe(false);
     expect(confirm.mock.calls[0][0].message).toContain('Prénom2 Nom2');
     expect(deactivateUser).not.toHaveBeenCalled();
     confirm.mock.calls[0][0].accept();
@@ -190,6 +192,5 @@ describe('AccountsPage', () => {
     listUsers.mockReturnValue(pageOf([account(2)]));
     await open();
     await click('btn-desactiver-2');
-    expect(confirm.mock.calls[0][0].closable).toBe(false);
   });
 });

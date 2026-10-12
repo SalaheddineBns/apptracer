@@ -34,8 +34,6 @@ export class ActivityTypesPage {
       message: `Désactiver le type « ${type.label} » ? Il ne sera plus proposé pour une nouvelle saisie. Les saisies existantes sont conservées.`,
       acceptLabel: 'Désactiver',
       rejectLabel: 'Annuler',
-      // Pas de croix : sans nom accessible, et Échap / « Annuler » suffisent.
-      closable: false,
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () => this.store.deactivate(type.id).subscribe(() => this.notify(`Le type « ${type.label} » est désactivé.`)),
