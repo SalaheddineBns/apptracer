@@ -4,6 +4,7 @@ api.base.service.ts
 api.module.ts
 api/activityTypes.service.ts
 api/api.ts
+api/appSettings.service.ts
 api/authentication.service.ts
 api/projects.service.ts
 api/users.service.ts
@@ -12,6 +13,7 @@ encoder.ts
 git_push.sh
 index.ts
 model/activityTypeResponse.ts
+model/appSettingsResponse.ts
 model/authTokensResponse.ts
 model/changePasswordRequest.ts
 model/createActivityTypeRequest.ts
@@ -26,8 +28,10 @@ model/problemDetail.ts
 model/projectResponse.ts
 model/refreshSessionRequest.ts
 model/role.ts
+model/settingsAuthor.ts
 model/tagColor.ts
 model/updateActivityTypeRequest.ts
+model/updateAppSettingsRequest.ts
 model/updateProjectRequest.ts
 model/updateUserRequest.ts
 model/userResponse.ts

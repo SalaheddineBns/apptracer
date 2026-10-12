@@ -1,4 +1,5 @@
 export * from './activityTypeResponse';
+export * from './appSettingsResponse';
 export * from './authTokensResponse';
 export * from './changePasswordRequest';
 export * from './createActivityTypeRequest';
@@ -12,8 +13,10 @@ export * from './problemDetail';
 export * from './projectResponse';
 export * from './refreshSessionRequest';
 export * from './role';
+export * from './settingsAuthor';
 export * from './tagColor';
 export * from './updateActivityTypeRequest';
+export * from './updateAppSettingsRequest';
 export * from './updateProjectRequest';
 export * from './updateUserRequest';
 export * from './userResponse';
