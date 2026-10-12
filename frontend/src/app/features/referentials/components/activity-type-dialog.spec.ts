@@ -235,4 +235,15 @@ describe('ActivityTypeDialog', () => {
     dialog.focusFirstField(form);
     expect(document.activeElement).toBe(input('champ-code-type'));
   });
+
+  it('l’exemple cité par l’erreur du code est celui de l’aide du même champ', async () => {
+    await open(null);
+    await type('champ-code-type', 'minuscules');
+    input('champ-code-type').dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    const example = (text: string | null | undefined) => /ex\. (\w+)\)/.exec(text ?? '')?.[1];
+    const help = document.body.querySelector('[data-cy="champ-code-type"]')?.parentElement?.querySelector('small')?.textContent;
+    expect(example(help)).toBe('REUNION_CLIENT');
+    expect(example(el('erreur-champ-code-type')?.textContent)).toBe(example(help));
+  });
 });

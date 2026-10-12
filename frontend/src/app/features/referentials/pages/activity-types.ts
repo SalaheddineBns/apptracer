@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -8,6 +9,7 @@ import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { FocusRestorer } from '../../../shared/focus-restorer';
 import { ActivityTypeDialog, ActivityTypeSaved } from '../components/activity-type-dialog';
 import { ActivityTypesStore } from '../data/activity-types.store';
 
@@ -22,6 +24,7 @@ export class ActivityTypesPage {
   protected readonly store = inject(ActivityTypesStore);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
+  private readonly focus = inject(FocusRestorer);
 
   protected readonly dialogVisible = signal(false);
   /** Type en cours de modification ; `null` pour une création. */
@@ -64,7 +67,11 @@ export class ActivityTypesPage {
 
   /** RG-02-05 : réversible, sans confirmation. */
   protected reactivate(type: ActivityTypeResponse): void {
-    this.store.reactivate(type.id).subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est réactivé.`));
+    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    const anchor = this.focus.capture();
+    this.store.reactivate(type.id)
+      .pipe(finalize(() => this.focus.restore(anchor)))
+      .subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est réactivé.`));
   }
 
   private notify(summary: string, detail: string): void {

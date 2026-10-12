@@ -89,12 +89,23 @@
     <router-outlet />
   </main>
 </div>
-<!-- closable (défaut) : Échap annule toutes les confirmations ; p-confirmdialog ne transmet pas closeAriaLabel, la croix est nommée par pt. -->
+<!--
+  Confirmation unique de l'application (design system) : 32rem (95vw au plus), focus d'ouverture sur « Annuler ».
+  closable (défaut) : Échap annule toutes les confirmations ; p-confirmdialog ne transmet pas closeAriaLabel, la croix est nommée par pt.
+  Le gabarit #message affiche le message comme du texte : p-confirmdialog l'injecterait sinon par innerHTML, or les libellés
+  et noms cités sont saisis par des utilisateurs.
+-->
 <p-confirmdialog
+  defaultFocus="reject"
+  styleClass="w-[32rem] max-w-[95vw]"
   (onHide)="restoreFocus()"
   [pt]="{
     pcCloseButton: { root: { 'aria-label': 'Fermer' } },
     pcAcceptButton: { root: { 'data-cy': 'btn-confirmer' } },
     pcRejectButton: { root: { 'data-cy': 'btn-annuler' } }
   }"
-/>
+>
+  <ng-template #message let-confirmation>
+    <span class="p-confirmdialog-message wrap-anywhere">{{ confirmation?.message }}</span>
+  </ng-template>
+</p-confirmdialog>

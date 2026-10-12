@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -9,6 +8,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MenuModule } from 'primeng/menu';
 import { Role } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
+import { FocusAnchor, FocusRestorer } from '../../shared/focus-restorer';
 
 /** Coquille applicative (SFD-03 E2 En-tête) : enveloppe les pages protégées, `/login` reste en dehors. */
 @Component({
@@ -20,29 +20,24 @@ import { AuthStore } from '../auth/auth.store';
 export class Shell {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
-  private readonly document = inject(DOCUMENT);
-  private confirmOpener: HTMLElement | null = null;
+  private readonly focus = inject(FocusRestorer);
+  private anchor: FocusAnchor | null = null;
 
   constructor() {
     // p-confirmdialog ne rend pas le focus à la fermeture : on le rend au bouton d'origine (clavier, accessibilité).
     inject(ConfirmationService)
       .requireConfirmation$.pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        const active = this.document.activeElement;
-        this.confirmOpener = active instanceof HTMLElement && active !== this.document.body ? active : null;
-      });
+      .subscribe(() => (this.anchor = this.focus.capture()));
   }
 
-  /** Fermeture de la confirmation (Échap, « Annuler », « Désactiver », croix) : le focus revient au déclencheur. */
+  /**
+   * Fermeture de la confirmation (Échap, « Annuler », action confirmée, croix) : le focus revient au déclencheur,
+   * ou au bouton qui le remplace une fois l'action terminée (« Désactiver » devient « Réactiver »).
+   */
   protected restoreFocus(): void {
-    const opener = this.confirmOpener;
-    this.confirmOpener = null;
-    // Après la fermeture du dialogue (le piège à focus de PrimeNG reprend sinon le focus).
-    setTimeout(() => {
-      if (opener?.isConnected) {
-        opener.focus();
-      }
-    });
+    const anchor = this.anchor;
+    this.anchor = null;
+    this.focus.restore(anchor);
   }
 
   protected readonly fullName = computed(() => {

@@ -9,6 +9,7 @@ import {
 } from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
+import { PendingIds } from '../../../shared/pending-ids';
 
 /**
  * Projets (SFD-02). RG-02-09 : le back renvoie les actifs seuls pour USER et MANAGER, tous pour ADMIN.
@@ -18,6 +19,9 @@ import { toProblem } from '../../../core/errors/problem';
 export class ProjectsStore {
   private readonly api = inject(ProjectsService);
   private requestId = 0;
+
+  /** Désactivations / réactivations en attente de réponse : une seule requête à la fois par ligne. */
+  readonly pending = new PendingIds();
 
   readonly items = signal<ProjectResponse[]>([]);
   readonly loading = signal(false);
@@ -71,11 +75,11 @@ export class ProjectsStore {
 
   /** RG-02-05 : désactivation (jamais de suppression). L'ordre ne change pas : remplacement en place. */
   deactivate(id: number): Observable<ProjectResponse> {
-    return this.api.deactivateProject(id).pipe(tap((item) => this.replace(item)));
+    return this.pending.guard(id, () => this.api.deactivateProject(id).pipe(tap((item) => this.replace(item))));
   }
 
   reactivate(id: number): Observable<ProjectResponse> {
-    return this.api.reactivateProject(id).pipe(tap((item) => this.replace(item)));
+    return this.pending.guard(id, () => this.api.reactivateProject(id).pipe(tap((item) => this.replace(item))));
   }
 
   private replace(item: ProjectResponse): void {

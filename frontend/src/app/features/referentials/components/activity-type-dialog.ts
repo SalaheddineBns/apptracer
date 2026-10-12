@@ -13,7 +13,7 @@ import { TAG_COLOR_OPTIONS } from '../../../shared/activity-type.ui';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { FieldError } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
-import { REFERENTIAL_CODE_MESSAGES, referentialCodeValidators } from '../../../shared/forms/referential-code';
+import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
 import { ActivityTypesStore } from '../data/activity-types.store';
 
 export interface ActivityTypeSaved {
@@ -60,7 +60,8 @@ export class ActivityTypeDialog {
     return { label: value.label?.trim() || 'Aperçu', color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
   });
 
-  protected readonly codeMessages = REFERENTIAL_CODE_MESSAGES;
+  protected readonly codeExample = 'REUNION_CLIENT';
+  protected readonly codeMessages = referentialCodeMessages(this.codeExample);
   protected readonly labelMessages = {
     required: 'Le libellé est obligatoire.',
     maxlength: 'Le libellé ne doit pas dépasser 100 caractères.',

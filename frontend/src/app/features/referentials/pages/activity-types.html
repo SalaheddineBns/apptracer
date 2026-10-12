@@ -24,7 +24,7 @@
       >
         <ng-template #header>
           <tr>
-            <th pFrozenColumn scope="col">Code</th>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Code</th>
             <th scope="col">Libellé</th>
             <th scope="col">Étiquette</th>
             <th scope="col">Projet requis</th>
@@ -34,7 +34,7 @@
         </ng-template>
         <ng-template #body let-type>
           <tr [attr.data-cy]="'ligne-type-' + type.id">
-            <td pFrozenColumn>{{ type.code }}</td>
+            <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ type.code }}</td>
             <td>{{ type.label }}</td>
             <td><app-activity-type-tag [label]="type.label" [color]="type.color" [code]="type.code" /></td>
             <td [attr.data-cy]="'projet-requis-type-' + type.id">{{ type.projectRequired ? 'Oui' : 'Non' }}</td>
@@ -45,7 +45,7 @@
                 [attr.data-cy]="'statut-type-' + type.id"
               />
             </td>
-            <td class="whitespace-nowrap">
+            <td class="sm:whitespace-nowrap">
               <p-button
                 type="button"
                 label="Modifier"
@@ -64,6 +64,7 @@
                   size="small"
                   severity="secondary"
                   [ariaLabel]="'Désactiver le type ' + type.label"
+                  [disabled]="store.pending.has(type.id)"
                   (onClick)="confirmDeactivate(type)"
                   [attr.data-cy]="'btn-desactiver-type-' + type.id"
                 />
@@ -75,6 +76,7 @@
                   size="small"
                   severity="secondary"
                   [ariaLabel]="'Réactiver le type ' + type.label"
+                  [disabled]="store.pending.has(type.id)"
                   (onClick)="reactivate(type)"
                   [attr.data-cy]="'btn-reactiver-type-' + type.id"
                 />

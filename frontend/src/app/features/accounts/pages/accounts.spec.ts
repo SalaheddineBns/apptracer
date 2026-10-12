@@ -202,4 +202,41 @@ describe('AccountsPage', () => {
     await open();
     await click('btn-desactiver-2');
   });
+
+  it('F1 : trois appuis rapides sur « Réactiver » n’envoient qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listUsers.mockReturnValue(pageOf([account(2, { active: false })]));
+    const response = new Subject<UserResponse>();
+    reactivateUser.mockReturnValue(response);
+    await open();
+    const button = cy('btn-reactiver-2')?.querySelector('button') as HTMLButtonElement;
+    button.click();
+    button.click();
+    button.click();
+    await whenStable();
+    expect(reactivateUser).toHaveBeenCalledTimes(1);
+    expect(cy('btn-reactiver-2')?.querySelector('button')?.disabled).toBe(true);
+    response.next(account(2));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-2')?.querySelector('button')?.disabled).toBe(false);
+  });
+
+  it('F1 : une désactivation confirmée deux fois n’envoie qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listUsers.mockReturnValue(pageOf([account(2, { lastName: '<u>Souligné</u>' })]));
+    const response = new Subject<UserResponse>();
+    deactivateUser.mockReturnValue(response);
+    await open();
+    await click('btn-desactiver-2');
+    const { accept } = confirm.mock.calls[0][0];
+    accept();
+    accept();
+    await whenStable();
+    expect(deactivateUser).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-2')?.querySelector('button')?.disabled).toBe(true);
+    response.next(account(2, { active: false }));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+  });
 });

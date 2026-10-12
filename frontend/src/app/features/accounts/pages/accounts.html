@@ -34,7 +34,7 @@
         >
           <ng-template #header>
             <tr>
-              <th pFrozenColumn pSortableColumn="lastName" scope="col">Nom <p-sort-icon field="lastName" /></th>
+              <th pFrozenColumn pSortableColumn="lastName" scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Nom <p-sort-icon field="lastName" /></th>
               <th pSortableColumn="email" scope="col">E-mail <p-sort-icon field="email" /></th>
               <th pSortableColumn="role" scope="col">Rôle <p-sort-icon field="role" /></th>
               <th pSortableColumn="active" scope="col">Statut <p-sort-icon field="active" /></th>
@@ -43,7 +43,7 @@
           </ng-template>
           <ng-template #body let-user>
             <tr [attr.data-cy]="'ligne-compte-' + user.id">
-              <td pFrozenColumn>
+              <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">
                 {{ fullName(user) }}
                 @if (isSelf(user)) {
                   <span class="text-xs text-muted-color" data-cy="indicateur-vous">(vous)</span>
@@ -58,7 +58,7 @@
                   [attr.data-cy]="'statut-compte-' + user.id"
                 />
               </td>
-              <td class="whitespace-nowrap">
+              <td class="sm:whitespace-nowrap">
                 <p-button
                   type="button"
                   label="Modifier"
@@ -78,6 +78,7 @@
                       size="small"
                       severity="secondary"
                       [ariaLabel]="'Désactiver le compte de ' + fullName(user)"
+                      [disabled]="store.pending.has(user.id)"
                       (onClick)="confirmDeactivate(user)"
                       [attr.data-cy]="'btn-desactiver-' + user.id"
                     />
@@ -90,6 +91,7 @@
                     size="small"
                     severity="secondary"
                     [ariaLabel]="'Réactiver le compte de ' + fullName(user)"
+                    [disabled]="store.pending.has(user.id)"
                     (onClick)="reactivate(user)"
                     [attr.data-cy]="'btn-reactiver-' + user.id"
                   />

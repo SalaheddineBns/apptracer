@@ -166,4 +166,41 @@ describe('ProjectsPage', () => {
     await open();
     expect(cy('btn-desactiver-projet-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Désactiver le projet Alpha');
   });
+
+  it('F1 : trois appuis rapides sur « Réactiver » n’envoient qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listProjects.mockReturnValue(of([project(1, { active: false })]));
+    const response = new Subject<ProjectResponse>();
+    reactivateProject.mockReturnValue(response);
+    await open();
+    const button = cy('btn-reactiver-projet-1')?.querySelector('button') as HTMLButtonElement;
+    button.click();
+    button.click();
+    button.click();
+    await whenStable();
+    expect(reactivateProject).toHaveBeenCalledTimes(1);
+    expect(cy('btn-reactiver-projet-1')?.querySelector('button')?.disabled).toBe(true);
+    response.next(project(1));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-projet-1')?.querySelector('button')?.disabled).toBe(false);
+  });
+
+  it('F1 : une désactivation confirmée deux fois n’envoie qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listProjects.mockReturnValue(of([project(1, { name: '<u>Souligné</u>' })]));
+    const response = new Subject<ProjectResponse>();
+    deactivateProject.mockReturnValue(response);
+    await open();
+    await click('btn-desactiver-projet-1');
+    const { accept } = confirm.mock.calls[0][0];
+    accept();
+    accept();
+    await whenStable();
+    expect(deactivateProject).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-projet-1')?.querySelector('button')?.disabled).toBe(true);
+    response.next(project(1, { active: false }));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+  });
 });

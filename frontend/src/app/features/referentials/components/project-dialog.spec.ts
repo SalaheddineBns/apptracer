@@ -192,4 +192,15 @@ describe('ProjectDialog', () => {
     dialog.focusFirstField(form);
     expect(document.activeElement).toBe(input('champ-code-projet'));
   });
+
+  it('l’exemple cité par l’erreur du code est celui de l’aide du même champ', async () => {
+    await open(null);
+    await type('champ-code-projet', 'minuscules');
+    input('champ-code-projet').dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    const example = (text: string | null | undefined) => /ex\. (\w+)\)/.exec(text ?? '')?.[1];
+    const help = document.body.querySelector('[data-cy="champ-code-projet"]')?.parentElement?.querySelector('small')?.textContent;
+    expect(example(help)).toBe('PORTAIL_CLIENT');
+    expect(example(el('erreur-champ-code-projet')?.textContent)).toBe(example(help));
+  });
 });

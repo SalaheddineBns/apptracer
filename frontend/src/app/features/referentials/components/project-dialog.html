@@ -17,7 +17,7 @@
       @if (isEdit()) {
         <small class="text-xs text-muted-color">Le code ne peut pas être modifié après la création.</small>
       } @else {
-        <small class="text-xs text-muted-color">Majuscules, chiffres et _, de 2 à 30 caractères (ex. PORTAIL_CLIENT).</small>
+        <small class="text-xs text-muted-color">Majuscules, chiffres et _, de 2 à 30 caractères (ex. {{ codeExample }}).</small>
       }
       <app-field-error [control]="form.controls.code" [messages]="codeMessages" cy="erreur-champ-code-projet" />
     </div>

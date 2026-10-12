@@ -9,6 +9,7 @@ import {
 } from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
+import { PendingIds } from '../../../shared/pending-ids';
 
 /**
  * Types d'activité (SFD-02). RG-02-09 : le back renvoie les actifs seuls pour USER et MANAGER, tous pour ADMIN.
@@ -18,6 +19,9 @@ import { toProblem } from '../../../core/errors/problem';
 export class ActivityTypesStore {
   private readonly api = inject(ActivityTypesService);
   private requestId = 0;
+
+  /** Désactivations / réactivations en attente de réponse : une seule requête à la fois par ligne. */
+  readonly pending = new PendingIds();
 
   readonly items = signal<ActivityTypeResponse[]>([]);
   readonly loading = signal(false);
@@ -71,11 +75,11 @@ export class ActivityTypesStore {
 
   /** RG-02-05 : désactivation (jamais de suppression). L'ordre ne change pas : remplacement en place. */
   deactivate(id: number): Observable<ActivityTypeResponse> {
-    return this.api.deactivateActivityType(id).pipe(tap((item) => this.replace(item)));
+    return this.pending.guard(id, () => this.api.deactivateActivityType(id).pipe(tap((item) => this.replace(item))));
   }
 
   reactivate(id: number): Observable<ActivityTypeResponse> {
-    return this.api.reactivateActivityType(id).pipe(tap((item) => this.replace(item)));
+    return this.pending.guard(id, () => this.api.reactivateActivityType(id).pipe(tap((item) => this.replace(item))));
   }
 
   private replace(item: ActivityTypeResponse): void {

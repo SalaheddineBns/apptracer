@@ -17,7 +17,7 @@
       <p-table [value]="store.items()" [loading]="store.loading()" [scrollable]="true" dataKey="id" class="text-sm" data-cy="table-projets">
         <ng-template #header>
           <tr>
-            <th pFrozenColumn scope="col">Code</th>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Code</th>
             <th scope="col">Nom</th>
             <th scope="col">Statut</th>
             <th scope="col">Actions</th>
@@ -25,7 +25,7 @@
         </ng-template>
         <ng-template #body let-project>
           <tr [attr.data-cy]="'ligne-projet-' + project.id">
-            <td pFrozenColumn>{{ project.code }}</td>
+            <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ project.code }}</td>
             <td>{{ project.name }}</td>
             <td>
               <p-tag
@@ -34,7 +34,7 @@
                 [attr.data-cy]="'statut-projet-' + project.id"
               />
             </td>
-            <td class="whitespace-nowrap">
+            <td class="sm:whitespace-nowrap">
               <p-button
                 type="button"
                 label="Modifier"
@@ -53,6 +53,7 @@
                   size="small"
                   severity="secondary"
                   [ariaLabel]="'Désactiver le projet ' + project.name"
+                  [disabled]="store.pending.has(project.id)"
                   (onClick)="confirmDeactivate(project)"
                   [attr.data-cy]="'btn-desactiver-projet-' + project.id"
                 />
@@ -64,6 +65,7 @@
                   size="small"
                   severity="secondary"
                   [ariaLabel]="'Réactiver le projet ' + project.name"
+                  [disabled]="store.pending.has(project.id)"
                   (onClick)="reactivate(project)"
                   [attr.data-cy]="'btn-reactiver-projet-' + project.id"
                 />

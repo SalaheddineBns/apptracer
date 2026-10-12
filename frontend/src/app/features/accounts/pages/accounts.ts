@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
@@ -8,6 +9,7 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { FocusRestorer } from '../../../shared/focus-restorer';
 import { AccountDialog, AccountSaved } from '../components/account-dialog';
 import { AccountsStore, isAccountSortField } from '../data/accounts.store';
 
@@ -34,6 +36,7 @@ export class AccountsPage {
   private readonly auth = inject(AuthStore);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
+  private readonly focus = inject(FocusRestorer);
 
   protected readonly first = computed(() => this.store.page() * this.store.size());
   protected readonly rowsPerPage = [10, 20, 50];
@@ -103,7 +106,11 @@ export class AccountsPage {
 
   /** Réactivation : réversible, sans confirmation. */
   protected reactivate(user: UserResponse): void {
-    this.store.reactivate(user.id).subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est réactivé.`));
+    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    const anchor = this.focus.capture();
+    this.store.reactivate(user.id)
+      .pipe(finalize(() => this.focus.restore(anchor)))
+      .subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est réactivé.`));
   }
 
   private notify(summary: string, detail: string): void {

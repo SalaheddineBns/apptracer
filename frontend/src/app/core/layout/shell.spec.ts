@@ -125,6 +125,54 @@ describe('coquille applicative (E2) et routes', () => {
     await vi.waitFor(() => expect(document.activeElement).toBe(opener));
   });
 
+  it('F2 : le message de la confirmation s’affiche comme du texte, jamais interprété comme du HTML', async () => {
+    await start(Role.Admin);
+    await harness.navigateByUrl('/admin/comptes');
+    const message = '<u>Souligné</u> <img src=x> <b>gras</b>';
+    TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message, acceptLabel: 'OK', rejectLabel: 'Annuler' });
+    await harness.fixture.whenStable();
+    const content = document.body.querySelector('.p-confirmdialog-message') as HTMLElement;
+    expect(content.textContent).toContain(message);
+    expect(content.querySelector('u, img, b')).toBeNull();
+  });
+
+  it('confirmation : 32rem (95vw au plus) et focus d’ouverture sur « Annuler », pas sur l’action destructrice', async () => {
+    await start(Role.Admin);
+    await harness.navigateByUrl('/admin/comptes');
+    TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message: 'Message', acceptLabel: 'Désactiver', rejectLabel: 'Annuler' });
+    await harness.fixture.whenStable();
+    const dialog = document.body.querySelector('.p-dialog') as HTMLElement;
+    expect(dialog.classList).toContain('w-[32rem]');
+    expect(dialog.classList).toContain('max-w-[95vw]');
+    await vi.waitFor(() => expect(document.activeElement).toBe(cy('btn-annuler')));
+  });
+
+  it('confirmation confirmée : le focus va au bouton qui remplace celui d’origine (« Désactiver » devient « Réactiver »)', async () => {
+    await start(Role.Admin);
+    await harness.navigateByUrl('/admin/comptes');
+    const row = document.createElement('table');
+    row.innerHTML = '<tbody><tr data-cy="ligne-test"><td><button type="button">Modifier</button><button type="button" id="origine">Désactiver</button></td></tr></tbody>';
+    document.body.appendChild(row);
+    const origin = row.querySelector('#origine') as HTMLButtonElement;
+    origin.focus();
+    const swap = () => {
+      // Comme la page : bouton désactivé pendant l'appel, puis remplacé à la réponse.
+      origin.disabled = true;
+      setTimeout(() => {
+        const replacement = document.createElement('button');
+        replacement.id = 'remplacant';
+        replacement.textContent = 'Réactiver';
+        origin.replaceWith(replacement);
+      }, 50);
+    };
+    TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message: 'Message', acceptLabel: 'Désactiver', rejectLabel: 'Annuler', accept: swap });
+    await harness.fixture.whenStable();
+    cy('btn-confirmer')?.click();
+    await harness.fixture.whenStable();
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('remplacant'));
+    row.remove();
+  });
+
   it('CA-03-08 : « Se déconnecter » révoque le refresh token et redirige vers /login', async () => {
     logout.mockReturnValue(of(null));
     await start(Role.User);

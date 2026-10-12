@@ -171,4 +171,41 @@ describe('ActivityTypesPage', () => {
     await open();
     expect(cy('btn-desactiver-type-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Désactiver le type Réunion');
   });
+
+  it('F1 : trois appuis rapides sur « Réactiver » n’envoient qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listActivityTypes.mockReturnValue(of([type(1, { active: false })]));
+    const response = new Subject<ActivityTypeResponse>();
+    reactivateActivityType.mockReturnValue(response);
+    await open();
+    const button = cy('btn-reactiver-type-1')?.querySelector('button') as HTMLButtonElement;
+    button.click();
+    button.click();
+    button.click();
+    await whenStable();
+    expect(reactivateActivityType).toHaveBeenCalledTimes(1);
+    expect(cy('btn-reactiver-type-1')?.querySelector('button')?.disabled).toBe(true);
+    response.next(type(1));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-type-1')?.querySelector('button')?.disabled).toBe(false);
+  });
+
+  it('F1 : une désactivation confirmée deux fois n’envoie qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+    listActivityTypes.mockReturnValue(of([type(1, { label: '<u>Souligné</u>' })]));
+    const response = new Subject<ActivityTypeResponse>();
+    deactivateActivityType.mockReturnValue(response);
+    await open();
+    await click('btn-desactiver-type-1');
+    const { accept } = confirm.mock.calls[0][0];
+    accept();
+    accept();
+    await whenStable();
+    expect(deactivateActivityType).toHaveBeenCalledTimes(1);
+    expect(cy('btn-desactiver-type-1')?.querySelector('button')?.disabled).toBe(true);
+    response.next(type(1, { active: false }));
+    response.complete();
+    await whenStable();
+    expect(add).toHaveBeenCalledTimes(1);
+  });
 });

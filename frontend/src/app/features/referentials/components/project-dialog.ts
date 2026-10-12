@@ -8,7 +8,7 @@ import { ProjectResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
 import { FieldError } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
-import { REFERENTIAL_CODE_MESSAGES, referentialCodeValidators } from '../../../shared/forms/referential-code';
+import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
 import { ProjectsStore } from '../data/projects.store';
 
 export interface ProjectSaved {
@@ -44,7 +44,8 @@ export class ProjectDialog {
     name: ['', [Validators.required, Validators.maxLength(100)]],
   });
 
-  protected readonly codeMessages = REFERENTIAL_CODE_MESSAGES;
+  protected readonly codeExample = 'PORTAIL_CLIENT';
+  protected readonly codeMessages = referentialCodeMessages(this.codeExample);
   protected readonly nameMessages = {
     required: 'Le nom est obligatoire.',
     maxlength: 'Le nom ne doit pas dépasser 100 caractères.',

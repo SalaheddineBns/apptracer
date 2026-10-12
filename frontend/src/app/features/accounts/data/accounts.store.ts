@@ -4,6 +4,7 @@ import { Observable, tap } from 'rxjs';
 import { CreateUserRequest, UpdateUserRequest, UserResponse, UsersService } from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
+import { PendingIds } from '../../../shared/pending-ids';
 
 /** Seuls champs de tri acceptés par le back (toute autre valeur donne 400). */
 export const ACCOUNT_SORT_FIELDS = ['lastName', 'firstName', 'email', 'role', 'active'] as const;
@@ -18,6 +19,9 @@ export function isAccountSortField(value: unknown): value is AccountSortField {
 export class AccountsStore {
   private readonly api = inject(UsersService);
   private requestId = 0;
+
+  /** Désactivations / réactivations en attente de réponse : une seule requête à la fois par ligne. */
+  readonly pending = new PendingIds();
 
   readonly users = signal<UserResponse[]>([]);
   readonly total = signal(0);
@@ -83,11 +87,11 @@ export class AccountsStore {
 
   /** RG-03-11 / RG-03-14. Les erreurs (ex. 409 RG-03-13) sont affichées par l'intercepteur d'erreurs. */
   deactivate(id: number): Observable<UserResponse> {
-    return this.api.deactivateUser(id).pipe(tap((user) => this.replace(user)));
+    return this.pending.guard(id, () => this.api.deactivateUser(id).pipe(tap((user) => this.replace(user))));
   }
 
   reactivate(id: number): Observable<UserResponse> {
-    return this.api.reactivateUser(id).pipe(tap((user) => this.replace(user)));
+    return this.pending.guard(id, () => this.api.reactivateUser(id).pipe(tap((user) => this.replace(user))));
   }
 
   private replace(user: UserResponse): void {

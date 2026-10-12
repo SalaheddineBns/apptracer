@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { finalize } from 'rxjs';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -7,6 +8,7 @@ import { ProjectResponse } from '../../../core/api/generated';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
+import { FocusRestorer } from '../../../shared/focus-restorer';
 import { ProjectDialog, ProjectSaved } from '../components/project-dialog';
 import { ProjectsStore } from '../data/projects.store';
 
@@ -21,6 +23,7 @@ export class ProjectsPage {
   protected readonly store = inject(ProjectsStore);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
+  private readonly focus = inject(FocusRestorer);
 
   protected readonly dialogVisible = signal(false);
   /** Projet en cours de modification ; `null` pour une création. */
@@ -63,7 +66,11 @@ export class ProjectsPage {
 
   /** RG-02-05 : réversible, sans confirmation. */
   protected reactivate(project: ProjectResponse): void {
-    this.store.reactivate(project.id).subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est réactivé.`));
+    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    const anchor = this.focus.capture();
+    this.store.reactivate(project.id)
+      .pipe(finalize(() => this.focus.restore(anchor)))
+      .subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est réactivé.`));
   }
 
   private notify(summary: string, detail: string): void {
