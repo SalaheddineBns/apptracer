@@ -2,8 +2,8 @@
   <h1 class="text-2xl font-semibold text-color">Paramètres</h1>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6 w-full max-w-lg">
-    @if (store.error() && !store.loaded()) {
-      <app-error-state [message]="store.error()!" (retry)="store.load()" />
+    @if (store.error() && (!store.loaded() || conflict())) {
+      <app-error-state [message]="loadErrorMessage()" (retry)="store.load()" />
     } @else if (!store.loaded()) {
       <div
         class="flex flex-col gap-4"
@@ -11,13 +11,23 @@
         aria-busy="true"
         aria-label="Chargement en cours"
       >
-        <p-skeleton width="14rem" height="1.25rem" />
-        <div class="flex gap-4">
-          <p-skeleton styleClass="flex-1" height="2.5rem" class="flex-1" />
-          <p-skeleton styleClass="flex-1" height="2.5rem" class="flex-1" />
+        <p-skeleton width="9rem" height="1.75rem" />
+        <div class="flex flex-col gap-2">
+          <div class="flex flex-wrap gap-4">
+            <div class="flex flex-col gap-2 flex-1 min-w-28">
+              <p-skeleton width="4rem" height="1.25rem" />
+              <p-skeleton height="2.1875rem" />
+            </div>
+            <div class="flex flex-col gap-2 flex-1 min-w-28">
+              <p-skeleton width="4rem" height="1.25rem" />
+              <p-skeleton height="2.1875rem" />
+            </div>
+          </div>
+          <div class="mt-2 max-sm:hidden"><p-skeleton height="3rem" /></div>
+          <div class="mt-2 sm:hidden"><p-skeleton height="4rem" /></div>
         </div>
-        <p-skeleton width="100%" height="1rem" />
-        <div class="flex justify-end"><p-skeleton width="7rem" height="2.5rem" /></div>
+        <p-skeleton width="16rem" height="1rem" />
+        <div class="flex justify-end"><p-skeleton width="7rem" height="2.1875rem" /></div>
       </div>
     } @else {
       <form
@@ -29,20 +39,16 @@
       >
         <h2 class="text-lg font-medium text-color" id="journee-standard-titre">Journée standard</h2>
 
-        @if (conflict(); as text) {
-          <div
-            class="flex items-start gap-2 rounded-md bg-surface-100 dark:bg-surface-800 p-3 text-sm text-color"
-            role="alert"
-            data-cy="message-conflit"
-          >
-            <i class="pi pi-exclamation-triangle mt-0.5" aria-hidden="true"></i>
-            <span>{{ text }}</span>
-          </div>
+        @if (conflict() && !store.loading()) {
+          <p-message severity="warn" data-cy="message-conflit">
+            Un autre administrateur a modifié la journée standard. La valeur actuelle est affichée :
+            vérifiez-la avant d’enregistrer à nouveau.
+          </p-message>
         }
 
         <div class="flex flex-col gap-2" role="group" aria-labelledby="journee-standard-titre">
           <div class="flex flex-wrap gap-4">
-            <div class="flex flex-col gap-2 flex-1 min-w-36">
+            <div class="flex flex-col gap-2 flex-1 min-w-28">
               <label for="standard-day-hours" class="text-sm font-medium text-color"
                 >Heures <span aria-hidden="true">*</span></label
               >
@@ -52,8 +58,7 @@
                 [showButtons]="true"
                 buttonLayout="stacked"
                 [step]="1"
-                [min]="0"
-                [max]="24"
+                [readonly]="store.saving()"
                 suffix=" h"
                 [invalid]="invalid()"
                 [required]="true"
@@ -64,7 +69,7 @@
                 [fluid]="true"
               />
             </div>
-            <div class="flex flex-col gap-2 flex-1 min-w-36">
+            <div class="flex flex-col gap-2 flex-1 min-w-28">
               <label for="standard-day-minutes" class="text-sm font-medium text-color"
                 >Minutes <span aria-hidden="true">*</span></label
               >
@@ -74,8 +79,8 @@
                 [showButtons]="true"
                 buttonLayout="stacked"
                 [step]="15"
-                [min]="0"
-                [max]="59"
+                [readonly]="store.saving()"
+                appQuarterHourStep
                 suffix=" min"
                 [invalid]="invalid()"
                 [required]="true"
@@ -87,16 +92,15 @@
               />
             </div>
           </div>
+          <app-field-error [control]="form" [messages]="durationMessages" cy="erreur-duree" />
           <small
             class="text-xs text-muted-color"
             id="journee-standard-aide"
             data-cy="aide-parametres"
           >
-            De 1 h à 24 h, par pas de 15 minutes (les flèches haut et bas de chaque champ avancent
-            d’un pas). Les saisies déjà enregistrées ne sont pas recalculées : le changement ne
-            concerne que les saisies créées ou modifiées ensuite.
+            Par pas de 15 minutes, de 1 h à 24 h. Les saisies déjà enregistrées ne sont pas
+            recalculées : le changement ne concerne que les saisies créées ou modifiées ensuite.
           </small>
-          <app-field-error [control]="form" [messages]="durationMessages" cy="erreur-duree" />
         </div>
 
         <p class="text-xs text-muted-color m-0" data-cy="derniere-modification">

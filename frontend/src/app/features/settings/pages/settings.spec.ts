@@ -127,7 +127,13 @@ describe('SettingsPage', () => {
     expect(page.form.getRawValue()).toEqual({ hours: 7, minutes: 30 });
     expect(cy('derniere-modification')?.textContent).toContain('Ada Martin');
     expect(cy('derniere-modification')?.textContent).toContain('12/10/2026 à 14:05');
-    expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', life: 3000 }));
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'success',
+        detail: 'Journée standard : 7 h 30.',
+        life: 3000,
+      }),
+    );
   });
 
   it('CA-06-05 : 7 h 10 met le champ en erreur et ne lance aucune requête', async () => {
@@ -185,6 +191,100 @@ describe('SettingsPage', () => {
     await submit();
     expect(updateAppSettings).toHaveBeenCalledTimes(1);
     expect(button().disabled).toBe(true);
+  });
+
+  const input = (name: 'champ-heures' | 'champ-minutes') => cy(name) as HTMLInputElement;
+  async function typeInto(name: 'champ-heures' | 'champ-minutes', text: string): Promise<void> {
+    const field = input(name);
+    field.focus();
+    field.value = text;
+    field.dispatchEvent(new Event('input', { bubbles: true }));
+    field.dispatchEvent(new Event('blur'));
+    await whenStable();
+  }
+  async function press(key: string): Promise<void> {
+    input('champ-minutes').dispatchEvent(
+      new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+    );
+    await whenStable();
+  }
+
+  it('F2 : une valeur tapée hors bornes n’est jamais ramenée en silence, elle reste en erreur sans requête', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    await typeInto('champ-heures', '75');
+    expect(page.form.getRawValue().hours).toBe(75);
+    await submit();
+    expect(updateAppSettings).not.toHaveBeenCalled();
+    expect(cy('erreur-duree')?.textContent).toContain(STANDARD_DAY_MESSAGE);
+    await typeInto('champ-heures', '-5');
+    expect(page.form.getRawValue().hours).toBe(-5);
+    await typeInto('champ-minutes', '-15');
+    expect(page.form.getRawValue().minutes).toBe(-15);
+  });
+
+  it('F1 : une minute tapée à 50 reste 50 et donne l’erreur de validation, jamais 45', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    await typeInto('champ-minutes', '50');
+    expect(page.form.getRawValue().minutes).toBe(50);
+    await submit();
+    expect(updateAppSettings).not.toHaveBeenCalled();
+    expect(cy('erreur-duree')).not.toBeNull();
+  });
+
+  it('F1 : les flèches des minutes ne donnent que 0, 15, 30 et 45', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    await open();
+    const seen: (number | null)[] = [];
+    for (let i = 0; i < 5; i++) {
+      await press('ArrowUp');
+      seen.push(page.form.getRawValue().minutes);
+    }
+    for (let i = 0; i < 5; i++) {
+      await press('ArrowDown');
+      seen.push(page.form.getRawValue().minutes);
+    }
+    expect(seen).toEqual([15, 30, 45, 45, 45, 30, 15, 0, 0, 0]);
+  });
+
+  it('F3 : un 409 suivi d’un rechargement en échec le dit (état d’erreur, « Réessayer »), sans prétendre afficher la valeur actuelle', async () => {
+    getAppSettings
+      .mockReturnValueOnce(of(settings(420, 0)))
+      .mockReturnValueOnce(
+        throwError(() => new HttpErrorResponse({ status: 500, error: { detail: 'Panne' } })),
+      );
+    updateAppSettings.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 409, error: { detail: 'Conflit' } })),
+    );
+    await open();
+    await enter(7, 30);
+    await submit();
+    expect(cy('etat-erreur')?.textContent).toContain('n’a pas pu être rechargée');
+    expect(cy('message-conflit')).toBeNull();
+    expect(cy('form-parametres')).toBeNull();
+    getAppSettings.mockReturnValue(of(settings(480, 1)));
+    (cy('btn-reessayer')?.querySelector('button') as HTMLButtonElement).click();
+    await whenStable();
+    expect(cy('etat-erreur')).toBeNull();
+    expect(cy('message-conflit')).not.toBeNull();
+    expect(page.form.getRawValue()).toEqual({ hours: 8, minutes: 0 });
+  });
+
+  it('F4 : les champs sont en lecture seule pendant l’envoi', async () => {
+    getAppSettings.mockReturnValue(of(settings(420)));
+    const pending = new Subject<AppSettingsResponse>();
+    updateAppSettings.mockReturnValue(pending);
+    await open();
+    expect(input('champ-heures').readOnly).toBe(false);
+    await enter(7, 30);
+    await submit();
+    expect(input('champ-heures').readOnly).toBe(true);
+    expect(input('champ-minutes').readOnly).toBe(true);
+    pending.next(settings(450, 1));
+    pending.complete();
+    await whenStable();
+    expect(input('champ-heures').readOnly).toBe(false);
   });
 
   it('dernière modification sans auteur renvoyé : la date seule, aucun auteur inventé', async () => {

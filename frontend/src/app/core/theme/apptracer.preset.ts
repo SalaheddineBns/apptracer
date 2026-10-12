@@ -28,6 +28,8 @@ export const AppTracerPreset = definePreset(Aura, {
     // Contraste AA du message d'erreur (jeton Aura `message.error.color`, par défaut red.600 / red.500).
     message: {
       error: { color: 'light-dark({red.700}, {red.400})' },
+      // Contraste AA de l'avertissement (jeton Aura `message.warn.color` yellow.600 en clair : 2,84:1).
+      warn: { color: 'light-dark({yellow.800}, {yellow.500})' },
     },
     // Contraste AA du bouton danger (blanc sur red.500 = 3,76:1) : le clair part de 600, le sombre reste celui d'Aura.
     button: {

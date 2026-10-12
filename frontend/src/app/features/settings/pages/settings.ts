@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   signal,
@@ -9,6 +10,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MessageService } from 'primeng/api';
+import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -18,8 +20,10 @@ import { toProblem } from '../../../core/errors/problem';
 import { ErrorState } from '../../../shared/components/error-state';
 import { FieldError } from '../../../shared/components/field-error';
 import { formatParisDateTime } from '../../../shared/dates/paris-date-time';
+import { QuarterHourStep } from '../../../shared/forms/quarter-hour-step';
 import { SERVER_ERROR_KEY } from '../../../shared/forms/apply-field-errors';
 import {
+  formatDuration,
   fromMinutes,
   STANDARD_DAY_MESSAGE,
   standardDayValidator,
@@ -33,6 +37,8 @@ import {
     ReactiveFormsModule,
     ButtonModule,
     InputNumberModule,
+    MessageModule,
+    QuarterHourStep,
     SkeletonModule,
     ErrorState,
     FieldError,
@@ -52,7 +58,7 @@ export class SettingsPage {
   );
 
   protected readonly durationMessages = { standardDay: STANDARD_DAY_MESSAGE };
-  protected readonly conflict = signal<string | null>(null);
+  protected readonly conflict = signal(false);
 
   private readonly total = toSignal(
     this.form.valueChanges.pipe(
@@ -84,6 +90,13 @@ export class SettingsPage {
     this.store.load();
   }
 
+  /** Après un 409, une relecture en échec ne doit pas laisser croire que le formulaire montre la valeur actuelle. */
+  protected readonly loadErrorMessage = computed(() =>
+    this.conflict()
+      ? 'Un autre administrateur a modifié la journée standard, mais la valeur actuelle n’a pas pu être rechargée.'
+      : (this.store.error() ?? ''),
+  );
+
   /** RG-06-05 : « Prénom Nom, le dd/MM/yyyy à HH:mm » (heure de Paris), ou la mention « jamais modifiée ». */
   protected lastModifiedText(): string {
     const at = this.store.lastModifiedAt();
@@ -109,13 +122,13 @@ export class SettingsPage {
     if (this.form.invalid || minutes === null) {
       return;
     }
-    this.conflict.set(null);
+    this.conflict.set(false);
     this.store.update(minutes).subscribe({
-      next: () =>
+      next: (saved) =>
         this.messages.add({
           severity: 'success',
           summary: 'Paramètres enregistrés',
-          detail: 'La journée standard a été enregistrée.',
+          detail: `Journée standard : ${formatDuration(saved.standardDayMinutes)}.`,
           life: 3000,
         }),
       error: (error: unknown) => {
@@ -127,9 +140,7 @@ export class SettingsPage {
           this.form.markAllAsTouched();
         } else if (problem.status === 409 && problem.code === null) {
           // Modification concurrente : le store se recharge et le formulaire reprend la valeur rechargée.
-          this.conflict.set(
-            'Un autre administrateur a modifié la journée standard. La valeur actuelle est affichée : vérifiez-la avant d’enregistrer à nouveau.',
-          );
+          this.conflict.set(true);
         }
       },
     });

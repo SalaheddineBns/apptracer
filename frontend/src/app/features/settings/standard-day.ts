@@ -32,3 +32,9 @@ export function standardDayValidator(group: AbstractControl): ValidationErrors |
     total % 15 === 0;
   return valid ? null : { standardDay: true };
 }
+
+/** « 7 h 30 », « 7 h 00 » (minutes à deux chiffres, comme le design system). */
+export function formatDuration(total: number): string {
+  const { hours, minutes } = fromMinutes(total);
+  return `${hours} h ${String(minutes).padStart(2, '0')}`;
+}
