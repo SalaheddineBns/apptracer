@@ -400,4 +400,37 @@ class TimeEntryServiceTest {
         .isInstanceOfSatisfying(
             BusinessException.class, ex -> assertThat(ex.getRgCode()).isEqualTo("RG-02-06"));
   }
+
+  @Test
+  @DisplayName("RG-01-11 : la suppression est logique, qui et quand (horloge applicative)")
+  void deleteIsLogical() {
+    TimeEntry e = existing(USER);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    service.delete(USER, 5L);
+    assertThat(e.isDeleted()).isTrue();
+    assertThat(e.getDeletedBy()).isEqualTo(USER);
+    assertThat(e.getDeletedAt()).isEqualTo(CLOCK.instant());
+    verify(entries).saveAndFlush(e);
+  }
+
+  @Test
+  @DisplayName("CA-01-08 : RG-01-10, supprimer la saisie d'autrui donne 403 RG-01-10")
+  void deleteOtherUsersEntryForbidden() {
+    TimeEntry e = existing(8L);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    assertThatThrownBy(() -> service.delete(USER, 5L))
+        .isInstanceOfSatisfying(
+            ForbiddenOperationException.class,
+            ex -> assertThat(ex.getRgCode()).isEqualTo("RG-01-10"));
+    assertThat(e.isDeleted()).isFalse();
+    verify(entries, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-01-11 : supprimer une saisie absente ou déjà supprimée donne 404")
+  void deleteMissingIsNotFound() {
+    when(entries.findActiveById(5L)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> service.delete(USER, 5L))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
 }

@@ -13,6 +13,7 @@ import java.net.URI;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -122,5 +123,28 @@ public class TimeEntryController {
     return mapper.toResponse(
         service.update(
             currentUser.currentUserId(), id, request.version(), mapper.toCommand(request)));
+  }
+
+  @DeleteMapping("/{id}")
+  @PreAuthorize("hasRole('USER')")
+  @Operation(
+      operationId = "deleteTimeEntry",
+      summary = "Supprimer une de ses saisies (suppression logique)")
+  @ApiResponse(responseCode = "204", description = "Saisie supprimée")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-01-14) ou saisie d'un autre utilisateur (RG-01-10)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Saisie introuvable ou déjà supprimée (RG-01-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public ResponseEntity<Void> deleteTimeEntry(@PathVariable Long id) {
+    service.delete(currentUser.currentUserId(), id);
+    return ResponseEntity.noContent().build();
   }
 }

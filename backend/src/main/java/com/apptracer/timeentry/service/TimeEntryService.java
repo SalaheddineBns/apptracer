@@ -125,6 +125,19 @@ public class TimeEntryService {
         standardDay);
   }
 
+  /**
+   * RG-01-11 : suppression logique (qui, quand, horloge applicative), la ligne reste en base.
+   * RG-01-10 : seul le propriétaire supprime sa saisie ; absente ou déjà supprimée = introuvable.
+   * Aucune version n'est demandée (l'architecture n'en prévoit pas pour DELETE).
+   */
+  @Transactional
+  public void delete(Long userId, Long id) {
+    TimeEntry entry = getOwn(userId, id);
+    entry.markDeleted(userId, clock.instant());
+    // la saisie sort du contrôle de chevauchement (RG-01-06) et de la contrainte partielle
+    entries.saveAndFlush(entry);
+  }
+
   /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */
   @Transactional(readOnly = true)
   public TimeEntry getOwn(Long userId, Long id) {
