@@ -16,6 +16,10 @@
     novalidate
     data-cy="dialogue-saisie"
   >
+    <!--
+      Dates et heures : le panneau s'ouvre par le bouton-icône, pas au focus. Ouvert au focus, il resterait affiché
+      après une frappe au clavier et masquerait les champs suivants.
+    -->
     <!-- Pendant l'envoi, les champs ne sont plus modifiables : ce qui serait tapé serait perdu à la réponse. -->
     <fieldset
       class="flex flex-col gap-4 border-0 m-0 p-0 min-w-0"
@@ -49,7 +53,9 @@
             dateFormat="dd/mm/yy"
             placeholder="jj/mm/aaaa"
             [maxDate]="today()"
+            [keepInvalid]="true"
             [showIcon]="true"
+            [showOnFocus]="false"
             appendTo="body"
             fluid
             data-cy="champ-date-debut"
@@ -72,6 +78,7 @@
               dateFormat="dd/mm/yy"
               placeholder="jj/mm/aaaa"
               [showIcon]="true"
+            [showOnFocus]="false"
               appendTo="body"
               fluid
               data-cy="champ-date-fin"
@@ -97,6 +104,8 @@
               [timeOnly]="true"
               hourFormat="24"
               [stepMinute]="timeStep"
+              [showIcon]="true"
+              [showOnFocus]="false"
               placeholder="hh:mm"
               appendTo="body"
               fluid
@@ -118,6 +127,8 @@
               [timeOnly]="true"
               hourFormat="24"
               [stepMinute]="timeStep"
+              [showIcon]="true"
+              [showOnFocus]="false"
               placeholder="hh:mm"
               appendTo="body"
               fluid
@@ -157,11 +168,13 @@
             />
           </ng-template>
           <ng-template #item let-option>
-            <app-activity-type-tag
-              [label]="option.label"
-              [color]="option.color"
-              [code]="option.code"
-            />
+            <span [attr.data-cy]="'option-' + option.code">
+              <app-activity-type-tag
+                [label]="option.label"
+                [color]="option.color"
+                [code]="option.code"
+              />
+            </span>
           </ng-template>
         </p-select>
         <app-field-error
@@ -188,7 +201,11 @@
             appendTo="body"
             fluid
             data-cy="select-projet"
-          />
+          >
+            <ng-template #item let-option>
+              <span [attr.data-cy]="'option-' + option.code">{{ option.name }}</span>
+            </ng-template>
+          </p-select>
           <app-field-error
             [control]="form.controls.projectCode"
             [messages]="projectMessages"
