@@ -153,6 +153,199 @@
         }
       }
     },
+    "/api/v1/time-entries/{id}" : {
+      "get" : {
+        "tags" : [ "TimeEntries" ],
+        "summary" : "Lire une de ses saisies",
+        "operationId" : "getMyTimeEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Saisie",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimeEntryResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-01-14) ou saisie d'un autre utilisateur (RG-01-10)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Saisie introuvable ou supprimée (RG-01-11)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "TimeEntries" ],
+        "summary" : "Modifier une de ses saisies (tous les champs, granularité comprise)",
+        "operationId" : "updateTimeEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTimeEntryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Saisie modifiée, durée recalculée et refigée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimeEntryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs requis ou interdits selon la granularité, format, commentaire",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-01-14) ou saisie d'un autre utilisateur (RG-01-10)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Saisie introuvable ou supprimée (RG-01-11)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Règle violée (RG-01-01, RG-01-03, RG-01-04, RG-01-05, RG-01-06, RG-01-07, RG-02-06) ou saisie modifiée entre-temps (conflit de version, sans code)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "TimeEntries" ],
+        "summary" : "Supprimer une de ses saisies (suppression logique)",
+        "operationId" : "deleteTimeEntry",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Saisie supprimée"
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-01-14) ou saisie d'un autre utilisateur (RG-01-10)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Saisie introuvable ou déjà supprimée (RG-01-11)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects/{id}" : {
       "get" : {
         "tags" : [ "Projects" ],
@@ -864,6 +1057,133 @@
         }
       }
     },
+    "/api/v1/time-entries" : {
+      "get" : {
+        "tags" : [ "TimeEntries" ],
+        "summary" : "Lister mes saisies d'une semaine (lundi à dimanche) avec le total",
+        "operationId" : "listMyTimeEntries",
+        "parameters" : [ {
+          "name" : "weekStart",
+          "in" : "query",
+          "description" : "Un lundi",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Un lundi"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Saisies de la semaine et total en minutes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/WeeklyTimeEntriesResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "weekStart absent, mal formé ou qui n'est pas un lundi",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-01-14)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "TimeEntries" ],
+        "summary" : "Déclarer une activité",
+        "operationId" : "createTimeEntry",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTimeEntryRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Saisie créée, durée calculée et figée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TimeEntryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Champs requis ou interdits selon la granularité, format, commentaire (RG-01-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-01-14)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Règle violée : RG-01-01, RG-01-03, RG-01-04, RG-01-05, RG-01-07, RG-02-06",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/projects" : {
       "get" : {
         "tags" : [ "Projects" ],
@@ -1539,6 +1859,144 @@
         },
         "required" : [ "active", "email", "firstName", "id", "lastName", "role", "version" ]
       },
+      "Granularity" : {
+        "type" : "string",
+        "enum" : [ "HOUR", "DAY", "RANGE" ]
+      },
+      "UpdateTimeEntryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "granularity" : {
+            "$ref" : "#/components/schemas/Granularity"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Requis si RANGE, interdit sinon"
+          },
+          "startTime" : {
+            "type" : "string",
+            "description" : "HH:mm, requis si HOUR, interdit sinon",
+            "example" : "09:00",
+            "pattern" : "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "endTime" : {
+            "type" : "string",
+            "description" : "HH:mm, requis si HOUR, interdit sinon",
+            "example" : "10:30",
+            "pattern" : "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "activityTypeCode" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "projectCode" : {
+            "type" : "string",
+            "description" : "Requis ou interdit selon le type d'activité (RG-01-05)"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "comment" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "activityTypeCode", "granularity", "startDate", "version" ]
+      },
+      "ActivityTypeSummary" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "color" : {
+            "$ref" : "#/components/schemas/TagColor"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "code", "color", "label" ]
+      },
+      "ProjectSummary" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "code", "name" ]
+      },
+      "TagColor" : {
+        "type" : "string",
+        "enum" : [ "INFO", "WARN", "SECONDARY", "CONTRAST", "SUCCESS" ]
+      },
+      "TimeEntryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "granularity" : {
+            "$ref" : "#/components/schemas/Granularity"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : [ "string", "null" ],
+            "format" : "date",
+            "description" : "Renseignée seulement pour RANGE"
+          },
+          "startTime" : {
+            "type" : [ "string", "null" ],
+            "description" : "Seulement HOUR",
+            "example" : "09:00"
+          },
+          "endTime" : {
+            "type" : [ "string", "null" ],
+            "description" : "Seulement HOUR",
+            "example" : "10:30"
+          },
+          "activityType" : {
+            "$ref" : "#/components/schemas/ActivityTypeSummary"
+          },
+          "project" : {
+            "type" : "null",
+            "$ref" : "#/components/schemas/ProjectSummary"
+          },
+          "comment" : {
+            "type" : [ "string", "null" ]
+          },
+          "durationMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "activityType", "durationMinutes", "granularity", "id", "startDate", "version" ]
+      },
       "UpdateProjectRequest" : {
         "type" : "object",
         "properties" : {
@@ -1651,10 +2109,6 @@
         },
         "required" : [ "firstName", "id", "lastName" ]
       },
-      "TagColor" : {
-        "type" : "string",
-        "enum" : [ "INFO", "WARN", "SECONDARY", "CONTRAST", "SUCCESS" ]
-      },
       "UpdateActivityTypeRequest" : {
         "type" : "object",
         "properties" : {
@@ -1733,6 +2187,49 @@
           }
         },
         "required" : [ "email", "firstName", "initialPassword", "lastName", "role" ]
+      },
+      "CreateTimeEntryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "granularity" : {
+            "$ref" : "#/components/schemas/Granularity"
+          },
+          "startDate" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "endDate" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Requis si RANGE, interdit sinon"
+          },
+          "startTime" : {
+            "type" : "string",
+            "description" : "HH:mm, requis si HOUR, interdit sinon",
+            "example" : "09:00",
+            "pattern" : "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "endTime" : {
+            "type" : "string",
+            "description" : "HH:mm, requis si HOUR, interdit sinon",
+            "example" : "10:30",
+            "pattern" : "^([01]\\d|2[0-3]):[0-5]\\d$"
+          },
+          "activityTypeCode" : {
+            "type" : "string",
+            "minLength" : 1
+          },
+          "projectCode" : {
+            "type" : "string",
+            "description" : "Requis ou interdit selon le type d'activité (RG-01-05)"
+          },
+          "comment" : {
+            "type" : "string",
+            "maxLength" : 500,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "activityTypeCode", "granularity", "startDate" ]
       },
       "CreateProjectRequest" : {
         "type" : "object",
@@ -1868,6 +2365,30 @@
           }
         },
         "required" : [ "content", "page", "size", "totalElements" ]
+      },
+      "WeeklyTimeEntriesResponse" : {
+        "type" : "object",
+        "properties" : {
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "totalMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "entries" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TimeEntryResponse"
+            }
+          }
+        },
+        "required" : [ "entries", "totalMinutes", "weekEnd", "weekStart" ]
       }
     }
   }
