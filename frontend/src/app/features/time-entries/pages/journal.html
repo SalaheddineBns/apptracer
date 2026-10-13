@@ -27,7 +27,11 @@
           />
         </app-empty-state>
       } @else {
-        <app-week-journal [week]="week" (edit)="openEdit($event)" />
+        <app-week-journal
+          [week]="week"
+          (edit)="openEdit($event)"
+          (remove)="confirmRemove($event)"
+        />
       }
     } @else {
       <div

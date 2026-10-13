@@ -204,6 +204,75 @@ describe('JournalPage', () => {
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ summary: 'Saisie modifiée' }));
   });
 
+  it('SFD-01 E3 : « Supprimer » demande une confirmation explicite ; annulée, elle n’appelle pas l’API', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    await open();
+    await click('btn-supprimer-saisie-1');
+    expect(confirm).toHaveBeenCalledTimes(1);
+    const options = confirm.mock.calls[0][0];
+    expect(options.message).toBe('Supprimer la saisie « Réunion » du 05/10 (1 h 30) ?');
+    expect(options.acceptLabel).toBe('Supprimer');
+    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    expect(options.closable).not.toBe(false);
+    expect(deleteTimeEntry).not.toHaveBeenCalled();
+    expect(cy('saisie-1')).not.toBeNull();
+  });
+
+  it('SFD-01 E3 : la confirmation d’une PLAGE cite ses deux bornes', async () => {
+    listMyTimeEntries.mockReturnValue(
+      of(
+        week(
+          [
+            meeting({
+              granularity: Granularity.Range,
+              endDate: '2026-10-16',
+              startTime: null,
+              endTime: null,
+              activityType: { code: 'FORMATION', label: 'Formation', color: TagColor.Success, active: true },
+              durationMinutes: 4200,
+            }),
+          ],
+          2100,
+        ),
+      ),
+    );
+    await open();
+    (cy('jour-2026-10-05')?.querySelector('[data-cy="btn-supprimer-saisie-1"] button') as HTMLElement).click();
+    expect(confirm.mock.calls[0][0].message).toBe(
+      'Supprimer la saisie « Formation » du 05/10 au 16/10 (70 h 00) ?',
+    );
+  });
+
+  it('RG-01-11 : la suppression confirmée retire la saisie du journal, met à jour le total et affiche un toast de 3 s', async () => {
+    listMyTimeEntries.mockReturnValueOnce(of(week([meeting(), fullDay()], 510)));
+    deleteTimeEntry.mockReturnValue(of(null));
+    await open();
+    expect(cy('total-semaine')?.textContent).toContain('8,5 h');
+    await click('btn-supprimer-saisie-1');
+    listMyTimeEntries.mockReturnValue(of(week([fullDay()], 420)));
+    confirm.mock.calls[0][0].accept();
+    await harness.fixture.whenStable();
+    expect(deleteTimeEntry).toHaveBeenCalledWith(1);
+    expect(cy('saisie-1')).toBeNull();
+    expect(cy('saisie-2')).not.toBeNull();
+    expect(cy('total-semaine')?.textContent).toContain('7 h');
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({ severity: 'success', summary: 'Saisie supprimée', life: 3000 }),
+    );
+  });
+
+  it('une suppression confirmée deux fois n’envoie qu’une requête', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    deleteTimeEntry.mockReturnValue(new Subject());
+    await open();
+    await click('btn-supprimer-saisie-1');
+    const { accept } = confirm.mock.calls[0][0];
+    accept();
+    accept();
+    expect(deleteTimeEntry).toHaveBeenCalledTimes(1);
+    expect(add).not.toHaveBeenCalled();
+  });
+
   it('RG-01-13 : sans semaine dans l’URL, affiche la semaine courante (lundi à Paris)', async () => {
     listMyTimeEntries.mockReturnValue(new Subject());
     await open('/journal');

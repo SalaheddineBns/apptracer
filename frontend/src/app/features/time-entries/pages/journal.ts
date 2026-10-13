@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimeEntryResponse } from '../../../core/api/generated';
@@ -43,6 +43,7 @@ export class JournalPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly messages = inject(MessageService);
+  private readonly confirmation = inject(ConfirmationService);
 
   private readonly params = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
@@ -73,6 +74,28 @@ export class JournalPage {
   protected openEdit(entry: TimeEntryResponse): void {
     this.editing.set(entry);
     this.dialogVisible.set(true);
+  }
+
+  /** E3, RG-01-10, RG-01-11 : confirmation explicite avant de supprimer ; la saisie sort du journal et du total. */
+  protected confirmRemove(entry: TimeEntryResponse): void {
+    const name = `${entry.activityType.label} ${datesLabel(entry)}`;
+    this.confirmation.confirm({
+      header: 'Supprimer la saisie',
+      message: `Supprimer la saisie « ${entry.activityType.label} » ${datesLabel(entry)} (${formatDuration(entry.durationMinutes)}) ?`,
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () =>
+        this.store.remove(entry.id).subscribe(() =>
+          this.messages.add({
+            severity: 'success',
+            summary: 'Saisie supprimée',
+            detail: `${name} est supprimée.`,
+            life: 3000,
+          }),
+        ),
+    });
   }
 
   /** CA-01-01 : la saisie enregistrée apparaît dans le journal, qui se place sur sa semaine. */
