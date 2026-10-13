@@ -17,6 +17,7 @@ import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthStore } from './core/auth/auth.store';
 import { errorInterceptor } from './core/errors/error.interceptor';
 import { AppTracerPreset } from './core/theme/apptracer.preset';
+import { PRIMENG_FR } from './core/theme/primeng-fr';
 import { routes } from './app.routes';
 
 registerLocaleData(localeFr);
@@ -34,6 +35,7 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'fr' },
     providePrimeNG({
       license: PRIMEUI_LICENSE,
+      translation: PRIMENG_FR,
       theme: {
         preset: AppTracerPreset,
         options: {

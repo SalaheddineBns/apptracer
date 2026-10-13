@@ -5,6 +5,7 @@
       type="button"
       label="Nouvelle saisie"
       icon="pi pi-plus"
+      (onClick)="openCreate()"
       data-cy="btn-nouvelle-saisie"
     />
   </div>
@@ -21,6 +22,7 @@
             type="button"
             label="Nouvelle saisie"
             icon="pi pi-plus"
+            (onClick)="openCreate()"
             data-cy="btn-nouvelle-saisie-vide"
           />
         </app-empty-state>
@@ -44,3 +46,5 @@
     }
   </section>
 </div>
+
+<app-time-entry-dialog [(visible)]="dialogVisible" />
