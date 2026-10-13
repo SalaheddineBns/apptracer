@@ -45,4 +45,26 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
       @Param("from") LocalDateTime from,
       @Param("to") LocalDateTime to,
       @Param("excludedId") Long excludedId);
+
+  /**
+   * RG-01-11, RG-01-13 : saisies non supprimées d'un compte dont la période coupe {@code
+   * [weekStart, weekEnd]} (une PLAGE à cheval est donc incluse). Type et projet chargés dans la
+   * même requête, actifs ou non (RG-02-05). Tri : date de début, puis heure de début (les saisies
+   * sans heure d'abord), puis identifiant.
+   */
+  @Query(
+      """
+      select e from TimeEntry e
+      join fetch e.activityType
+      left join fetch e.project
+      where e.userId = :userId
+        and e.deletedAt is null
+        and e.startDate <= :weekEnd
+        and e.endDate >= :weekStart
+      order by e.startDate, e.startTime nulls first, e.id
+      """)
+  List<TimeEntry> findWeek(
+      @Param("userId") Long userId,
+      @Param("weekStart") java.time.LocalDate weekStart,
+      @Param("weekEnd") java.time.LocalDate weekEnd);
 }

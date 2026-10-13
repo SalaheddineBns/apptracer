@@ -1,6 +1,7 @@
 package com.apptracer.common.error;
 
 import java.util.List;
+import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -177,6 +179,29 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       HttpStatusCode status,
       WebRequest request) {
     return ResponseEntity.badRequest().body(validationProblem(List.of()));
+  }
+
+  /** Paramètre de requête obligatoire absent : 400 avec le nom du paramètre en erreur. */
+  @Override
+  protected ResponseEntity<Object> handleMissingServletRequestParameter(
+      MissingServletRequestParameterException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    return ResponseEntity.badRequest()
+        .body(
+            validationProblem(
+                List.of(
+                    new ApiFieldError(ex.getParameterName(), "Ce paramètre est obligatoire."))));
+  }
+
+  /** Paramètre de requête mal formé (par exemple une date illisible) : 400 sur ce paramètre. */
+  @Override
+  protected ResponseEntity<Object> handleTypeMismatch(
+      TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    String field = ex.getPropertyName() == null ? "request" : ex.getPropertyName();
+    return ResponseEntity.badRequest()
+        .body(validationProblem(List.of(new ApiFieldError(field, "Valeur invalide."))));
   }
 
   private static ProblemDetail validationProblem(List<ApiFieldError> errors) {

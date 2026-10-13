@@ -3,6 +3,7 @@ package com.apptracer.timeentry.api;
 import com.apptracer.timeentry.domain.Granularity;
 import com.apptracer.timeentry.domain.TimeEntry;
 import com.apptracer.timeentry.service.TimeEntryCommand;
+import com.apptracer.timeentry.service.WeeklyTimeEntries;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -50,5 +51,13 @@ public class TimeEntryMapper {
         e.getComment(),
         e.getDurationMinutes(),
         e.getVersion());
+  }
+
+  public WeeklyTimeEntriesResponse toResponse(WeeklyTimeEntries week) {
+    return new WeeklyTimeEntriesResponse(
+        week.weekStart(),
+        week.weekEnd(),
+        week.totalMinutes(),
+        week.entries().stream().map(this::toResponse).toList());
   }
 }

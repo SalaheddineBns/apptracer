@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -38,6 +40,31 @@ public class TimeEntryController {
     this.service = service;
     this.mapper = mapper;
     this.currentUser = currentUser;
+  }
+
+  @GetMapping
+  @PreAuthorize("hasRole('USER')")
+  @Operation(
+      operationId = "listMyTimeEntries",
+      summary = "Lister mes saisies d'une semaine (lundi à dimanche) avec le total")
+  @ApiResponse(responseCode = "200", description = "Saisies de la semaine et total en minutes")
+  @ApiResponse(
+      responseCode = "400",
+      description = "weekStart absent, mal formé ou qui n'est pas un lundi",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-01-14)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public WeeklyTimeEntriesResponse listMyTimeEntries(
+      @RequestParam @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Un lundi")
+          LocalDate weekStart) {
+    // RG-00-03 : toujours le compte du jeton
+    return mapper.toResponse(service.listWeek(currentUser.currentUserId(), weekStart));
   }
 
   @PostMapping

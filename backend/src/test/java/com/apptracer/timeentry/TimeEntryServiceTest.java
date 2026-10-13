@@ -48,8 +48,10 @@ class TimeEntryServiceTest {
   private final ActivityTypeRepository types = mock(ActivityTypeRepository.class);
   private final ProjectRepository projects = mock(ProjectRepository.class);
   private final AppSettingsService settings = mock(AppSettingsService.class);
+  private final com.apptracer.timeentry.service.WeeklyEntriesReader reader =
+      mock(com.apptracer.timeentry.service.WeeklyEntriesReader.class);
   private final TimeEntryService service =
-      new TimeEntryService(entries, types, projects, settings, CLOCK);
+      new TimeEntryService(entries, types, projects, settings, CLOCK, reader);
 
   private final ActivityType meeting = new ActivityType("REUNION", "Réunion", false, TagColor.WARN);
   private final ActivityType work =
@@ -432,5 +434,29 @@ class TimeEntryServiceTest {
     when(entries.findActiveById(5L)).thenReturn(Optional.empty());
     assertThatThrownBy(() -> service.delete(USER, 5L))
         .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("RG-01-13 : weekStart doit être un lundi, sinon 400 sur weekStart")
+  void listWeekRequiresMonday() {
+    assertThatThrownBy(() -> service.listWeek(USER, LocalDate.of(2026, 10, 6)))
+        .isInstanceOfSatisfying(
+            com.apptracer.common.error.InvalidRequestException.class,
+            ex -> assertThat(ex.getErrors()).extracting("field").containsExactly("weekStart"));
+    assertThatThrownBy(() -> service.listWeek(USER, LocalDate.of(2026, 10, 11)))
+        .isInstanceOf(com.apptracer.common.error.InvalidRequestException.class);
+  }
+
+  @Test
+  @DisplayName("CA-01-09 : RG-00-03, la semaine est lue pour le compte donné, total = somme")
+  void listWeekUsesGivenUser() {
+    TimeEntry a = existing(USER); // 60 min le 05/10
+    TimeEntry b = existing(USER);
+    b.setDuration(90 - 60 + 60, 420);
+    when(reader.read(USER, D)).thenReturn(List.of(a, b));
+    var week = service.listWeek(USER, D);
+    assertThat(week.weekEnd()).isEqualTo(D.plusDays(6));
+    assertThat(week.totalMinutes()).isEqualTo(60 + 90);
+    assertThat(week.entries()).containsExactly(a, b);
   }
 }

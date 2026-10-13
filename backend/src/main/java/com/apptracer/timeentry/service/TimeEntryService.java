@@ -2,6 +2,7 @@ package com.apptracer.timeentry.service;
 
 import com.apptracer.common.error.BusinessException;
 import com.apptracer.common.error.ForbiddenOperationException;
+import com.apptracer.common.error.InvalidRequestException;
 import com.apptracer.common.error.ResourceNotFoundException;
 import com.apptracer.referential.domain.ActivityType;
 import com.apptracer.referential.domain.Project;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,19 +43,23 @@ public class TimeEntryService {
   private final AppSettingsService settings;
   private final DurationCalculator durationCalculator;
   private final Clock clock;
+  private final WeeklyEntriesReader weeklyReader;
+  private final WeeklyTotalCalculator weeklyCalculator = new WeeklyTotalCalculator();
 
   public TimeEntryService(
       TimeEntryRepository entries,
       ActivityTypeRepository types,
       ProjectRepository projects,
       AppSettingsService settings,
-      Clock clock) {
+      Clock clock,
+      WeeklyEntriesReader weeklyReader) {
     this.entries = entries;
     this.types = types;
     this.projects = projects;
     this.settings = settings;
     this.durationCalculator = new DurationCalculator();
     this.clock = clock;
+    this.weeklyReader = weeklyReader;
   }
 
   /**
@@ -136,6 +142,23 @@ public class TimeEntryService {
     entry.markDeleted(userId, clock.instant());
     // la saisie sort du contrôle de chevauchement (RG-01-06) et de la contrainte partielle
     entries.saveAndFlush(entry);
+  }
+
+  /**
+   * RG-00-03 : journal de la semaine du compte donné (celui du jeton, passé par le contrôleur).
+   * RG-01-11 : saisies supprimées exclues. RG-01-13 : total calculé par {@link
+   * WeeklyTotalCalculator}.
+   */
+  @Transactional(readOnly = true)
+  public WeeklyTimeEntries listWeek(Long userId, LocalDate weekStart) {
+    // le paramètre doit être un lundi (architecture §4.5) : 400 sur le champ weekStart
+    if (weekStart.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
+      throw new InvalidRequestException(
+          "La semaine doit commencer un lundi.", "weekStart", "Doit être un lundi.");
+    }
+    List<TimeEntry> week = weeklyReader.read(userId, weekStart);
+    int total = weeklyCalculator.compute(week, weekStart).totalMinutes();
+    return new WeeklyTimeEntries(weekStart, weekStart.plusDays(6), total, week);
   }
 
   /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */
