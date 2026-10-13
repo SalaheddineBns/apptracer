@@ -20,6 +20,18 @@ public class TimeEntryMapper {
         r.comment());
   }
 
+  public TimeEntryCommand toCommand(UpdateTimeEntryRequest r) {
+    return new TimeEntryCommand(
+        r.granularity(),
+        r.startDate(),
+        r.endDate(),
+        r.startTime(),
+        r.endTime(),
+        r.activityTypeCode(),
+        r.projectCode(),
+        r.comment());
+  }
+
   public TimeEntryResponse toResponse(TimeEntry e) {
     var type = e.getActivityType();
     var project = e.getProject();

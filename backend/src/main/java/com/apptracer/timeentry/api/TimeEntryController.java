@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -86,5 +87,40 @@ public class TimeEntryController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public TimeEntryResponse getMyTimeEntry(@PathVariable Long id) {
     return mapper.toResponse(service.getOwn(currentUser.currentUserId(), id));
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('USER')")
+  @Operation(
+      operationId = "updateTimeEntry",
+      summary = "Modifier une de ses saisies (tous les champs, granularité comprise)")
+  @ApiResponse(responseCode = "200", description = "Saisie modifiée, durée recalculée et refigée")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Champs requis ou interdits selon la granularité, format, commentaire",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-01-14) ou saisie d'un autre utilisateur (RG-01-10)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Saisie introuvable ou supprimée (RG-01-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "409",
+      description =
+          "Règle violée (RG-01-01, RG-01-03, RG-01-04, RG-01-05, RG-01-06, RG-01-07, RG-02-06)"
+              + " ou saisie modifiée entre-temps (conflit de version, sans code)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public TimeEntryResponse updateTimeEntry(
+      @PathVariable Long id, @Valid @RequestBody UpdateTimeEntryRequest request) {
+    return mapper.toResponse(
+        service.update(
+            currentUser.currentUserId(), id, request.version(), mapper.toCommand(request)));
   }
 }

@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,13 +62,42 @@ public class TimeEntryService {
    */
   @Transactional
   public TimeEntry create(Long userId, TimeEntryCommand cmd) {
+    TimeEntry entry = new TimeEntry(userId);
+    applyChecked(entry, cmd, NO_ENTRY);
+    // RG-01-11, RG-00-04 : créé par / le alimenté par l'audit JPA
+    return entries.saveAndFlush(entry);
+  }
+
+  /**
+   * RG-01-12 : tous les champs sont modifiables, granularité comprise, avec exactement les mêmes
+   * contrôles qu'à la création (RG-02-06 inclus : type et projet doivent être actifs, même
+   * inchangés). Le chevauchement ignore la saisie elle-même. RG-01-08, RG-06-04 : durée recalculée
+   * et refigée avec la journée standard en vigueur. RG-01-11 : modifié par / le par l'audit JPA.
+   *
+   * @param version version lue par l'utilisateur ; périmée, la modification est refusée
+   */
+  @Transactional
+  public TimeEntry update(Long userId, Long id, long version, TimeEntryCommand cmd) {
+    TimeEntry entry = getOwn(userId, id); // RG-01-10 (403), RG-01-11 (404)
+    if (entry.getVersion() != version) {
+      throw new ObjectOptimisticLockingFailureException(TimeEntry.class, id);
+    }
+    applyChecked(entry, cmd, id);
+    return entries.saveAndFlush(entry);
+  }
+
+  /**
+   * Contrôles communs à la création et à la modification, puis application sur la saisie. Tous les
+   * contrôles précèdent la première écriture sur l'entité (pas de vidage prématuré). Les champs
+   * devenus sans objet après un changement de granularité sont remis à vide (heures, date de fin).
+   */
+  private void applyChecked(TimeEntry entry, TimeEntryCommand cmd, long excludedId) {
     checkPeriod(cmd);
     checkStartDateNotInFuture(cmd.startDate());
     ActivityType type = resolveType(cmd.activityTypeCode());
     Project project = resolveProject(type, cmd.projectCode());
-    checkNoOverlap(userId, cmd, NO_ENTRY);
+    checkNoOverlap(entry.getUserId(), cmd, excludedId);
 
-    TimeEntry entry = new TimeEntry(userId, type);
     // endDate renseignée en base pour toutes les granularités (= startDate hors RANGE)
     boolean range = cmd.granularity() == Granularity.RANGE;
     boolean hour = cmd.granularity() == Granularity.HOUR;
@@ -78,6 +108,7 @@ public class TimeEntryService {
         endDate,
         hour ? cmd.startTime() : null,
         hour ? cmd.endTime() : null);
+    entry.setActivityType(type);
     entry.setProject(project);
     entry.setComment(cmd.comment()); // RG-01-09 : longueur contrôlée par Bean Validation
     // RG-01-08, RG-06-04, RG-00-02 : journée standard lue à l'enregistrement, puis figée avec la
@@ -92,8 +123,6 @@ public class TimeEntryService {
             entry.getEndTime(),
             standardDay),
         standardDay);
-    // RG-01-11, RG-00-04 : créé par / le alimenté par l'audit JPA
-    return entries.saveAndFlush(entry);
   }
 
   /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */

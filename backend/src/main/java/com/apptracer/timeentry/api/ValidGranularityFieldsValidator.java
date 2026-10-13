@@ -4,10 +4,10 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 class ValidGranularityFieldsValidator
-    implements ConstraintValidator<ValidGranularityFields, CreateTimeEntryRequest> {
+    implements ConstraintValidator<ValidGranularityFields, TimeEntryShape> {
 
   @Override
-  public boolean isValid(CreateTimeEntryRequest r, ConstraintValidatorContext ctx) {
+  public boolean isValid(TimeEntryShape r, ConstraintValidatorContext ctx) {
     if (r.granularity() == null) {
       return true; // déjà signalé par @NotNull
     }

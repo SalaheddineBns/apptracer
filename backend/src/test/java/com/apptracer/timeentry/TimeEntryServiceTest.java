@@ -301,4 +301,103 @@ class TimeEntryServiceTest {
     service.create(USER, range(D, D.plusDays(6)));
     verify(entries).findFirstOverlapDay(USER, D.atStartOfDay(), D.plusDays(7).atStartOfDay(), -1L);
   }
+
+  private TimeEntry existing(Long owner) {
+    TimeEntry e = new TimeEntry(owner, meeting);
+    e.setPeriod(Granularity.HOUR, D, D, LocalTime.of(9, 0), LocalTime.of(10, 0));
+    e.setDuration(60, 420);
+    return e;
+  }
+
+  @Test
+  @DisplayName("RG-01-12 : la modification applique tous les champs, granularité comprise")
+  void updateChangesGranularityAndClearsTimes() {
+    TimeEntry e = existing(USER);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    TimeEntry updated = service.update(USER, 5L, 0L, range(D, D.plusDays(4)));
+    assertThat(updated.getGranularity()).isEqualTo(Granularity.RANGE);
+    assertThat(updated.getEndDate()).isEqualTo(D.plusDays(4));
+    assertThat(updated.getStartTime()).isNull(); // champs sans objet remis à vide
+    assertThat(updated.getEndTime()).isNull();
+    assertThat(updated.getDurationMinutes()).isEqualTo(5 * 420);
+    TimeEntry back = service.update(USER, 5L, 0L, hour(LocalTime.of(14, 0), LocalTime.of(15, 0)));
+    assertThat(back.getEndDate()).isEqualTo(D);
+    assertThat(back.getStartTime()).isEqualTo(LocalTime.of(14, 0));
+    assertThat(back.getDurationMinutes()).isEqualTo(60);
+  }
+
+  @Test
+  @DisplayName("RG-01-12 : le contrôle de chevauchement ignore la saisie modifiée elle-même")
+  void updateExcludesItself() {
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(existing(USER)));
+    service.update(USER, 5L, 0L, hour(LocalTime.of(9, 30), LocalTime.of(10, 30)));
+    verify(entries).findFirstOverlapDay(USER, D.atTime(9, 30), D.atTime(10, 30), 5L);
+  }
+
+  @Test
+  @DisplayName("CA-01-08 : RG-01-10, modifier la saisie d'un autre utilisateur donne 403 RG-01-10")
+  void updateOtherUsersEntryForbidden() {
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(existing(8L)));
+    assertThatThrownBy(
+            () -> service.update(USER, 5L, 0L, hour(LocalTime.of(9, 0), LocalTime.of(10, 0))))
+        .isInstanceOfSatisfying(
+            ForbiddenOperationException.class,
+            ex -> assertThat(ex.getRgCode()).isEqualTo("RG-01-10"));
+    verify(entries, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-01-11 : modifier une saisie absente ou supprimée donne 404")
+  void updateMissingIsNotFound() {
+    when(entries.findActiveById(5L)).thenReturn(Optional.empty());
+    assertThatThrownBy(() -> service.update(USER, 5L, 0L, day(D)))
+        .isInstanceOf(ResourceNotFoundException.class);
+  }
+
+  @Test
+  @DisplayName("RG-01-12 : une version périmée donne un conflit de version, rien n'est écrit")
+  void updateStaleVersion() {
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(existing(USER)));
+    assertThatThrownBy(() -> service.update(USER, 5L, 3L, day(D)))
+        .isInstanceOf(org.springframework.orm.ObjectOptimisticLockingFailureException.class);
+    verify(entries, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-06-04 : la modification refige durée et journée standard en vigueur")
+  void updateRefreezesStandardDay() {
+    TimeEntry e = existing(USER);
+    e.setPeriod(Granularity.DAY, D, D, null, null);
+    e.setDuration(420, 420);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    when(settings.getStandardDayMinutes()).thenReturn(450);
+    TimeEntry updated = service.update(USER, 5L, 0L, day(D));
+    assertThat(updated.getDurationMinutes()).isEqualTo(450);
+    assertThat(updated.getStandardDayMinutes()).isEqualTo(450);
+  }
+
+  @Test
+  @DisplayName("RG-02-06 : à la modification, un type devenu inactif est refusé même inchangé")
+  void updateRejectsInactiveType() {
+    TimeEntry e = existing(USER);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    meeting.setActive(false);
+    assertThatThrownBy(() -> service.update(USER, 5L, 0L, day(D)))
+        .isInstanceOfSatisfying(
+            BusinessException.class, ex -> assertThat(ex.getRgCode()).isEqualTo("RG-01-04"));
+    verify(entries, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-02-06 : à la modification, un projet devenu inactif est refusé")
+  void updateRejectsInactiveProject() {
+    TimeEntry e = existing(USER);
+    when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
+    project.setActive(false);
+    TimeEntryCommand cmd =
+        new TimeEntryCommand(Granularity.DAY, D, null, null, null, "TRAVAIL_PROJET", "P1", null);
+    assertThatThrownBy(() -> service.update(USER, 5L, 0L, cmd))
+        .isInstanceOfSatisfying(
+            BusinessException.class, ex -> assertThat(ex.getRgCode()).isEqualTo("RG-02-06"));
+  }
 }

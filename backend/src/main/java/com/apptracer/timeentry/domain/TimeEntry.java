@@ -83,6 +83,11 @@ public class TimeEntry extends AuditableEntity {
 
   protected TimeEntry() {}
 
+  /** Saisie à compléter par le service (période, type, durée) avant enregistrement. */
+  public TimeEntry(Long userId) {
+    this.userId = userId;
+  }
+
   public TimeEntry(Long userId, ActivityType activityType) {
     this.userId = userId;
     this.activityType = activityType;
