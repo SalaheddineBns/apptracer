@@ -13,7 +13,9 @@ import com.apptracer.timeentry.domain.TimeEntry;
 import com.apptracer.timeentry.repository.TimeEntryRepository;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,11 @@ public class TimeEntryService {
 
   /** RG-01-03 : 31 jours calendaires bornes incluses, soit 30 jours d'écart. */
   private static final long MAX_RANGE_GAP_DAYS = 30;
+
+  /** Identifiant qui ne correspond à aucune saisie : rien à ignorer (création). */
+  private static final long NO_ENTRY = -1L;
+
+  private static final DateTimeFormatter FRENCH_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
   private static final int QUARTER_SECONDS = 15 * 60;
 
@@ -49,7 +56,8 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-14 (rôles) est contrôlé par le contrôleur. RG-01-06 (chevauchement) viendra avec T-01-4.
+   * RG-01-14 (rôles) est contrôlé par le contrôleur. RG-01-06 : chevauchement contrôlé ici, la
+   * contrainte d'exclusion {@code ex_time_entries_no_overlap} couvrant les requêtes simultanées.
    */
   @Transactional
   public TimeEntry create(Long userId, TimeEntryCommand cmd) {
@@ -57,6 +65,7 @@ public class TimeEntryService {
     checkStartDateNotInFuture(cmd.startDate());
     ActivityType type = resolveType(cmd.activityTypeCode());
     Project project = resolveProject(type, cmd.projectCode());
+    checkNoOverlap(userId, cmd, NO_ENTRY);
 
     TimeEntry entry = new TimeEntry(userId, type);
     // endDate renseignée en base pour toutes les granularités (= startDate hors RANGE)
@@ -101,6 +110,34 @@ public class TimeEntryService {
           "RG-01-10", "Vous ne pouvez accéder qu'à vos propres saisies.");
     }
     return entry;
+  }
+
+  /**
+   * RG-01-06 : intervalle semi-ouvert [début, fin) en heure locale, comme la colonne {@code
+   * occupied} : HOUR = [date + début, date + fin), DAY / RANGE = jours entiers, week-ends compris.
+   * {@code excludedId} permet à la modification d'ignorer la saisie elle-même (RG-01-12).
+   */
+  private void checkNoOverlap(Long userId, TimeEntryCommand cmd, long excludedId) {
+    LocalDateTime from;
+    LocalDateTime to;
+    if (cmd.granularity() == Granularity.HOUR) {
+      from = cmd.startDate().atTime(cmd.startTime());
+      to = cmd.startDate().atTime(cmd.endTime());
+    } else {
+      LocalDate last = cmd.granularity() == Granularity.RANGE ? cmd.endDate() : cmd.startDate();
+      from = cmd.startDate().atStartOfDay();
+      to = last.plusDays(1).atStartOfDay();
+    }
+    entries.findFirstOverlapDay(userId, from, to, excludedId).stream()
+        .findFirst()
+        .ifPresent(
+            day -> {
+              throw new BusinessException(
+                  "RG-01-06",
+                  "Cette période chevauche une activité déjà déclarée le "
+                      + FRENCH_DATE.format(LocalDate.parse(day))
+                      + ".");
+            });
   }
 
   private void checkPeriod(TimeEntryCommand cmd) {

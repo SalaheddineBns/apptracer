@@ -3,6 +3,7 @@ package com.apptracer.timeentry;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -28,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -265,5 +267,38 @@ class TimeEntryServiceTest {
     TimeEntry e = new TimeEntry(USER, meeting);
     when(entries.findActiveById(1L)).thenReturn(Optional.of(e));
     assertThat(service.getOwn(USER, 1L)).isSameAs(e);
+  }
+
+  @Test
+  @DisplayName("CA-01-04 : RG-01-06, un chevauchement donne 409 RG-01-06 avec la date du conflit")
+  void overlapRejected() {
+    when(entries.findFirstOverlapDay(any(), any(), any(), anyLong()))
+        .thenReturn(List.of("2026-10-05"));
+    TimeEntryCommand cmd = hour(LocalTime.of(9, 30), LocalTime.of(10, 30));
+    clearInvocations(entries);
+    assertThatThrownBy(() -> service.create(USER, cmd))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e -> {
+              assertThat(e.getRgCode()).isEqualTo("RG-01-06");
+              assertThat(e.getMessage()).contains("05/10/2026").contains("chevauche");
+            });
+    verify(entries, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-01-06 : HOUR est contrôlé sur [début, fin), début inclus et fin exclue")
+  void hourIntervalIsHalfOpen() {
+    service.create(USER, hour(LocalTime.of(9, 0), LocalTime.of(10, 0)));
+    verify(entries).findFirstOverlapDay(USER, D.atTime(9, 0), D.atTime(10, 0), -1L);
+  }
+
+  @Test
+  @DisplayName("RG-01-06 : JOURNEE et PLAGE occupent des journées entières, week-ends compris")
+  void dayAndRangeOccupyWholeDays() {
+    service.create(USER, day(D));
+    verify(entries).findFirstOverlapDay(USER, D.atStartOfDay(), D.plusDays(1).atStartOfDay(), -1L);
+    service.create(USER, range(D, D.plusDays(6)));
+    verify(entries).findFirstOverlapDay(USER, D.atStartOfDay(), D.plusDays(7).atStartOfDay(), -1L);
   }
 }

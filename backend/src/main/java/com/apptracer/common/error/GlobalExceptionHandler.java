@@ -138,6 +138,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
               "code",
               "Ce code est déjà utilisé."));
     }
+    if (violates(ex, "ex_time_entries_no_overlap")) {
+      // RG-01-06 : deux requêtes simultanées ont passé le contrôle de service
+      return handleBusiness(
+          new BusinessException("RG-01-06", "Cette période chevauche une activité déjà déclarée."));
+    }
     throw ex;
   }
 
