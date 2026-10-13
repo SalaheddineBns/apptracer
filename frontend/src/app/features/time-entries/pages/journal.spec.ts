@@ -5,7 +5,10 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
 import {
+  ActivityTypesService,
+  AppSettingsService,
   Granularity,
+  ProjectsService,
   TagColor,
   TimeEntriesService,
   TimeEntryResponse,
@@ -56,6 +59,12 @@ describe('JournalPage', () => {
       providers: [
         provideRouter([{ path: 'journal', component: JournalPage }]),
         { provide: TimeEntriesService, useValue: { listMyTimeEntries, deleteTimeEntry } },
+        { provide: ActivityTypesService, useValue: { listActivityTypes: () => of([]) } },
+        { provide: ProjectsService, useValue: { listProjects: () => of([]) } },
+        {
+          provide: AppSettingsService,
+          useValue: { getAppSettings: () => of({ standardDayMinutes: 420, version: 0 }) },
+        },
         { provide: ConfirmationService, useValue: { confirm } },
         { provide: MessageService, useValue: { add } },
       ],
@@ -139,6 +148,35 @@ describe('JournalPage', () => {
     await open();
     expect(cy('saisie-1')?.textContent).toContain('Réunion');
     expect(cy('saisie-1')?.querySelector('.p-tag-warn')).not.toBeNull();
+  });
+
+  it('SFD-01 E1 : « Nouvelle saisie » ouvre le dialogue de saisie', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([], 0)));
+    await open();
+    const page = harness.routeDebugElement?.componentInstance as { dialogVisible(): boolean };
+    expect(page.dialogVisible()).toBe(false);
+    await click('btn-nouvelle-saisie');
+    expect(page.dialogVisible()).toBe(true);
+  });
+
+  it('CA-01-01 : après l’enregistrement, un toast de 3 s nomme la saisie et le journal se place sur sa semaine', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([], 0)));
+    await open('/journal?semaine=2026-10-12');
+    const page = harness.routeDebugElement?.componentInstance as {
+      onSaved(event: { mode: 'create' | 'update'; entry: TimeEntryResponse }): void;
+    };
+    page.onSaved({ mode: 'create', entry: meeting() });
+    await harness.fixture.whenStable();
+    expect(add).toHaveBeenCalledWith(
+      expect.objectContaining({
+        severity: 'success',
+        summary: 'Saisie enregistrée',
+        detail: 'Réunion du 05/10 (1 h 30).',
+        life: 3000,
+      }),
+    );
+    expect(TestBed.inject(Router).url).toBe('/journal?semaine=2026-10-05');
+    expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-10-05');
   });
 
   it('RG-01-13 : sans semaine dans l’URL, affiche la semaine courante (lundi à Paris)', async () => {

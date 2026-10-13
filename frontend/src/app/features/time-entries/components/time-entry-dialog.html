@@ -4,136 +4,221 @@
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
+  [closable]="!submitting()"
   closeAriaLabel="Fermer"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onHide)="onHide()"
 >
-  <form class="flex flex-col gap-4" [formGroup]="form" novalidate data-cy="dialogue-saisie">
-    <div class="flex flex-col gap-2">
-      <span id="time-entry-granularity-label" class="text-sm font-medium text-color"
-        >Période <span aria-hidden="true">*</span></span
-      >
-      <p-selectbutton
-        formControlName="granularity"
-        [options]="granularityOptions"
-        optionLabel="label"
-        optionValue="value"
-        [allowEmpty]="false"
-        ariaLabelledBy="time-entry-granularity-label"
-        data-cy="select-granularite"
-      />
-    </div>
-
-    <div class="flex flex-wrap gap-4">
-      <div class="flex flex-col gap-2 flex-1 min-w-40">
-        <label for="time-entry-start-date" class="text-sm font-medium text-color"
-          >{{ granularity() === Granularity.Range ? 'Date de début' : 'Date' }}
-          <span aria-hidden="true">*</span></label
+  <form
+    class="flex flex-col gap-4"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    novalidate
+    data-cy="dialogue-saisie"
+  >
+    <!-- Pendant l'envoi, les champs ne sont plus modifiables : ce qui serait tapé serait perdu à la réponse. -->
+    <fieldset
+      class="flex flex-col gap-4 border-0 m-0 p-0 min-w-0"
+      [class.pointer-events-none]="submitting()"
+      [disabled]="submitting()"
+    >
+      <div class="flex flex-col gap-2">
+        <span id="time-entry-granularity-label" class="text-sm font-medium text-color"
+          >Période <span aria-hidden="true">*</span></span
         >
-        <p-datepicker
-          formControlName="startDate"
-          inputId="time-entry-start-date"
-          dateFormat="dd/mm/yy"
-          placeholder="jj/mm/aaaa"
-          [maxDate]="today()"
-          [showIcon]="true"
-          appendTo="body"
-          fluid
-          data-cy="champ-date-debut"
-        />
-        <app-field-error
-          [control]="form.controls.startDate"
-          [messages]="startDateMessages"
-          cy="erreur-champ-date-debut"
+        <p-selectbutton
+          formControlName="granularity"
+          [options]="granularityOptions"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+          ariaLabelledBy="time-entry-granularity-label"
+          data-cy="select-granularite"
         />
       </div>
 
-      @if (granularity() === Granularity.Range) {
+      <div class="flex flex-wrap gap-4">
         <div class="flex flex-col gap-2 flex-1 min-w-40">
-          <label for="time-entry-end-date" class="text-sm font-medium text-color"
-            >Date de fin <span aria-hidden="true">*</span></label
+          <label for="time-entry-start-date" class="text-sm font-medium text-color"
+            >{{ granularity() === Granularity.Range ? 'Date de début' : 'Date' }}
+            <span aria-hidden="true">*</span></label
           >
           <p-datepicker
-            formControlName="endDate"
-            inputId="time-entry-end-date"
+            formControlName="startDate"
+            inputId="time-entry-start-date"
             dateFormat="dd/mm/yy"
             placeholder="jj/mm/aaaa"
+            [maxDate]="today()"
             [showIcon]="true"
             appendTo="body"
             fluid
-            data-cy="champ-date-fin"
+            data-cy="champ-date-debut"
           />
           <app-field-error
-            [control]="form.controls.endDate"
-            [messages]="endDateMessages"
-            cy="erreur-champ-date-fin"
+            [control]="form.controls.startDate"
+            [messages]="startDateMessages"
+            cy="erreur-champ-date-debut"
+          />
+        </div>
+
+        @if (granularity() === Granularity.Range) {
+          <div class="flex flex-col gap-2 flex-1 min-w-40">
+            <label for="time-entry-end-date" class="text-sm font-medium text-color"
+              >Date de fin <span aria-hidden="true">*</span></label
+            >
+            <p-datepicker
+              formControlName="endDate"
+              inputId="time-entry-end-date"
+              dateFormat="dd/mm/yy"
+              placeholder="jj/mm/aaaa"
+              [showIcon]="true"
+              appendTo="body"
+              fluid
+              data-cy="champ-date-fin"
+            />
+            <app-field-error
+              [control]="form.controls.endDate"
+              [messages]="endDateMessages"
+              cy="erreur-champ-date-fin"
+            />
+          </div>
+        }
+      </div>
+
+      @if (granularity() === Granularity.Hour) {
+        <div class="flex flex-wrap gap-4">
+          <div class="flex flex-col gap-2 flex-1 min-w-40">
+            <label for="time-entry-start-time" class="text-sm font-medium text-color"
+              >Heure de début <span aria-hidden="true">*</span></label
+            >
+            <p-datepicker
+              formControlName="startTime"
+              inputId="time-entry-start-time"
+              [timeOnly]="true"
+              hourFormat="24"
+              [stepMinute]="timeStep"
+              placeholder="hh:mm"
+              appendTo="body"
+              fluid
+              data-cy="champ-heure-debut"
+            />
+            <app-field-error
+              [control]="form.controls.startTime"
+              [messages]="startTimeMessages"
+              cy="erreur-champ-heure-debut"
+            />
+          </div>
+          <div class="flex flex-col gap-2 flex-1 min-w-40">
+            <label for="time-entry-end-time" class="text-sm font-medium text-color"
+              >Heure de fin <span aria-hidden="true">*</span></label
+            >
+            <p-datepicker
+              formControlName="endTime"
+              inputId="time-entry-end-time"
+              [timeOnly]="true"
+              hourFormat="24"
+              [stepMinute]="timeStep"
+              placeholder="hh:mm"
+              appendTo="body"
+              fluid
+              data-cy="champ-heure-fin"
+            />
+            <app-field-error
+              [control]="form.controls.endTime"
+              [messages]="endTimeMessages"
+              cy="erreur-champ-heure-fin"
+            />
+          </div>
+        </div>
+      }
+
+      <div class="flex flex-col gap-2">
+        <span id="time-entry-type-label" class="text-sm font-medium text-color"
+          >Type d’activité <span aria-hidden="true">*</span></span
+        >
+        <p-select
+          formControlName="activityTypeCode"
+          [options]="types.activeItems()"
+          optionLabel="label"
+          optionValue="code"
+          placeholder="Choisir un type"
+          emptyMessage="Aucun type d’activité disponible."
+          inputId="time-entry-type"
+          ariaLabelledBy="time-entry-type-label"
+          appendTo="body"
+          fluid
+          data-cy="select-type-activite"
+        >
+          <ng-template #selectedItem let-selected>
+            <app-activity-type-tag
+              [label]="selected.label"
+              [color]="selected.color"
+              [code]="selected.code"
+            />
+          </ng-template>
+          <ng-template #item let-option>
+            <app-activity-type-tag
+              [label]="option.label"
+              [color]="option.color"
+              [code]="option.code"
+            />
+          </ng-template>
+        </p-select>
+        <app-field-error
+          [control]="form.controls.activityTypeCode"
+          [messages]="activityTypeMessages"
+          cy="erreur-select-type-activite"
+        />
+      </div>
+
+      @if (projectRequired()) {
+        <div class="flex flex-col gap-2">
+          <span id="time-entry-project-label" class="text-sm font-medium text-color"
+            >Projet <span aria-hidden="true">*</span></span
+          >
+          <p-select
+            formControlName="projectCode"
+            [options]="projects.activeItems()"
+            optionLabel="name"
+            optionValue="code"
+            placeholder="Choisir un projet"
+            emptyMessage="Aucun projet disponible."
+            inputId="time-entry-project"
+            ariaLabelledBy="time-entry-project-label"
+            appendTo="body"
+            fluid
+            data-cy="select-projet"
+          />
+          <app-field-error
+            [control]="form.controls.projectCode"
+            [messages]="projectMessages"
+            cy="erreur-select-projet"
           />
         </div>
       }
-    </div>
 
-    @if (granularity() === Granularity.Hour) {
-      <div class="flex flex-wrap gap-4">
-        <div class="flex flex-col gap-2 flex-1 min-w-40">
-          <label for="time-entry-start-time" class="text-sm font-medium text-color"
-            >Heure de début <span aria-hidden="true">*</span></label
-          >
-          <p-datepicker
-            formControlName="startTime"
-            inputId="time-entry-start-time"
-            [timeOnly]="true"
-            hourFormat="24"
-            [stepMinute]="timeStep"
-            placeholder="hh:mm"
-            appendTo="body"
-            fluid
-            data-cy="champ-heure-debut"
-          />
-          <app-field-error
-            [control]="form.controls.startTime"
-            [messages]="startTimeMessages"
-            cy="erreur-champ-heure-debut"
-          />
-        </div>
-        <div class="flex flex-col gap-2 flex-1 min-w-40">
-          <label for="time-entry-end-time" class="text-sm font-medium text-color"
-            >Heure de fin <span aria-hidden="true">*</span></label
-          >
-          <p-datepicker
-            formControlName="endTime"
-            inputId="time-entry-end-time"
-            [timeOnly]="true"
-            hourFormat="24"
-            [stepMinute]="timeStep"
-            placeholder="hh:mm"
-            appendTo="body"
-            fluid
-            data-cy="champ-heure-fin"
-          />
-          <app-field-error
-            [control]="form.controls.endTime"
-            [messages]="endTimeMessages"
-            cy="erreur-champ-heure-fin"
-          />
-        </div>
+      <div class="flex flex-col gap-2">
+        <label for="time-entry-comment" class="text-sm font-medium text-color">Commentaire</label>
+        <textarea
+          pTextarea
+          id="time-entry-comment"
+          formControlName="comment"
+          rows="3"
+          fluid
+          data-cy="champ-commentaire"
+        ></textarea>
+        <app-field-error
+          [control]="form.controls.comment"
+          [messages]="commentMessages"
+          cy="erreur-champ-commentaire"
+        />
       </div>
-    }
+    </fieldset>
 
-    <div class="flex flex-col gap-2">
-      <label for="time-entry-comment" class="text-sm font-medium text-color">Commentaire</label>
-      <textarea
-        pTextarea
-        id="time-entry-comment"
-        formControlName="comment"
-        rows="3"
-        fluid
-        data-cy="champ-commentaire"
-      ></textarea>
-      <app-field-error
-        [control]="form.controls.comment"
-        [messages]="commentMessages"
-        cy="erreur-champ-commentaire"
-      />
-    </div>
+    <p class="text-sm text-color m-0" aria-live="polite">
+      Durée calculée :
+      <span class="font-medium tabular-nums" data-cy="duree-calculee">{{ durationText() }}</span>
+    </p>
 
     <div class="flex justify-end gap-2">
       <p-button
@@ -141,8 +226,15 @@
         label="Annuler"
         [text]="true"
         severity="secondary"
+        [disabled]="submitting()"
         (onClick)="close()"
         data-cy="btn-annuler-dialogue"
+      />
+      <p-button
+        type="submit"
+        label="Enregistrer"
+        [loading]="submitting()"
+        data-cy="btn-enregistrer"
       />
     </div>
   </form>

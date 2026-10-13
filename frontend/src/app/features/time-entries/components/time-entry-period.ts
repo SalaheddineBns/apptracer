@@ -1,5 +1,11 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
-import { daysBetween, localDateToIso, todayInParis } from '../../../shared/dates/week';
+import { Granularity } from '../../../core/api/generated';
+import {
+  countWeekdays,
+  daysBetween,
+  localDateToIso,
+  todayInParis,
+} from '../../../shared/dates/week';
 
 /** RG-01-03 : une PLAGE fait au plus 31 jours calendaires, bornes incluses. */
 export const MAX_RANGE_DAYS = 31;
@@ -65,4 +71,55 @@ export function endDateValidator(control: AbstractControl): ValidationErrors | n
     return { endDateNotAfter: true };
   }
   return days + 1 > MAX_RANGE_DAYS ? { rangeTooLong: true } : null;
+}
+
+/** Valeurs de période utiles au calcul de la durée (celles du formulaire du dialogue). */
+export interface PeriodValue {
+  readonly granularity: Granularity;
+  readonly startDate: Date | null;
+  readonly endDate: Date | null;
+  readonly startTime: Date | null;
+  readonly endTime: Date | null;
+}
+
+/** Durée en minutes ; `weekdays` est le nombre de jours ouvrés d'une PLAGE, null pour les autres granularités. */
+export interface LiveDuration {
+  readonly minutes: number;
+  readonly weekdays: number | null;
+}
+
+/**
+ * RG-01-08 : durée affichée en direct, avec la journée standard en vigueur (RG-00-02). HEURE = écart en minutes ;
+ * JOURNEE = une journée standard, week-end compris ; PLAGE = jours ouvrés × journée standard (0 sans jour ouvré).
+ * Null tant que la période est incomplète ou invalide, ou que la journée standard n'est pas connue.
+ * Le back recalcule et fige la durée à l'enregistrement : il reste la référence.
+ */
+export function liveDuration(
+  period: PeriodValue,
+  standardDayMinutes: number | null,
+): LiveDuration | null {
+  if (period.granularity === Granularity.Hour) {
+    if (!period.startTime || !period.endTime) {
+      return null;
+    }
+    const [start, end] = [minutesOfDay(period.startTime), minutesOfDay(period.endTime)];
+    const valid = end > start && start % TIME_STEP_MINUTES === 0 && end % TIME_STEP_MINUTES === 0;
+    return valid ? { minutes: end - start, weekdays: null } : null;
+  }
+  if (standardDayMinutes === null || !period.startDate) {
+    return null;
+  }
+  if (period.granularity === Granularity.Day) {
+    return { minutes: standardDayMinutes, weekdays: null };
+  }
+  if (!period.endDate) {
+    return null;
+  }
+  const [start, end] = [localDateToIso(period.startDate), localDateToIso(period.endDate)];
+  const days = daysBetween(start, end);
+  if (days <= 0 || days + 1 > MAX_RANGE_DAYS) {
+    return null;
+  }
+  const weekdays = countWeekdays(start, end);
+  return { minutes: weekdays * standardDayMinutes, weekdays };
 }

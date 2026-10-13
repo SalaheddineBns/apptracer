@@ -47,4 +47,4 @@
   </section>
 </div>
 
-<app-time-entry-dialog [(visible)]="dialogVisible" />
+<app-time-entry-dialog [(visible)]="dialogVisible" (saved)="onSaved($event)" />

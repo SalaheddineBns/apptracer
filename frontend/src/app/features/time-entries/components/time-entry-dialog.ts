@@ -1,23 +1,52 @@
-import { ChangeDetectionStrategy, Component, effect, inject, model, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
+import { SelectModule } from 'primeng/select';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TextareaModule } from 'primeng/textarea';
-import { Granularity } from '../../../core/api/generated';
+import { map } from 'rxjs';
+import { CreateTimeEntryRequest, Granularity, TimeEntryResponse } from '../../../core/api/generated';
+import { FieldError as ApiFieldError, toProblem } from '../../../core/errors/problem';
+import { AppSettingsStore } from '../../../core/settings/app-settings.store';
+import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { FieldError } from '../../../shared/components/field-error';
-import { isoToLocalDate, todayInParis } from '../../../shared/dates/week';
+import { isoToLocalDate, localDateToIso, todayInParis } from '../../../shared/dates/week';
+import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
+import { formatDuration } from '../../../shared/pipes/duration';
+import { ActivityTypesStore } from '../../referentials/data/activity-types.store';
+import { ProjectsStore } from '../../referentials/data/projects.store';
+import { TimeEntriesStore } from '../data/time-entries.store';
 import {
   COMMENT_MAX_LENGTH,
   endDateValidator,
   endTimeAfterStartValidator,
+  liveDuration,
   MAX_RANGE_DAYS,
   notFutureValidator,
   quarterHourValidator,
   TIME_STEP_MINUTES,
+  toTimeString,
 } from './time-entry-period';
+
+export interface TimeEntrySaved {
+  readonly mode: 'create' | 'update';
+  readonly entry: TimeEntryResponse;
+}
 
 /** SFD-01 E2 Dialogue de saisie. */
 @Component({
@@ -27,16 +56,26 @@ import {
     DialogModule,
     ButtonModule,
     DatePickerModule,
+    SelectModule,
     SelectButtonModule,
     TextareaModule,
     FieldError,
+    ActivityTypeTag,
   ],
   selector: 'app-time-entry-dialog',
   templateUrl: './time-entry-dialog.html',
 })
 export class TimeEntryDialog {
-  readonly visible = model(false);
+  private readonly store = inject(TimeEntriesStore);
+  protected readonly types = inject(ActivityTypesStore);
+  protected readonly projects = inject(ProjectsStore);
+  private readonly settings = inject(AppSettingsStore);
+  private readonly messages = inject(MessageService);
 
+  readonly visible = model(false);
+  readonly saved = output<TimeEntrySaved>();
+
+  protected readonly submitting = signal(false);
   protected readonly Granularity = Granularity;
   protected readonly timeStep = TIME_STEP_MINUTES;
   protected readonly granularityOptions = [
@@ -47,6 +86,7 @@ export class TimeEntryDialog {
   /** RG-01-07 : dernier jour proposé pour la date de début (date du jour à Paris). */
   protected readonly today = signal(isoToLocalDate(todayInParis()));
 
+  // Les contrôles portent le nom des champs de l'API : ses `errors[]` s'affichent sous le champ concerné.
   protected readonly form = inject(FormBuilder).nonNullable.group({
     granularity: [Granularity.Hour, [Validators.required]],
     // RG-01-07 : pas de date de début dans le futur (le back reste la référence).
@@ -59,12 +99,41 @@ export class TimeEntryDialog {
       null as Date | null,
       [Validators.required, quarterHourValidator, endTimeAfterStartValidator],
     ],
+    // RG-01-04 : type obligatoire, choisi parmi les types actifs.
+    activityTypeCode: ['', [Validators.required]],
+    // RG-01-05 : projet obligatoire si le type l'exige ; le contrôle est désactivé sinon.
+    projectCode: [null as string | null, [Validators.required]],
     // RG-01-09 : 500 caractères au plus.
     comment: ['', [Validators.maxLength(COMMENT_MAX_LENGTH)]],
   });
 
-  protected readonly granularity = toSignal(this.form.controls.granularity.valueChanges, {
-    initialValue: this.form.controls.granularity.value,
+  private readonly value = toSignal(
+    this.form.valueChanges.pipe(map(() => this.form.getRawValue())),
+    { initialValue: this.form.getRawValue() },
+  );
+  protected readonly granularity = computed(() => this.value().granularity);
+
+  /** RG-01-05, RG-02-03 : le projet n'est demandé que si le type choisi l'exige (CA-01-06). */
+  protected readonly projectRequired = computed(() => {
+    const code = this.value().activityTypeCode;
+    return this.types.activeItems().find((type) => type.code === code)?.projectRequired ?? false;
+  });
+
+  /** RG-01-08 : durée calculée en direct, avec la journée standard en vigueur (RG-00-02, CA-06-03). */
+  protected readonly durationText = computed(() => {
+    const duration = liveDuration(this.value(), this.settings.standardDayMinutes());
+    if (duration === null) {
+      return '—';
+    }
+    const text = formatDuration(duration.minutes);
+    if (duration.weekdays === null) {
+      return text;
+    }
+    const days =
+      duration.weekdays === 0
+        ? 'aucun jour ouvré'
+        : `${duration.weekdays} jour${duration.weekdays > 1 ? 's' : ''} ouvré${duration.weekdays > 1 ? 's' : ''}`;
+    return `${text} (${days})`;
   });
 
   protected readonly startDateMessages = {
@@ -85,11 +154,28 @@ export class TimeEntryDialog {
     quarterHour: `L’heure se saisit par pas de ${TIME_STEP_MINUTES} minutes.`,
     endBeforeStart: 'L’heure de fin doit être après l’heure de début.',
   };
+  protected readonly activityTypeMessages = { required: 'Le type d’activité est obligatoire.' };
+  protected readonly projectMessages = {
+    required: 'Le projet est obligatoire pour ce type d’activité.',
+  };
   protected readonly commentMessages = {
     maxlength: `Le commentaire ne doit pas dépasser ${COMMENT_MAX_LENGTH} caractères.`,
   };
 
+  private originCy: string | null = null;
+
   constructor() {
+    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape' && this.submitting()) {
+        event.stopImmediatePropagation();
+      }
+    };
+    window.addEventListener('keydown', blockEscapeWhileSubmitting, true);
+    inject(DestroyRef).onDestroy(() =>
+      window.removeEventListener('keydown', blockEscapeWhileSubmitting, true),
+    );
+
     const { granularity, startDate, endDate, startTime, endTime } = this.form.controls;
     // Les champs de période s'adaptent à la granularité : un champ hors sujet est désactivé, donc ni validé ni envoyé.
     granularity.valueChanges
@@ -100,6 +186,19 @@ export class TimeEntryDialog {
     startDate.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => endDate.updateValueAndValidity());
 
     effect(() => {
+      // RG-01-05 : projet interdit pour un type qui ne l'exige pas ; la valeur n'est alors ni validée ni envoyée.
+      const required = this.projectRequired();
+      untracked(() => {
+        const control = this.form.controls.projectCode;
+        if (required) {
+          control.enable({ emitEvent: false });
+        } else {
+          control.disable({ emitEvent: false });
+        }
+      });
+    });
+
+    effect(() => {
       if (this.visible()) {
         untracked(() => this.prepare());
       }
@@ -107,6 +206,17 @@ export class TimeEntryDialog {
   }
 
   private prepare(): void {
+    const active = document.activeElement;
+    this.originCy =
+      active instanceof HTMLElement
+        ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null)
+        : null;
+    this.submitting.set(false);
+    // RG-02-06 : seuls les types et projets actifs sont proposés ; les listes sont relues à chaque ouverture.
+    this.types.load();
+    this.projects.load();
+    // CA-06-03 : la journée standard est rechargée à chaque ouverture pour suivre une modification du paramètre.
+    this.settings.load();
     this.today.set(isoToLocalDate(todayInParis()));
     this.form.reset({
       granularity: Granularity.Hour,
@@ -114,6 +224,8 @@ export class TimeEntryDialog {
       endDate: null,
       startTime: null,
       endTime: null,
+      activityTypeCode: '',
+      projectCode: null,
       comment: '',
     });
     this.applyGranularity(Granularity.Hour);
@@ -130,5 +242,66 @@ export class TimeEntryDialog {
 
   protected close(): void {
     this.visible.set(false);
+  }
+
+  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la carte a pu être recréée). */
+  protected onHide(): void {
+    const cy = this.originCy;
+    if (cy) {
+      setTimeout(() =>
+        document
+          .querySelector<HTMLElement>(`[data-cy="${cy}"] button, button[data-cy="${cy}"]`)
+          ?.focus(),
+      );
+    }
+  }
+
+  protected submit(): void {
+    if (this.submitting()) {
+      return;
+    }
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+    this.submitting.set(true);
+    this.store.create(this.toRequest()).subscribe({
+      next: (entry) => {
+        this.submitting.set(false);
+        this.visible.set(false);
+        this.saved.emit({ mode: 'create', entry });
+      },
+      error: (error: unknown) => {
+        this.submitting.set(false);
+        // RG-01-06 (chevauchement, CA-01-04) n'a pas d'erreur de champ : son message est affiché en toast par l'intercepteur.
+        this.showFieldErrors(toProblem(error).fieldErrors);
+      },
+    });
+  }
+
+  private toRequest(): CreateTimeEntryRequest {
+    const value = this.form.getRawValue();
+    const hour = value.granularity === Granularity.Hour;
+    const range = value.granularity === Granularity.Range;
+    return {
+      granularity: value.granularity,
+      startDate: localDateToIso(value.startDate as Date),
+      ...(range && value.endDate ? { endDate: localDateToIso(value.endDate) } : {}),
+      ...(hour && value.startTime ? { startTime: toTimeString(value.startTime) } : {}),
+      ...(hour && value.endTime ? { endTime: toTimeString(value.endTime) } : {}),
+      activityTypeCode: value.activityTypeCode,
+      // RG-01-05 : le projet n'est envoyé que pour un type qui l'exige.
+      ...(this.projectRequired() && value.projectCode ? { projectCode: value.projectCode } : {}),
+      ...(value.comment.trim() === '' ? {} : { comment: value.comment }),
+    };
+  }
+
+  /** Les `errors[]` de l'API s'affichent sous leur champ ; celles d'un champ absent de l'écran, en toast. */
+  private showFieldErrors(errors: readonly ApiFieldError[]): void {
+    const shown = errors.filter((error) => this.form.get(error.field)?.enabled);
+    const hidden = errors.filter((error) => !shown.includes(error));
+    for (const error of [...applyFieldErrors(this.form, shown), ...hidden]) {
+      this.messages.add({ severity: 'error', summary: 'Erreur', detail: error.message, life: 5000 });
+    }
   }
 }
