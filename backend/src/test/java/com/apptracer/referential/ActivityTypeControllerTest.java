@@ -199,10 +199,10 @@ class ActivityTypeControllerTest {
   }
 
   @Test
-  @DisplayName("RG-02-07 : sans saisie (port par défaut), projectRequired reste modifiable")
+  @DisplayName("RG-02-07 : sans saisie, projectRequired reste modifiable")
   void updateWithDefaultCheckerAllowsChange() throws Exception {
-    // SFD-01 absente : l'implémentation par défaut répond « non utilisé » ; le cas « utilisé »
-    // est testé au niveau service (ActivityTypeServiceTest)
+    // aucune saisie en base : le port répond « non utilisé » ; le cas « utilisé » est testé dans
+    // ActivityTypeServiceTest et TimeEntryActivityTypeUsageTest
     assertThat(usageChecker.isUsed(1L)).isFalse();
     ActivityType t = types.saveAndFlush(new ActivityType("LIBRE", "Libre", false, TagColor.INFO));
     mockMvc

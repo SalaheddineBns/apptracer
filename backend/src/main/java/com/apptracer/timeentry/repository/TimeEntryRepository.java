@@ -47,6 +47,12 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
       @Param("excludedId") Long excludedId);
 
   /**
+   * RG-02-07 : vrai dès qu'une saisie référence le type, saisies supprimées logiquement comprises
+   * (architecture, H3) : aucun filtre sur {@code deletedAt}.
+   */
+  boolean existsByActivityTypeId(Long activityTypeId);
+
+  /**
    * RG-01-11, RG-01-13 : saisies non supprimées d'un compte dont la période coupe {@code
    * [weekStart, weekEnd]} (une PLAGE à cheval est donc incluse). Type et projet chargés dans la
    * même requête, actifs ou non (RG-02-05). Tri : date de début, puis heure de début (les saisies
