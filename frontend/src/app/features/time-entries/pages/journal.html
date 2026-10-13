@@ -1,0 +1,46 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h1 class="text-2xl font-semibold text-color" data-cy="titre-journal">Mon journal</h1>
+    <p-button
+      type="button"
+      label="Nouvelle saisie"
+      icon="pi pi-plus"
+      data-cy="btn-nouvelle-saisie"
+    />
+  </div>
+
+  <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+    @if (store.error(); as message) {
+      <app-error-state [message]="message" (retry)="store.reload()" />
+    } @else if (store.week(); as week) {
+      @if (week.entries.length === 0) {
+        <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar">
+          <p-button
+            type="button"
+            label="Nouvelle saisie"
+            icon="pi pi-plus"
+            data-cy="btn-nouvelle-saisie-vide"
+          />
+        </app-empty-state>
+      } @else {
+        <app-week-journal [week]="week" />
+      }
+    } @else {
+      <div
+        class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2"
+        data-cy="etat-chargement"
+        aria-busy="true"
+        aria-label="Chargement en cours"
+      >
+        @for (day of skeletonDays; track day) {
+          <div class="flex flex-col gap-2">
+            <p-skeleton width="5rem" height="1.25rem" />
+            <p-skeleton height="6rem" />
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>

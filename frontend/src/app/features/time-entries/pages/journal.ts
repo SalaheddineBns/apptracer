@@ -1,14 +1,45 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
+import { SkeletonModule } from 'primeng/skeleton';
+import { EmptyState } from '../../../shared/components/empty-state';
+import { ErrorState } from '../../../shared/components/error-state';
+import { isIsoDate, mondayOf, todayInParis } from '../../../shared/dates/week';
+import { WeekJournal } from '../../../shared/journal/week-journal';
+import { WeekNavigator } from '../../../shared/journal/week-navigator';
+import { TimeEntriesStore } from '../data/time-entries.store';
 
-/** Page PROVISOIRE : destination de la connexion en attendant « Mon journal » (SFD-01, T-01-11). */
+/** SFD-01 E1 Mon journal (USER et MANAGER, RG-01-14) : la semaine affichée est dans l'URL (`?semaine=YYYY-MM-DD`). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-journal-placeholder',
-  template: `
-    <div class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6 flex flex-col gap-2">
-      <h1 class="text-2xl font-semibold text-color" data-cy="titre-journal">Mon journal</h1>
-      <p class="text-sm text-muted-color">Page provisoire : le journal sera disponible avec la SFD-01.</p>
-    </div>
-  `,
+  imports: [ButtonModule, SkeletonModule, EmptyState, ErrorState, WeekJournal, WeekNavigator],
+  selector: 'app-journal',
+  templateUrl: './journal.html',
 })
-export class JournalPlaceholderPage {}
+export class JournalPage {
+  protected readonly store = inject(TimeEntriesStore);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  private readonly params = toSignal(this.route.queryParamMap, {
+    initialValue: this.route.snapshot.queryParamMap,
+  });
+  /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
+  protected readonly weekStart = computed(() => {
+    const requested = this.params().get('semaine');
+    return mondayOf(isIsoDate(requested) ? requested : todayInParis());
+  });
+  protected readonly skeletonDays = [0, 1, 2, 3, 4, 5, 6];
+
+  constructor() {
+    effect(() => {
+      const weekStart = this.weekStart();
+      untracked(() => this.store.load(weekStart));
+    });
+  }
+
+  protected goToWeek(weekStart: string): void {
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { semaine: weekStart } });
+  }
+}

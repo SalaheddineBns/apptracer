@@ -17,10 +17,10 @@ export const routes: Routes = [
       // `/` : redirection vers l'accueil du rôle (chaque accueil passe son propre roleGuard : pas de boucle).
       { path: '', pathMatch: 'full', canActivate: [homeRedirectGuard], children: [] },
       {
-        // Provisoire, remplacée par la vraie page SFD-01 (T-01-11).
+        // RG-01-14 : USER et MANAGER (un MANAGER satisfait Role.User).
         path: 'journal',
         canActivate: [roleGuard(Role.User)],
-        loadComponent: () => import('./features/time-entries/pages/journal').then((m) => m.JournalPlaceholderPage),
+        loadComponent: () => import('./features/time-entries/pages/journal').then((m) => m.JournalPage),
       },
       {
         path: 'admin/comptes',
