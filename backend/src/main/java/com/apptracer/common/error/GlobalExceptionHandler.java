@@ -50,6 +50,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
   }
 
+  /** Opération interdite (par exemple saisie d'un autre utilisateur, RG-01-10) : 403 avec code. */
+  @ExceptionHandler(ForbiddenOperationException.class)
+  ResponseEntity<ProblemDetail> handleForbiddenOperation(ForbiddenOperationException ex) {
+    ProblemDetail problem =
+        ProblemDetails.of(
+            HttpStatus.FORBIDDEN,
+            "forbidden",
+            "Accès refusé",
+            ex.getMessage(),
+            ex.getRgCode(),
+            List.of());
+    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
+  }
+
   @ExceptionHandler(ResourceNotFoundException.class)
   ResponseEntity<ProblemDetail> handleNotFound(ResourceNotFoundException ex) {
     ProblemDetail problem =

@@ -1,0 +1,221 @@
+package com.apptracer.timeentry.service;
+
+import com.apptracer.common.error.BusinessException;
+import com.apptracer.common.error.ForbiddenOperationException;
+import com.apptracer.common.error.ResourceNotFoundException;
+import com.apptracer.referential.domain.ActivityType;
+import com.apptracer.referential.domain.Project;
+import com.apptracer.referential.repository.ActivityTypeRepository;
+import com.apptracer.referential.repository.ProjectRepository;
+import com.apptracer.settings.service.AppSettingsService;
+import com.apptracer.timeentry.domain.Granularity;
+import com.apptracer.timeentry.domain.TimeEntry;
+import com.apptracer.timeentry.repository.TimeEntryRepository;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/** Saisies d'activité (SFD-01). Le propriétaire est toujours l'utilisateur du jeton (RG-00-03). */
+@Service
+public class TimeEntryService {
+
+  /** RG-01-03 : 31 jours calendaires bornes incluses, soit 30 jours d'écart. */
+  private static final long MAX_RANGE_GAP_DAYS = 30;
+
+  private static final int QUARTER_SECONDS = 15 * 60;
+
+  private final TimeEntryRepository entries;
+  private final ActivityTypeRepository types;
+  private final ProjectRepository projects;
+  private final AppSettingsService settings;
+  private final DurationCalculator durationCalculator;
+  private final Clock clock;
+
+  public TimeEntryService(
+      TimeEntryRepository entries,
+      ActivityTypeRepository types,
+      ProjectRepository projects,
+      AppSettingsService settings,
+      Clock clock) {
+    this.entries = entries;
+    this.types = types;
+    this.projects = projects;
+    this.settings = settings;
+    this.durationCalculator = new DurationCalculator();
+    this.clock = clock;
+  }
+
+  /**
+   * RG-01-14 (rôles) est contrôlé par le contrôleur. RG-01-06 (chevauchement) viendra avec T-01-4.
+   */
+  @Transactional
+  public TimeEntry create(Long userId, TimeEntryCommand cmd) {
+    checkPeriod(cmd);
+    checkStartDateNotInFuture(cmd.startDate());
+    ActivityType type = resolveType(cmd.activityTypeCode());
+    Project project = resolveProject(type, cmd.projectCode());
+
+    TimeEntry entry = new TimeEntry(userId, type);
+    // endDate renseignée en base pour toutes les granularités (= startDate hors RANGE)
+    boolean range = cmd.granularity() == Granularity.RANGE;
+    boolean hour = cmd.granularity() == Granularity.HOUR;
+    LocalDate endDate = range ? cmd.endDate() : cmd.startDate();
+    entry.setPeriod(
+        cmd.granularity(),
+        cmd.startDate(),
+        endDate,
+        hour ? cmd.startTime() : null,
+        hour ? cmd.endTime() : null);
+    entry.setProject(project);
+    entry.setComment(cmd.comment()); // RG-01-09 : longueur contrôlée par Bean Validation
+    // RG-01-08, RG-06-04, RG-00-02 : journée standard lue à l'enregistrement, puis figée avec la
+    // durée
+    int standardDay = settings.getStandardDayMinutes();
+    entry.setDuration(
+        durationCalculator.compute(
+            cmd.granularity(),
+            cmd.startDate(),
+            endDate,
+            entry.getStartTime(),
+            entry.getEndTime(),
+            standardDay),
+        standardDay);
+    // RG-01-11, RG-00-04 : créé par / le alimenté par l'audit JPA
+    return entries.saveAndFlush(entry);
+  }
+
+  /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */
+  @Transactional(readOnly = true)
+  public TimeEntry getOwn(Long userId, Long id) {
+    // RG-01-11 : saisie absente ou supprimée logiquement
+    TimeEntry entry =
+        entries
+            .findActiveById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Saisie introuvable."));
+    // RG-01-10
+    if (!entry.getUserId().equals(userId)) {
+      throw new ForbiddenOperationException(
+          "RG-01-10", "Vous ne pouvez accéder qu'à vos propres saisies.");
+    }
+    return entry;
+  }
+
+  private void checkPeriod(TimeEntryCommand cmd) {
+    switch (cmd.granularity()) {
+      case HOUR -> checkHours(cmd.startTime(), cmd.endTime());
+      case RANGE -> checkRange(cmd.startDate(), cmd.endDate());
+      case DAY -> {
+        // RG-01-02 : la journée entière de startDate, rien à contrôler
+      }
+    }
+  }
+
+  private static void checkHours(LocalTime start, LocalTime end) {
+    // RG-01-01 : pas de 15 minutes
+    if (!isQuarter(start)) {
+      throw BusinessException.onField(
+          "RG-01-01",
+          "Les heures doivent être des multiples de 15 minutes.",
+          "startTime",
+          "Doit être un multiple de 15 minutes.");
+    }
+    if (!isQuarter(end)) {
+      throw BusinessException.onField(
+          "RG-01-01",
+          "Les heures doivent être des multiples de 15 minutes.",
+          "endTime",
+          "Doit être un multiple de 15 minutes.");
+    }
+    // RG-01-01 : même jour, fin strictement après le début
+    if (!end.isAfter(start)) {
+      throw BusinessException.onField(
+          "RG-01-01",
+          "L'heure de fin doit être après l'heure de début.",
+          "endTime",
+          "Doit être après l'heure de début.");
+    }
+  }
+
+  private static boolean isQuarter(LocalTime t) {
+    return t.getNano() == 0 && t.toSecondOfDay() % QUARTER_SECONDS == 0;
+  }
+
+  private static void checkRange(LocalDate start, LocalDate end) {
+    // RG-01-03 : fin strictement après le début
+    if (!end.isAfter(start)) {
+      throw BusinessException.onField(
+          "RG-01-03",
+          "La date de fin doit être après la date de début.",
+          "endDate",
+          "Doit être après la date de début.");
+    }
+    // RG-01-03 : 31 jours calendaires au plus, bornes incluses
+    if (ChronoUnit.DAYS.between(start, end) > MAX_RANGE_GAP_DAYS) {
+      throw BusinessException.onField(
+          "RG-01-03",
+          "Une plage ne peut pas dépasser 31 jours.",
+          "endDate",
+          "La plage ne peut pas dépasser 31 jours.");
+    }
+  }
+
+  private void checkStartDateNotInFuture(LocalDate startDate) {
+    // RG-01-07, RG-00-01 : seule la date de début est contrôlée, à la date du jour Europe/Paris
+    if (startDate.isAfter(LocalDate.now(clock))) {
+      throw BusinessException.onField(
+          "RG-01-07",
+          "La date de début ne peut pas être dans le futur.",
+          "startDate",
+          "Ne peut pas être dans le futur.");
+    }
+  }
+
+  private ActivityType resolveType(String code) {
+    // RG-01-04 : le type existe et est actif (RG-02-06)
+    return types
+        .findByCode(code)
+        .filter(ActivityType::isActive)
+        .orElseThrow(
+            () ->
+                BusinessException.onField(
+                    "RG-01-04",
+                    "Le type d'activité est inconnu ou inactif.",
+                    "activityTypeCode",
+                    "Choisissez un type d'activité actif."));
+  }
+
+  private Project resolveProject(ActivityType type, String projectCode) {
+    // RG-01-05 : projet obligatoire si le type l'exige, interdit sinon
+    if (type.isProjectRequired() && projectCode == null) {
+      throw BusinessException.onField(
+          "RG-01-05",
+          "Le projet est obligatoire pour ce type d'activité.",
+          "projectCode",
+          "Le projet est obligatoire.");
+    }
+    if (!type.isProjectRequired()) {
+      if (projectCode != null) {
+        throw BusinessException.onField(
+            "RG-01-05",
+            "Ce type d'activité n'accepte pas de projet.",
+            "projectCode",
+            "Le projet n'est pas autorisé pour ce type.");
+      }
+      return null;
+    }
+    // RG-02-06 : le projet existe et est actif
+    return projects
+        .findByCode(projectCode)
+        .filter(Project::isActive)
+        .orElseThrow(
+            () ->
+                BusinessException.onField(
+                    "RG-02-06",
+                    "Le projet est inconnu ou inactif.",
+                    "projectCode",
+                    "Choisissez un projet actif."));
+  }
+}
