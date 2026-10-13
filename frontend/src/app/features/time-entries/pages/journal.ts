@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TimeEntryResponse } from '../../../core/api/generated';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { isIsoDate, mondayOf, todayInParis } from '../../../shared/dates/week';
@@ -53,6 +54,8 @@ export class JournalPage {
   });
   protected readonly skeletonDays = [0, 1, 2, 3, 4, 5, 6];
   protected readonly dialogVisible = signal(false);
+  /** Saisie en cours de modification ; `null` pour une création. */
+  protected readonly editing = signal<TimeEntryResponse | null>(null);
 
   constructor() {
     effect(() => {
@@ -62,6 +65,13 @@ export class JournalPage {
   }
 
   protected openCreate(): void {
+    this.editing.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  /** RG-01-10, RG-01-12 : le journal ne montre que ses propres saisies, toutes modifiables. */
+  protected openEdit(entry: TimeEntryResponse): void {
+    this.editing.set(entry);
     this.dialogVisible.set(true);
   }
 
@@ -70,7 +80,7 @@ export class JournalPage {
     const { entry } = event;
     this.messages.add({
       severity: 'success',
-      summary: 'Saisie enregistrée',
+      summary: event.mode === 'create' ? 'Saisie enregistrée' : 'Saisie modifiée',
       detail: `${entry.activityType.label} ${datesLabel(entry)} (${formatDuration(entry.durationMinutes)}).`,
       life: 3000,
     });

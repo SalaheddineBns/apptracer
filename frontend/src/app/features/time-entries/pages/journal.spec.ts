@@ -179,6 +179,31 @@ describe('JournalPage', () => {
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-10-05');
   });
 
+  it('RG-01-12 : « Modifier » ouvre le dialogue sur la saisie, « Nouvelle saisie » repart d’une création', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    await open();
+    const page = harness.routeDebugElement?.componentInstance as {
+      dialogVisible: { (): boolean; set(value: boolean): void };
+      editing(): TimeEntryResponse | null;
+    };
+    await click('btn-modifier-saisie-1');
+    expect(page.dialogVisible()).toBe(true);
+    expect(page.editing()).toEqual(expect.objectContaining({ id: 1 }));
+    page.dialogVisible.set(false);
+    await click('btn-nouvelle-saisie');
+    expect(page.editing()).toBeNull();
+  });
+
+  it('le toast d’une modification a le titre « Saisie modifiée »', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    await open();
+    const page = harness.routeDebugElement?.componentInstance as {
+      onSaved(event: { mode: 'create' | 'update'; entry: TimeEntryResponse }): void;
+    };
+    page.onSaved({ mode: 'update', entry: meeting() });
+    expect(add).toHaveBeenCalledWith(expect.objectContaining({ summary: 'Saisie modifiée' }));
+  });
+
   it('RG-01-13 : sans semaine dans l’URL, affiche la semaine courante (lundi à Paris)', async () => {
     listMyTimeEntries.mockReturnValue(new Subject());
     await open('/journal');

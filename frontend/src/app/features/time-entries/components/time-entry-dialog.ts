@@ -5,6 +5,7 @@ import {
   DestroyRef,
   effect,
   inject,
+  input,
   model,
   output,
   signal,
@@ -40,6 +41,7 @@ import {
   notFutureValidator,
   quarterHourValidator,
   TIME_STEP_MINUTES,
+  timeStringToDate,
   toTimeString,
 } from './time-entry-period';
 
@@ -48,7 +50,7 @@ export interface TimeEntrySaved {
   readonly entry: TimeEntryResponse;
 }
 
-/** SFD-01 E2 Dialogue de saisie. */
+/** SFD-01 E2 Dialogue de saisie : création (entry = null) ou modification d'une saisie existante (RG-01-12). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -73,9 +75,14 @@ export class TimeEntryDialog {
   private readonly messages = inject(MessageService);
 
   readonly visible = model(false);
+  /** Saisie à modifier, ou `null` pour une création. */
+  readonly entry = input<TimeEntryResponse | null>(null);
   readonly saved = output<TimeEntrySaved>();
+  /** Modification concurrente détectée : l'appelant recharge la semaine. */
+  readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
+  protected readonly isEdit = computed(() => this.entry() !== null);
   protected readonly Granularity = Granularity;
   protected readonly timeStep = TIME_STEP_MINUTES;
   protected readonly granularityOptions = [
@@ -218,17 +225,20 @@ export class TimeEntryDialog {
     // CA-06-03 : la journée standard est rechargée à chaque ouverture pour suivre une modification du paramètre.
     this.settings.load();
     this.today.set(isoToLocalDate(todayInParis()));
+    const entry = this.entry();
+    // RG-01-12 : tous les champs sont repris, granularité comprise. RG-02-06 : un type ou un projet désactivé n'est
+    // plus proposé, sa valeur n'est pas reprise et l'utilisateur doit en choisir un actif.
     this.form.reset({
-      granularity: Granularity.Hour,
-      startDate: this.today(),
-      endDate: null,
-      startTime: null,
-      endTime: null,
-      activityTypeCode: '',
-      projectCode: null,
-      comment: '',
+      granularity: entry?.granularity ?? Granularity.Hour,
+      startDate: entry ? isoToLocalDate(entry.startDate) : this.today(),
+      endDate: entry?.endDate ? isoToLocalDate(entry.endDate) : null,
+      startTime: entry?.startTime ? timeStringToDate(entry.startTime) : null,
+      endTime: entry?.endTime ? timeStringToDate(entry.endTime) : null,
+      activityTypeCode: entry?.activityType.active ? entry.activityType.code : '',
+      projectCode: entry?.project?.active ? entry.project.code : null,
+      comment: entry?.comment ?? '',
     });
-    this.applyGranularity(Granularity.Hour);
+    this.applyGranularity(this.form.controls.granularity.value);
   }
 
   private applyGranularity(granularity: Granularity): void {
@@ -265,16 +275,33 @@ export class TimeEntryDialog {
       return;
     }
     this.submitting.set(true);
-    this.store.create(this.toRequest()).subscribe({
+    const editing = this.entry();
+    const request = this.toRequest();
+    // RG-01-12 : mêmes champs et mêmes contrôles qu'à la création, avec la version lue.
+    const request$ = editing
+      ? this.store.update(editing.id, { ...request, version: editing.version })
+      : this.store.create(request);
+    request$.subscribe({
       next: (entry) => {
         this.submitting.set(false);
         this.visible.set(false);
-        this.saved.emit({ mode: 'create', entry });
+        this.saved.emit({ mode: editing ? 'update' : 'create', entry });
       },
       error: (error: unknown) => {
         this.submitting.set(false);
+        const problem = toProblem(error);
         // RG-01-06 (chevauchement, CA-01-04) n'a pas d'erreur de champ : son message est affiché en toast par l'intercepteur.
-        this.showFieldErrors(toProblem(error).fieldErrors);
+        this.showFieldErrors(problem.fieldErrors);
+        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        if (
+          editing &&
+          problem.status === 409 &&
+          problem.code === null &&
+          problem.fieldErrors.length === 0
+        ) {
+          this.visible.set(false);
+          this.conflict.emit();
+        }
       },
     });
   }

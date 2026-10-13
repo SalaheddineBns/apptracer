@@ -1,5 +1,5 @@
 <p-dialog
-  header="Nouvelle saisie"
+  [header]="isEdit() ? 'Modifier la saisie' : 'Nouvelle saisie'"
   [(visible)]="visible"
   [modal]="true"
   [draggable]="false"

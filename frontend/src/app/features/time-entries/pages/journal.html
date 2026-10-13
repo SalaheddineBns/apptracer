@@ -27,7 +27,7 @@
           />
         </app-empty-state>
       } @else {
-        <app-week-journal [week]="week" />
+        <app-week-journal [week]="week" (edit)="openEdit($event)" />
       }
     } @else {
       <div
@@ -47,4 +47,9 @@
   </section>
 </div>
 
-<app-time-entry-dialog [(visible)]="dialogVisible" (saved)="onSaved($event)" />
+<app-time-entry-dialog
+  [(visible)]="dialogVisible"
+  [entry]="editing()"
+  (saved)="onSaved($event)"
+  (conflict)="store.reload()"
+/>

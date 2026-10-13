@@ -59,9 +59,10 @@ describe('TimeEntryDialog', () => {
   const listMyTimeEntries = vi.fn();
   const add = vi.fn();
   const saved = vi.fn();
+  const conflict = vi.fn();
   let fixture: ReturnType<typeof TestBed.createComponent<TimeEntryDialog>>;
 
-  async function open(): Promise<void> {
+  async function open(entry: TimeEntryResponse | null = null): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
         { provide: ActivityTypesService, useValue: { listActivityTypes } },
@@ -76,6 +77,8 @@ describe('TimeEntryDialog', () => {
     });
     fixture = TestBed.createComponent(TimeEntryDialog);
     fixture.componentInstance.saved.subscribe(saved);
+    fixture.componentInstance.conflict.subscribe(conflict);
+    fixture.componentRef.setInput('entry', entry);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
     await fixture.whenStable();
@@ -123,6 +126,7 @@ describe('TimeEntryDialog', () => {
       listMyTimeEntries,
       add,
       saved,
+      conflict,
     ]) {
       fn.mockReset();
     }
@@ -474,6 +478,141 @@ describe('TimeEntryDialog', () => {
       );
       await fixture.whenStable();
       expect(fixture.componentInstance.visible()).toBe(true);
+    });
+  });
+
+  describe('modification', () => {
+    const projectEntry = savedEntry({
+      id: 12,
+      granularity: Granularity.Day,
+      startDate: '2026-10-06',
+      startTime: null,
+      endTime: null,
+      activityType: {
+        code: 'TRAVAIL_PROJET',
+        label: 'Travail projet',
+        color: TagColor.Info,
+        active: true,
+      },
+      project: { code: 'APOLLO', name: 'Apollo', active: true },
+      comment: 'Sprint 12',
+      durationMinutes: 420,
+      version: 4,
+    });
+
+    it('RG-01-12 : ouvre la saisie avec tous ses champs, sous le titre « Modifier la saisie »', async () => {
+      await open(savedEntry({ comment: 'Point hebdo', version: 2 }));
+      expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain(
+        'Modifier la saisie',
+      );
+      const value = form().getRawValue();
+      expect(value.granularity).toBe(Granularity.Hour);
+      expect(value.startDate).toEqual(date('2026-10-05'));
+      expect((value.startTime as Date).getHours()).toBe(9);
+      expect((value.endTime as Date).getHours()).toBe(10);
+      expect((value.endTime as Date).getMinutes()).toBe(30);
+      expect(value.activityTypeCode).toBe('REUNION');
+      expect(value.comment).toBe('Point hebdo');
+      expect(duration()).toBe('1 h 30');
+    });
+
+    it('RG-01-12 : le projet d’une saisie est repris et reste modifiable', async () => {
+      await open(projectEntry);
+      expect(el('select-projet')).not.toBeNull();
+      expect(form().get('projectCode')?.enabled).toBe(true);
+      expect(form().get('projectCode')?.value).toBe('APOLLO');
+    });
+
+    it('RG-01-12 : tous les champs sont modifiables, granularité comprise, et la version lue est envoyée', async () => {
+      updateTimeEntry.mockReturnValue(of(projectEntry));
+      await open(savedEntry({ version: 2 }));
+      await fill({
+        granularity: Granularity.Day,
+        startDate: date('2026-10-06'),
+        activityTypeCode: 'TRAVAIL_PROJET',
+        projectCode: 'APOLLO',
+        comment: 'Sprint 12',
+      });
+      await submit();
+      expect(updateTimeEntry).toHaveBeenCalledWith(7, {
+        granularity: Granularity.Day,
+        startDate: '2026-10-06',
+        activityTypeCode: 'TRAVAIL_PROJET',
+        projectCode: 'APOLLO',
+        comment: 'Sprint 12',
+        version: 2,
+      });
+      expect(createTimeEntry).not.toHaveBeenCalled();
+      expect(saved).toHaveBeenCalledWith({ mode: 'update', entry: projectEntry });
+      expect(fixture.componentInstance.visible()).toBe(false);
+    });
+
+    it('RG-01-12 : les contrôles sont ceux de la création (heure de fin avant le début refusée)', async () => {
+      await open(savedEntry());
+      await fill({ endTime: time('08:00') });
+      await submit();
+      expect(error('champ-heure-fin')).toContain('après l’heure de début');
+      expect(updateTimeEntry).not.toHaveBeenCalled();
+    });
+
+    it('RG-02-06 : un type désactivé n’est pas repris, il faut en rechoisir un actif pour enregistrer', async () => {
+      await open(
+        savedEntry({
+          activityType: { code: 'ANCIEN', label: 'Ancien', color: TagColor.Info, active: false },
+        }),
+      );
+      expect(form().get('activityTypeCode')?.value).toBe('');
+      await submit();
+      expect(error('select-type-activite')).toContain('obligatoire');
+      expect(updateTimeEntry).not.toHaveBeenCalled();
+    });
+
+    it('RG-02-06 : un projet désactivé n’est pas repris, il faut en rechoisir un actif pour enregistrer', async () => {
+      await open({ ...projectEntry, project: { code: 'CLOS', name: 'Clos', active: false } });
+      expect(form().get('projectCode')?.value).toBeNull();
+      await submit();
+      expect(error('select-projet')).toContain('Le projet est obligatoire');
+      expect(updateTimeEntry).not.toHaveBeenCalled();
+    });
+
+    it('modification concurrente : 409 sans code, le dialogue se ferme et la semaine est rechargée', async () => {
+      updateTimeEntry.mockReturnValue(
+        httpError(409, {
+          status: 409,
+          type: 'https://apptracer/errors/concurrent-modification',
+          detail: 'Cette saisie a été modifiée entre-temps.',
+        }),
+      );
+      await open(savedEntry());
+      await submit();
+      expect(conflict).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.visible()).toBe(false);
+      expect(saved).not.toHaveBeenCalled();
+    });
+
+    it('CA-01-04 : un chevauchement à la modification laisse le dialogue ouvert, sans recharger', async () => {
+      updateTimeEntry.mockReturnValue(
+        httpError(409, { status: 409, code: 'RG-01-06', detail: 'Chevauchement.' }),
+      );
+      await open(savedEntry());
+      await submit();
+      expect(fixture.componentInstance.visible()).toBe(true);
+      expect(conflict).not.toHaveBeenCalled();
+    });
+
+    it('après une modification, une nouvelle saisie repart d’un formulaire vide', async () => {
+      await open(savedEntry({ comment: 'Point hebdo' }));
+      fixture.componentRef.setInput('visible', false);
+      await fixture.whenStable();
+      fixture.componentRef.setInput('entry', null);
+      fixture.componentRef.setInput('visible', true);
+      await fixture.whenStable();
+      expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain(
+        'Nouvelle saisie',
+      );
+      expect(form().get('activityTypeCode')?.value).toBe('');
+      expect(form().get('comment')?.value).toBe('');
+      expect(form().get('startTime')?.value).toBeNull();
     });
   });
 });
