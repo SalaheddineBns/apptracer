@@ -39,6 +39,17 @@
                 (onClick)="openEdit(team)"
                 [attr.data-cy]="'btn-modifier-equipe-' + team.id"
               />
+              <p-button
+                type="button"
+                label="Supprimer"
+                [text]="true"
+                size="small"
+                severity="secondary"
+                [ariaLabel]="'Supprimer l’équipe ' + team.name"
+                [disabled]="store.pending.has(team.id)"
+                (onClick)="confirmRemove(team)"
+                [attr.data-cy]="'btn-supprimer-equipe-' + team.id"
+              />
             </td>
           </tr>
         </ng-template>

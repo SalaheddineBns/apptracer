@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
 import { Role, TeamAccountSummary, TeamResponse, TeamsService } from '../../../core/api/generated';
 import { TeamsPage } from './teams';
@@ -22,13 +22,15 @@ const team = (id: number, over: Partial<TeamResponse> = {}): TeamResponse => {
 
 describe('TeamsPage', () => {
   const listTeams = vi.fn();
+  const deleteTeam = vi.fn();
+  const confirm = vi.fn();
   const add = vi.fn();
   let fixtureRef: ReturnType<typeof TestBed.createComponent<TeamsPage>>;
   let root: HTMLElement;
   let whenStable: () => Promise<unknown>;
 
   async function open(): Promise<void> {
-    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams, listTeamManagerCandidates: () => of([]), listTeamMemberCandidates: () => of([]) } }, { provide: MessageService, useValue: { add } }] });
+    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams, deleteTeam, listTeamManagerCandidates: () => of([]), listTeamMemberCandidates: () => of([]) } }, { provide: ConfirmationService, useValue: { confirm } }, { provide: MessageService, useValue: { add } }] });
     const fixture = TestBed.createComponent(TeamsPage);
     fixtureRef = fixture;
     root = fixture.nativeElement as HTMLElement;
@@ -43,6 +45,8 @@ describe('TeamsPage', () => {
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     listTeams.mockReset();
     add.mockReset();
+    deleteTeam.mockReset();
+    confirm.mockReset();
     TestBed.resetTestingModule();
   });
 
@@ -121,5 +125,90 @@ describe('TeamsPage', () => {
     page.onSaved({ mode: 'create', team: team(1) });
     page.onSaved({ mode: 'update', team: team(1) });
     expect(add.mock.calls.map((c) => c[0].summary)).toEqual(['Équipe créée', 'Équipe mise à jour']);
+  });
+
+  describe('E3 Suppression', () => {
+    const threeMembers = [account(3), account(4), account(5)];
+
+    it('CA-05-09 : la confirmation cite le nom et le nombre de membres ; une fois confirmée, l’équipe disparaît de la liste et seule l’API d’équipe est appelée', async () => {
+      listTeams.mockReturnValue(of([team(1, { name: 'Produit', members: threeMembers, memberCount: 3 }), team(2, { name: 'Zèbre' })]));
+      deleteTeam.mockReturnValue(of(null));
+      await open();
+      cy('btn-supprimer-equipe-1')?.querySelector('button')?.click();
+      await whenStable();
+      expect(confirm).toHaveBeenCalledTimes(1);
+      const options = confirm.mock.calls[0][0];
+      expect(options.message).toContain('« Produit »');
+      expect(options.message).toContain('Ses 3 membres se retrouveront sans équipe.');
+      expect(options.message).toContain('définitive');
+      expect(options.acceptLabel).toBe('Supprimer');
+      expect(options.closable).not.toBe(false);
+      expect(deleteTeam).not.toHaveBeenCalled();
+      options.accept();
+      await whenStable();
+      expect(deleteTeam).toHaveBeenCalledWith(1);
+      expect(cy('ligne-equipe-1')).toBeNull();
+      expect(cy('ligne-equipe-2')).not.toBeNull();
+      expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success', summary: 'Équipe supprimée', life: 3000 }));
+      expect(listTeams).toHaveBeenCalledTimes(1);
+    });
+
+    it('annulée, la confirmation n’appelle pas l’API et la ligne reste', async () => {
+      listTeams.mockReturnValue(of([team(1)]));
+      await open();
+      cy('btn-supprimer-equipe-1')?.querySelector('button')?.click();
+      await whenStable();
+      expect(deleteTeam).not.toHaveBeenCalled();
+      expect(cy('ligne-equipe-1')).not.toBeNull();
+    });
+
+    it.each([
+      [0, 'Elle n’a aucun membre.'],
+      [1, 'Son membre se retrouvera sans équipe.'],
+    ])('la confirmation d’une équipe de %s membre(s) est accordée : « %s »', async (count, sentence) => {
+      listTeams.mockReturnValue(of([team(1, { members: threeMembers.slice(0, count), memberCount: count })]));
+      await open();
+      cy('btn-supprimer-equipe-1')?.querySelector('button')?.click();
+      await whenStable();
+      expect(confirm.mock.calls[0][0].message).toContain(sentence);
+    });
+
+    it('le nom du bouton nomme l’équipe', async () => {
+      listTeams.mockReturnValue(of([team(1, { name: 'Produit' })]));
+      await open();
+      expect(cy('btn-supprimer-equipe-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Supprimer l’équipe Produit');
+    });
+
+    it('F1 : une suppression confirmée deux fois n’envoie qu’une requête, bouton désactivé jusqu’à la réponse', async () => {
+      listTeams.mockReturnValue(of([team(1)]));
+      const response = new Subject<null>();
+      deleteTeam.mockReturnValue(response);
+      await open();
+      cy('btn-supprimer-equipe-1')?.querySelector('button')?.click();
+      await whenStable();
+      const { accept } = confirm.mock.calls[0][0];
+      accept();
+      accept();
+      await whenStable();
+      expect(deleteTeam).toHaveBeenCalledTimes(1);
+      expect((cy('btn-supprimer-equipe-1')?.querySelector('button') as HTMLButtonElement).disabled).toBe(true);
+      response.next(null);
+      response.complete();
+      await whenStable();
+      expect(cy('ligne-equipe-1')).toBeNull();
+    });
+
+    it('équipe déjà supprimée (404) : la ligne n’est pas retirée localement, la liste est relue', async () => {
+      listTeams.mockReturnValueOnce(of([team(1), team(2)])).mockReturnValue(of([team(2)]));
+      deleteTeam.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 404, error: { detail: 'Équipe introuvable.' } })));
+      await open();
+      cy('btn-supprimer-equipe-1')?.querySelector('button')?.click();
+      await whenStable();
+      confirm.mock.calls[0][0].accept();
+      await whenStable();
+      expect(listTeams).toHaveBeenCalledTimes(2);
+      expect(cy('ligne-equipe-1')).toBeNull();
+      expect(add).not.toHaveBeenCalled();
+    });
   });
 });

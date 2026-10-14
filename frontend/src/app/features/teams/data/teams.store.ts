@@ -11,6 +11,7 @@ import {
 } from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
+import { PendingIds } from '../../../shared/pending-ids';
 
 /**
  * Équipes (SFD-05, ADMIN). RG-05-13 : le back renvoie les équipes triées par nom et les membres triés par nom puis prénom,
@@ -20,6 +21,9 @@ import { toProblem } from '../../../core/errors/problem';
 export class TeamsStore {
   private readonly api = inject(TeamsService);
   private requestId = 0;
+
+  /** Suppressions en attente de réponse : une seule requête à la fois par équipe. */
+  readonly pending = new PendingIds();
 
   readonly items = signal<TeamResponse[]>([]);
   readonly loading = signal(false);
@@ -97,5 +101,13 @@ export class TeamsStore {
   /** RG-05-01 à RG-05-08 : modification d'un bloc (nom, manager, liste complète des membres) avec la version reçue. */
   update(id: number, request: UpdateTeamRequest): Observable<TeamResponse> {
     return this.api.updateTeam(id, request).pipe(tap(() => this.load()));
+  }
+
+  /**
+   * RG-05-09 : suppression définitive. Les membres se retrouvent sans équipe côté back ; la ligne quitte la liste sans la recharger.
+   * Les erreurs (ex. 404, équipe déjà supprimée) sont affichées par l'intercepteur d'erreurs.
+   */
+  remove(id: number): Observable<unknown> {
+    return this.pending.guard(id, () => this.api.deleteTeam(id).pipe(tap(() => this.items.update((list) => list.filter((team) => team.id !== id)))));
   }
 }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TeamAccountSummary, TeamResponse } from '../../../core/api/generated';
@@ -18,6 +18,7 @@ import { TeamsStore } from '../data/teams.store';
 })
 export class TeamsPage {
   protected readonly store = inject(TeamsStore);
+  private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
 
   protected readonly dialogVisible = signal(false);
@@ -55,5 +56,34 @@ export class TeamsPage {
   /** CA-05-01 : « 2 membres » ; singulier à 0 et 1 (usage français). */
   protected memberCountLabel(count: number): string {
     return count > 1 ? `${count} membres` : `${count} membre`;
+  }
+
+  /** E3, RG-05-09 : confirmation citant le nom de l'équipe et le nombre de membres concernés. */
+  protected confirmRemove(team: TeamResponse): void {
+    this.confirmation.confirm({
+      header: 'Supprimer l’équipe',
+      message: `Supprimer l’équipe « ${team.name} » ? ${this.consequence(team.memberCount)} Cette suppression est définitive.`,
+      acceptLabel: 'Supprimer',
+      rejectLabel: 'Annuler',
+      acceptButtonProps: { severity: 'danger' },
+      rejectButtonProps: { severity: 'secondary', text: true },
+      accept: () =>
+        this.store.remove(team.id).subscribe({
+          next: () => {
+            this.messages.add({ severity: 'success', summary: 'Équipe supprimée', detail: `L’équipe « ${team.name} » est supprimée.`, life: 3000 });
+            // La ligne a disparu : le focus passe à l'action principale de la page plutôt que de tomber sur <body>.
+            setTimeout(() => document.querySelector<HTMLElement>('[data-cy="btn-nouvelle-equipe"] button')?.focus());
+          },
+          // Déjà supprimée par quelqu'un d'autre (404, message affiché par l'intercepteur) : la liste est relue.
+          error: () => this.store.load(),
+        }),
+    });
+  }
+
+  private consequence(memberCount: number): string {
+    if (memberCount === 0) {
+      return 'Elle n’a aucun membre.';
+    }
+    return memberCount === 1 ? 'Son membre se retrouvera sans équipe.' : `Ses ${memberCount} membres se retrouveront sans équipe.`;
   }
 }
