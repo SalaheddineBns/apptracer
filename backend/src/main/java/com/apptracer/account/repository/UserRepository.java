@@ -2,8 +2,12 @@ package com.apptracer.account.repository;
 
 import com.apptracer.account.domain.Role;
 import com.apptracer.account.domain.User;
+import jakarta.persistence.LockModeType;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -17,4 +21,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByEmail(@Param("email") String email);
 
   boolean existsByRole(Role role);
+
+  /**
+   * RG-05-02, RG-05-03 : comptes chargés avec un verrou partagé ({@code FOR SHARE}) par la gestion
+   * des équipes, dans l'ordre des identifiants. Un {@code UserService.update / deactivate}
+   * concurrent attend la fin de la transaction.
+   */
+  @Lock(LockModeType.PESSIMISTIC_READ)
+  @Query("select u from User u where u.id in :ids order by u.id")
+  List<User> findAllByIdForShare(@Param("ids") Collection<Long> ids);
+
+  /** RG-05-10, RG-05-12 : compte chargé avec un verrou exclusif ({@code FOR UPDATE}). */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select u from User u where u.id = :id")
+  Optional<User> findByIdForUpdate(@Param("id") Long id);
 }

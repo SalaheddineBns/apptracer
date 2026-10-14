@@ -145,6 +145,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       return handleBusiness(
           new BusinessException("RG-01-06", "Cette période chevauche une activité déjà déclarée."));
     }
+    if (violates(ex, "ux_teams_name_lower")) {
+      // RG-05-01
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-05-01",
+              "Une équipe existe déjà avec ce nom.",
+              "name",
+              "Ce nom d'équipe est déjà utilisé."));
+    }
+    if (violates(ex, "pk_team_members")) {
+      // RG-05-04 : deux requêtes simultanées ont rattaché le même compte
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-05-04",
+              "Un des comptes choisis est déjà membre d'une autre équipe.",
+              "memberIds",
+              "Un des comptes est déjà membre d'une autre équipe."));
+    }
     throw ex;
   }
 
