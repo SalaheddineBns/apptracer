@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,6 +36,62 @@ public class TeamController {
     this.service = service;
     this.mapper = mapper;
     this.currentUser = currentUser;
+  }
+
+  @GetMapping
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "listTeams",
+      summary = "Lister les équipes avec leurs membres (triées par nom)")
+  @ApiResponse(responseCode = "200", description = "Équipes triées par nom, membres par nom/prénom")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-05-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public List<TeamResponse> listTeams() {
+    return service.list().stream().map(mapper::toResponse).toList();
+  }
+
+  @GetMapping("/manager-candidates")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "listTeamManagerCandidates",
+      summary = "Lister les comptes pouvant être manager (actifs, rôle MANAGER)")
+  @ApiResponse(responseCode = "200", description = "Comptes triés par nom puis prénom")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-05-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public List<TeamAccountSummary> listTeamManagerCandidates() {
+    return service.managerCandidates().stream().map(mapper::toSummary).toList();
+  }
+
+  @GetMapping("/member-candidates")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "listTeamMemberCandidates",
+      summary = "Lister les comptes pouvant être membre, avec leur équipe actuelle")
+  @ApiResponse(
+      responseCode = "200",
+      description = "Comptes USER ou MANAGER (actifs ou non) triés par nom puis prénom")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-05-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public List<TeamMemberCandidateResponse> listTeamMemberCandidates() {
+    return service.memberCandidates().stream().map(mapper::toCandidate).toList();
   }
 
   @PostMapping

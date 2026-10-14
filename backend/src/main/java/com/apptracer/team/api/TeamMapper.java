@@ -1,6 +1,8 @@
 package com.apptracer.team.api;
 
 import com.apptracer.account.domain.User;
+import com.apptracer.team.domain.Team;
+import com.apptracer.team.service.TeamService.MemberCandidate;
 import com.apptracer.team.service.TeamService.TeamDetails;
 import org.springframework.stereotype.Component;
 
@@ -25,5 +27,18 @@ public class TeamMapper {
         user.getEmail(),
         user.getRole(),
         user.isActive());
+  }
+
+  public TeamMemberCandidateResponse toCandidate(MemberCandidate candidate) {
+    User user = candidate.user();
+    Team current = candidate.currentTeam();
+    return new TeamMemberCandidateResponse(
+        user.getId(),
+        user.getFirstName(),
+        user.getLastName(),
+        user.getEmail(),
+        user.getRole(),
+        user.isActive(),
+        current == null ? null : new TeamRef(current.getId(), current.getName()));
   }
 }

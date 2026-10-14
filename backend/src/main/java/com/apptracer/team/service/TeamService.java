@@ -34,6 +34,9 @@ public class TeamService {
   /** Équipe et ses membres, triés par nom puis prénom (RG-05-13). */
   public record TeamDetails(Team team, List<User> members) {}
 
+  /** Compte éligible comme membre, avec son équipe actuelle (RG-05-04), s'il en a une. */
+  public record MemberCandidate(User user, Team currentTeam) {}
+
   /** RG-05-13 : membres triés par nom puis prénom. */
   static final Comparator<User> MEMBER_ORDER =
       Comparator.comparing((User u) -> u.getLastName().toLowerCase())
@@ -83,6 +86,44 @@ public class TeamService {
     List<User> teamMembers =
         members.findByTeamIdsSorted(List.of(id)).stream().map(TeamMember::getUser).toList();
     return new TeamDetails(team, teamMembers);
+  }
+
+  /** RG-05-13 : équipes triées par nom, membres triés par nom puis prénom. */
+  @Transactional(readOnly = true)
+  public List<TeamDetails> list() {
+    List<Team> all = teams.findAllActiveSorted();
+    if (all.isEmpty()) {
+      return List.of();
+    }
+    Map<Long, List<User>> byTeam =
+        members.findByTeamIdsSorted(all.stream().map(Team::getId).toList()).stream()
+            .collect(
+                Collectors.groupingBy(
+                    TeamMember::getTeamId,
+                    Collectors.mapping(TeamMember::getUser, Collectors.toList())));
+    return all.stream()
+        .map(t -> new TeamDetails(t, byTeam.getOrDefault(t.getId(), List.of())))
+        .toList();
+  }
+
+  /** RG-05-02 : comptes actifs de rôle MANAGER, triés par nom puis prénom. */
+  @Transactional(readOnly = true)
+  public List<User> managerCandidates() {
+    return users.findActiveByRoleSorted(Role.MANAGER);
+  }
+
+  /**
+   * RG-05-03 : comptes USER ou MANAGER, actifs ou non (RG-05-11), jamais ADMIN. RG-05-04 : chacun
+   * avec son équipe actuelle, que l'API refusera de lui retirer implicitement (H10).
+   */
+  @Transactional(readOnly = true)
+  public List<MemberCandidate> memberCandidates() {
+    Map<Long, Team> currentTeams =
+        members.findAllWithTeam().stream()
+            .collect(Collectors.toMap(TeamMember::getUserId, TeamMember::getTeam));
+    return users.findByRolesSorted(List.of(Role.USER, Role.MANAGER)).stream()
+        .map(u -> new MemberCandidate(u, currentTeams.get(u.getId())))
+        .toList();
   }
 
   // ---- contrôles communs à la création et à la modification ----

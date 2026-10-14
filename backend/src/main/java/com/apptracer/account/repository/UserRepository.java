@@ -35,4 +35,22 @@ public interface UserRepository extends JpaRepository<User, Long> {
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select u from User u where u.id = :id")
   Optional<User> findByIdForUpdate(@Param("id") Long id);
+
+  /** RG-05-02 : candidats managers, comptes actifs du rôle donné, triés par nom puis prénom. */
+  @Query(
+      """
+      select u from User u
+      where u.role = :role and u.active = true
+      order by lower(u.lastName), lower(u.firstName), u.id
+      """)
+  List<User> findActiveByRoleSorted(@Param("role") Role role);
+
+  /** RG-05-03 : candidats membres, actifs ou non, des rôles donnés, triés par nom puis prénom. */
+  @Query(
+      """
+      select u from User u
+      where u.role in :roles
+      order by lower(u.lastName), lower(u.firstName), u.id
+      """)
+  List<User> findByRolesSorted(@Param("roles") Collection<Role> roles);
 }
