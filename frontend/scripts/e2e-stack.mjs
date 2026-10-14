@@ -167,12 +167,18 @@ try {
   }
 
   log('Cypress');
-  const cypress = spawnSync('npx', ['cypress', 'run', ...process.argv.slice(2)], {
+  // Asynchrone (et non spawnSync) : tant que Cypress tourne, la boucle d'événements doit continuer à vider les tubes de sortie
+  // du back et du front. Bloquée, elle laisse le tube (64 Ko) se remplir ; le front (ng serve), qui écrit ses journaux de
+  // façon synchrone, se fige alors et toutes les requêtes passent en délai dépassé (constaté au-delà de quelques centaines de requêtes).
+  const cypress = spawn('npx', ['cypress', 'run', ...process.argv.slice(2)], {
     cwd: frontendDir,
     stdio: 'inherit',
     env: { ...process.env, E2E_BASE_URL: `http://localhost:${webPort}` },
   });
-  exitCode = cypress.status ?? 1;
+  exitCode = await new Promise((resolve) => {
+    cypress.on('error', () => resolve(1));
+    cypress.on('exit', (code) => resolve(code ?? 1));
+  });
 } catch (error) {
   console.error(`[e2e-stack] ERREUR : ${error.message}`);
 } finally {
