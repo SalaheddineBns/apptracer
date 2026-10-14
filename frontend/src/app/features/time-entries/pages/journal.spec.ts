@@ -96,11 +96,13 @@ describe('JournalPage', () => {
     expect(cy('titre-journal')?.textContent).toContain('Mon journal');
   });
 
-  it('affiche l’état vide avec « Nouvelle saisie » quand la semaine n’a aucune saisie', async () => {
+  it('affiche l’état vide sans répéter « Nouvelle saisie » quand la semaine n’a aucune saisie', async () => {
     listMyTimeEntries.mockReturnValue(of(week([], 0)));
     await open();
     expect(cy('etat-vide')?.textContent).toContain('Aucune activité cette semaine.');
-    expect(cy('btn-nouvelle-saisie-vide')).not.toBeNull();
+    // Un seul « Nouvelle saisie », en haut à droite : l'état vide n'en répète pas.
+    expect(cy('btn-nouvelle-saisie-vide')).toBeNull();
+    expect(root.querySelectorAll('[data-cy^="btn-nouvelle-saisie"]')).toHaveLength(1);
     expect(cy('btn-nouvelle-saisie')).not.toBeNull();
   });
 

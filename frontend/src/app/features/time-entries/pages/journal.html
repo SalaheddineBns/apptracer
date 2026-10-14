@@ -17,15 +17,8 @@
       <app-error-state [message]="message" (retry)="store.reload()" />
     } @else if (store.week(); as week) {
       @if (week.entries.length === 0) {
-        <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar">
-          <p-button
-            type="button"
-            label="Nouvelle saisie"
-            icon="pi pi-plus"
-            (onClick)="openCreate()"
-            data-cy="btn-nouvelle-saisie-vide"
-          />
-        </app-empty-state>
+        <!-- Sans bouton : « Nouvelle saisie » en haut à droite et le « + » de chaque jour suffisent. -->
+        <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar" />
       }
       <!-- Affichée même sans saisie : chaque jour porte son « + ». -->
       <app-week-journal

@@ -29,7 +29,7 @@ import { coversDay } from './time-entry.ui';
                 <p-button
                   type="button"
                   icon="pi pi-plus"
-                  [text]="true"
+                  [outlined]="true"
                   size="small"
                   severity="secondary"
                   [ariaLabel]="'Ajouter une saisie le ' + day.name + ' ' + day.label"

@@ -226,6 +226,9 @@ describe('WeekJournal', () => {
       '[data-cy="btn-ajouter-saisie-2026-10-07"] button',
     );
     expect(button?.getAttribute('aria-label')).toBe('Ajouter une saisie le mercredi 07/10');
+    // Bouton carré bordé : icône seule, contour visible.
+    expect(button?.classList).toContain('p-button-icon-only');
+    expect(button?.classList).toContain('p-button-outlined');
     button?.click();
     expect(added).toHaveBeenCalledWith('2026-10-07');
   });
