@@ -113,6 +113,22 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     expect(cy('navigation-semaine')).not.toBeNull();
   });
 
+  it('le sélecteur d’équipe a une largeur fixée par la classe posée sur son hôte (w-64 max-w-full)', async () => {
+    listMyManagedTeams.mockReturnValue(of([alpha, beta]));
+    getTeamWeekSummary.mockReturnValue(of(summary(alpha, [])));
+    await open();
+    const select = cy('select-equipe') as HTMLElement;
+    expect(select.classList.contains('w-64')).toBe(true);
+    expect(select.classList.contains('max-w-full')).toBe(true);
+  });
+
+  it('pendant le chargement des équipes, un squelette de la navigation de semaine réserve sa place', async () => {
+    listMyManagedTeams.mockReturnValue(new Subject<ManagedTeamResponse[]>());
+    await open();
+    expect(cy('squelette-navigation-semaine')).not.toBeNull();
+    expect(cy('navigation-semaine')).toBeNull();
+  });
+
   it('affiche l’état d’erreur de la semaine avec « Réessayer », qui recharge la même équipe et la même semaine', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
     getTeamWeekSummary.mockReturnValueOnce(
@@ -200,7 +216,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     await open();
     const link = cy('lien-membre-10') as HTMLAnchorElement;
     expect(link.tagName).toBe('A');
-    expect(link.getAttribute('href')).toBe('/equipe/membres/10?semaine=2026-10-05');
+    expect(link.getAttribute('href')).toBe('/equipe/membres/10?equipe=1&semaine=2026-10-05');
     expect(link.tabIndex).toBeGreaterThanOrEqual(0);
   });
 
@@ -279,10 +295,14 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     expect(cy('message-equipe-interdite')?.textContent).toContain('ne fait pas partie');
     expect(cy('btn-reessayer')).toBeNull();
     expect(cy('table-equipe-semaine')).toBeNull();
+    expect(cy('navigation-semaine')).toBeNull();
 
+    (cy('btn-afficher-mes-equipes')?.querySelector('button') as HTMLElement).focus();
     await click('btn-afficher-mes-equipes');
+    expect(document.activeElement).toBe(cy('titre-equipe'));
     expect(url()).toBe('/equipe?semaine=2026-10-05');
     expect(cy('message-equipe-interdite')).toBeNull();
     expect(cy('ligne-membre-10')).not.toBeNull();
+    expect(cy('navigation-semaine')).not.toBeNull();
   });
 });

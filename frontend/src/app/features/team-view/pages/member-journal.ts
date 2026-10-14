@@ -49,8 +49,11 @@ export class MemberJournalPage {
   });
   /** Retour vers E1 en conservant la semaine et, une fois connue, l'équipe du membre (RG-04-04). */
   protected readonly backParams = computed(() => {
-    const team = this.store.memberJournal()?.team;
-    return team ? { equipe: team.id, semaine: this.weekStart() } : { semaine: this.weekStart() };
+    // L'équipe renvoyée par l'API prime ; sinon celle d'origine, portée par l'URL du lien de membre.
+    const requested = Number(this.params().get('equipe'));
+    const fromUrl = Number.isInteger(requested) && requested > 0 ? requested : null;
+    const team = this.store.memberJournal()?.team?.id ?? fromUrl;
+    return team !== null ? { equipe: team, semaine: this.weekStart() } : { semaine: this.weekStart() };
   });
 
   constructor() {

@@ -1,10 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
+import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { EmptyState } from '../../../shared/components/empty-state';
@@ -27,6 +28,7 @@ import { TeamViewStore } from '../data/team-view.store';
     ButtonModule,
     MessageModule,
     SelectModule,
+    SkeletonModule,
     TableModule,
     TagModule,
     EmptyState,
@@ -42,6 +44,7 @@ export class TeamWeekPage {
   protected readonly store = inject(TeamViewStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly title = viewChild.required<ElementRef<HTMLElement>>('title');
 
   private readonly params = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
@@ -92,12 +95,14 @@ export class TeamWeekPage {
   }
 
   /** RG-04-02 : après un refus, retour à la première équipe du MANAGER, même semaine. */
-  protected showMyTeams(): void {
-    void this.router.navigate([], {
+  protected async showMyTeams(): Promise<void> {
+    await this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { equipe: null, semaine: this.weekStart() },
       queryParamsHandling: 'merge',
     });
+    // Le bouton cliqué disparaît avec le message de refus : le focus passe au titre de la page.
+    this.title().nativeElement.focus();
   }
 
   protected memberName(member: { firstName: string; lastName: string }): string {

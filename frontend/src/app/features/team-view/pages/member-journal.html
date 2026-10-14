@@ -34,10 +34,12 @@
       <app-error-state [message]="message" (retry)="store.reloadMemberJournal()" />
     } @else if (store.memberJournal(); as journal) {
       @if (journal.week.entries.length === 0) {
+        <!-- En lecture seule, une grille de jours vides n'apporte rien : seul l'état vide est affiché. -->
         <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar" />
+      } @else {
+        <!-- RG-04-03 : lecture seule, aucun bouton de création, de modification ni de suppression. -->
+        <app-week-journal [week]="journal.week" [editable]="false" [showComment]="true" />
       }
-      <!-- RG-04-03 : lecture seule, aucun bouton de création, de modification ni de suppression. -->
-      <app-week-journal [week]="journal.week" [editable]="false" [showComment]="true" />
     } @else {
       <div
         class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2"

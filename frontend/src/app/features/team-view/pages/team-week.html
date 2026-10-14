@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-6">
-  <div class="flex flex-wrap items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color" data-cy="titre-equipe">Mon équipe</h1>
+  <div class="flex flex-wrap items-center justify-between gap-4 min-h-10">
+    <h1 #title tabindex="-1" class="text-2xl font-semibold text-color outline-none" data-cy="titre-equipe">Mon équipe</h1>
     <!-- RG-04-08 : le choix de l'équipe n'est proposé que si le MANAGER en a plusieurs. -->
     @if (store.teams().length > 1) {
       <p-select
@@ -12,7 +12,7 @@
         [showClear]="false"
         placeholder="Choisir une équipe"
         ariaLabel="Équipe affichée"
-        styleClass="w-64 max-w-full"
+        class="w-64 max-w-full"
         data-cy="select-equipe"
       >
         <ng-template #item let-team>
@@ -27,8 +27,12 @@
       <app-error-state [message]="message" (retry)="store.loadTeams()" />
     </section>
   } @else if (!store.teamsLoaded()) {
+    <!-- Même forme que l'écran chargé (navigation de semaine, carte) : aucun saut à l'arrivée des équipes. -->
+    <div class="h-[2.1875rem] max-sm:h-[6.625rem]" data-cy="squelette-navigation-semaine">
+      <p-skeleton height="100%" />
+    </div>
     <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
-      <app-loading-state [rows]="6" />
+      <app-loading-state [rows]="5" />
     </section>
   } @else if (store.teams().length === 0) {
     <!-- RG-04-01, CA-04-09 : un MANAGER sans équipe accède à la vue et en est informé. -->
@@ -36,7 +40,10 @@
       <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
     </section>
   } @else {
-    <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
+    <!-- Masquée quand la vue est refusée : chaque semaine renverrait le même refus. -->
+    @if (!store.summaryForbidden()) {
+      <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
+    }
 
     <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
       @if (store.summaryForbidden()) {
@@ -83,7 +90,7 @@
                   <span class="flex flex-wrap items-center gap-2">
                     <a
                       [routerLink]="['/equipe/membres', row.member.id]"
-                      [queryParams]="{ semaine: weekStart() }"
+                      [queryParams]="{ equipe: teamId(), semaine: weekStart() }"
                       class="text-primary font-medium hover:underline"
                       [attr.data-cy]="'lien-membre-' + row.member.id"
                       >{{ memberName(row.member) }}</a

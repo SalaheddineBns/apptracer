@@ -102,7 +102,8 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     await open();
     expect(cy('etat-vide')?.textContent).toContain('Aucune activité cette semaine.');
     expect(cy('etat-vide')?.querySelector('button')).toBeNull();
-    expect(cy('jour-2026-10-05')).not.toBeNull();
+    expect(cy('journal-semaine')).toBeNull();
+    expect(cy('jour-2026-10-05')).toBeNull();
   });
 
   it('CA-04-02 : le MANAGER voit les saisies de la semaine du membre, avec commentaire, et aucun bouton de création, de modification ni de suppression', async () => {
@@ -169,6 +170,18 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     await harness.fixture.whenStable();
     expect(url()).toBe('/equipe?equipe=7&semaine=2026-10-12');
     expect(getTeamWeekSummary).toHaveBeenCalledWith(7, '2026-10-12', 'body', false, expect.anything());
+  });
+
+  it('SFD-04 E2 : tant que le journal n’est pas chargé, « Retour à Mon équipe » garde l’équipe portée par l’URL', async () => {
+    listTeamMemberTimeEntries.mockReturnValue(new Subject());
+    listMyManagedTeams.mockReturnValue(of([{ id: 3, name: 'Aaa' }, { id: 7, name: 'Alpha' }]));
+    getTeamWeekSummary.mockReturnValue(
+      of({ team: { id: 7, name: 'Alpha' }, weekStart: '2026-10-12', weekEnd: '2026-10-18', members: [] }),
+    );
+    await open('/equipe/membres/10?equipe=7&semaine=2026-10-12');
+    await click('btn-retour-equipe');
+    await harness.fixture.whenStable();
+    expect(url()).toBe('/equipe?equipe=7&semaine=2026-10-12');
   });
 
   it('RG-04-02 : un compte hors périmètre (403, membre retiré) mène à un message clair, sans « Réessayer », et le retour reste possible', async () => {
