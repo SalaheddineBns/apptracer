@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
+import { MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
 import { Role, TeamAccountSummary, TeamResponse, TeamsService } from '../../../core/api/generated';
 import { TeamsPage } from './teams';
@@ -25,7 +26,7 @@ describe('TeamsPage', () => {
   let whenStable: () => Promise<unknown>;
 
   async function open(): Promise<void> {
-    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams } }] });
+    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams } }, MessageService] });
     const fixture = TestBed.createComponent(TeamsPage);
     root = fixture.nativeElement as HTMLElement;
     whenStable = () => fixture.whenStable();

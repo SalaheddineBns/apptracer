@@ -1,0 +1,126 @@
+<p-dialog
+  header="Nouvelle équipe"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!submitting()"
+  closeAriaLabel="Fermer"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onShow)="focusFirstField(nameInput)"
+  (onHide)="onHide()"
+  data-cy="dialogue-equipe"
+>
+  <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="form-equipe">
+    <div class="flex flex-col gap-2">
+      <label for="team-name" class="text-sm font-medium text-color">Nom <span aria-hidden="true">*</span></label>
+      <input
+        pInputText
+        #nameInput
+        id="team-name"
+        formControlName="name"
+        autocomplete="off"
+        fluid
+        required
+        [readonly]="submitting()"
+        data-cy="champ-nom-equipe"
+      />
+      <small class="text-xs text-muted-color">De 2 à 100 caractères, unique (sans distinction de casse).</small>
+      <app-field-error [control]="form.controls.name" [messages]="nameMessages" cy="erreur-champ-nom-equipe" />
+    </div>
+
+    @if (store.candidatesLoading()) {
+      <app-loading-state [rows]="2" />
+    } @else if (store.candidatesError(); as message) {
+      <app-error-state [message]="message" (retry)="store.loadCandidates()" />
+    } @else {
+      <div class="flex flex-col gap-2">
+        <span id="team-manager-label" class="text-sm font-medium text-color">Manager <span aria-hidden="true">*</span></span>
+        <p-select
+          formControlName="managerId"
+          [options]="managerOptions()"
+          optionLabel="label"
+          optionValue="id"
+          placeholder="Choisir un manager"
+          emptyMessage="Aucun manager actif disponible."
+          emptyFilterMessage="Aucun résultat."
+          filterBy="label,email"
+          filterPlaceholder="Rechercher un manager"
+          [filter]="true"
+          [showClear]="false"
+          [readonly]="submitting()"
+          inputId="team-manager"
+          ariaLabelledBy="team-manager-label"
+          appendTo="body"
+          fluid
+          data-cy="champ-manager"
+        >
+          <ng-template #item let-option>
+            <div class="flex flex-col" [attr.data-cy]="'option-manager-' + option.id">
+              <span>{{ option.name }}</span>
+              <span class="text-xs text-muted-color">{{ option.email }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+        <app-field-error [control]="form.controls.managerId" [messages]="managerMessages" cy="erreur-champ-manager" />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <span id="team-members-label" class="text-sm font-medium text-color">Membres</span>
+        <p-multiselect
+          formControlName="memberIds"
+          [options]="memberOptions()"
+          optionLabel="label"
+          optionValue="id"
+          display="chip"
+          placeholder="Choisir des membres"
+          emptyMessage="Aucun compte éligible."
+          emptyFilterMessage="Aucun résultat."
+          filterBy="label,email"
+          filterPlaceholder="Rechercher un membre"
+          [filter]="true"
+          [showToggleAll]="false"
+          [readonly]="submitting()"
+          inputId="team-members"
+          ariaLabelledBy="team-members-label"
+          appendTo="body"
+          fluid
+          data-cy="champ-membres"
+        >
+          <ng-template #item let-option>
+            <div class="flex flex-col gap-1" [attr.data-cy]="'option-membre-' + option.id">
+              <span class="flex flex-wrap items-center gap-2">
+                <span>{{ option.name }}</span>
+                @if (!option.active) {
+                  <p-tag value="Inactif" severity="secondary" />
+                }
+                @if (option.currentTeam; as team) {
+                  <p-tag [value]="'Déjà dans l’équipe ' + team.name" severity="warn" />
+                }
+              </span>
+              <span class="text-xs text-muted-color">{{ option.email }}</span>
+            </div>
+          </ng-template>
+        </p-multiselect>
+        <small class="text-xs text-muted-color">Facultatif. Le manager n’est pas membre de son équipe ; un compte n’est membre que d’une équipe.</small>
+        @if (removedMemberName(); as removed) {
+          <small class="text-xs text-muted-color" data-cy="info-membre-retire" role="status"
+            >{{ removed }} a été retiré des membres : le manager ne peut pas être membre de son équipe.</small
+          >
+        }
+        <app-field-error [control]="form.controls.memberIds" [messages]="memberMessages" cy="erreur-champ-membres" />
+      </div>
+    }
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" label="Annuler" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button
+        type="submit"
+        label="Enregistrer"
+        [loading]="submitting()"
+        [disabled]="store.candidatesLoading() || store.candidatesError() !== null"
+        data-cy="btn-enregistrer"
+      />
+    </div>
+  </form>
+</p-dialog>

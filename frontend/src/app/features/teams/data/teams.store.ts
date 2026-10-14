@@ -1,6 +1,13 @@
 import { HttpContext } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
-import { TeamResponse, TeamsService } from '../../../core/api/generated';
+import { forkJoin, Observable, tap } from 'rxjs';
+import {
+  CreateTeamRequest,
+  TeamAccountSummary,
+  TeamMemberCandidateResponse,
+  TeamResponse,
+  TeamsService,
+} from '../../../core/api/generated';
 import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
 
@@ -43,5 +50,46 @@ export class TeamsStore {
         this.loading.set(false);
       },
     });
+  }
+
+  /** RG-05-02 : comptes actifs de rôle MANAGER proposés comme manager (triés par le back). */
+  readonly managerCandidates = signal<TeamAccountSummary[]>([]);
+  /** RG-05-03, RG-05-04, RG-05-11 : comptes USER ou MANAGER proposés comme membres, avec leur équipe actuelle. */
+  readonly memberCandidates = signal<TeamMemberCandidateResponse[]>([]);
+  readonly candidatesLoading = signal(false);
+  readonly candidatesError = signal<string | null>(null);
+  private candidatesRequestId = 0;
+
+  /** Charge les deux listes de candidats du dialogue E2 (relues à chaque ouverture : les comptes évoluent). */
+  loadCandidates(): void {
+    const id = ++this.candidatesRequestId;
+    this.candidatesLoading.set(true);
+    this.candidatesError.set(null);
+    const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
+    forkJoin({
+      managers: this.api.listTeamManagerCandidates('body', false, { context }),
+      members: this.api.listTeamMemberCandidates('body', false, { context }),
+    }).subscribe({
+      next: ({ managers, members }) => {
+        if (id !== this.candidatesRequestId) {
+          return;
+        }
+        this.managerCandidates.set(managers);
+        this.memberCandidates.set(members);
+        this.candidatesLoading.set(false);
+      },
+      error: (error: unknown) => {
+        if (id !== this.candidatesRequestId) {
+          return;
+        }
+        this.candidatesError.set(toProblem(error).detail);
+        this.candidatesLoading.set(false);
+      },
+    });
+  }
+
+  /** RG-05-01 à RG-05-08 : création. La liste est rechargée pour respecter l'ordre du back (RG-05-13). */
+  create(request: CreateTeamRequest): Observable<TeamResponse> {
+    return this.api.createTeam(request).pipe(tap(() => this.load()));
   }
 }
