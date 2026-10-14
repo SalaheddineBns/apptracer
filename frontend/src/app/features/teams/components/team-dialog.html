@@ -32,7 +32,7 @@
     @if (store.candidatesLoading()) {
       <app-loading-state [rows]="2" />
     } @else if (store.candidatesError(); as message) {
-      <app-error-state [message]="message" (retry)="store.loadCandidates()" />
+      <app-error-state [message]="message" (retry)="retry(nameInput)" />
     } @else {
       <div class="flex flex-col gap-2">
         <span id="team-manager-label" class="text-sm font-medium text-color">Manager <span aria-hidden="true">*</span></span>
@@ -80,6 +80,10 @@
           filterPlaceholder="Rechercher un membre"
           [filter]="true"
           [showToggleAll]="false"
+          [maxSelectedLabels]="null"
+          selectedItemsLabel="{0} membres sélectionnés"
+          [autofocusFilter]="true"
+          [panelStyle]="{ maxWidth: 'calc(100vw - 1rem)' }"
           [pt]="{ dropdown: { 'data-cy': 'btn-ouvrir-membres' } }"
           [readonly]="submitting()"
           inputId="team-members"
@@ -96,7 +100,7 @@
                   <p-tag value="Inactif" severity="secondary" />
                 }
                 @if (option.currentTeam; as team) {
-                  <p-tag [value]="'Déjà dans l’équipe ' + team.name" severity="warn" />
+                  <p-tag [value]="'Déjà dans l’équipe ' + team.name" severity="warn" styleClass="max-w-full whitespace-normal wrap-anywhere" />
                 }
               </span>
               <span class="text-xs text-muted-color">{{ option.email }}</span>
@@ -105,9 +109,9 @@
         </p-multiselect>
         <small class="text-xs text-muted-color">Facultatif. Le manager n’est pas membre de son équipe ; un compte n’est membre que d’une équipe.</small>
         @if (removedMemberName(); as removed) {
-          <small class="text-xs text-muted-color" data-cy="info-membre-retire" role="status"
-            >{{ removed }} a été retiré des membres : le manager ne peut pas être membre de son équipe.</small
-          >
+          <p-message severity="info" size="small" data-cy="info-membre-retire">
+            {{ removed }} a été retiré des membres : le manager ne peut pas être membre de son équipe.
+          </p-message>
         }
         <app-field-error [control]="form.controls.memberIds" [messages]="memberMessages" cy="erreur-champ-membres" />
       </div>

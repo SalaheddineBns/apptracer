@@ -5,6 +5,7 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
@@ -36,7 +37,7 @@ export interface AccountOption {
 /** SFD-05 E2 Dialogue équipe : création (team = null) ou modification d'une équipe existante (nom, manager, membres). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, TagModule, FieldError, ErrorState, LoadingState],
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, MessageModule, TagModule, FieldError, ErrorState, LoadingState],
   selector: 'app-team-dialog',
   templateUrl: './team-dialog.html',
 })
@@ -101,14 +102,17 @@ export class TeamDialog {
       .filter((c) => c.id !== managerId)
       .map((c) => {
         const name = `${c.firstName} ${c.lastName}`;
+        // H10 : on ne signale pas l'équipe en cours de modification (le compte en est déjà membre).
+        const currentTeam = c.currentTeam && c.currentTeam.id !== editedTeamId ? c.currentTeam : null;
+        // Le libellé sert d'aria-label de l'option et de texte de la pastille : l'état et l'équipe actuelle y figurent.
+        const label = `${name}${c.active ? '' : ' (inactif)'}${currentTeam ? ` (équipe ${currentTeam.name})` : ''}`;
         return {
           id: c.id,
-          label: c.active ? name : `${name} (inactif)`,
+          label,
           name,
           email: c.email,
           active: c.active,
-          // H10 : on ne signale pas l'équipe en cours de modification (le compte en est déjà membre).
-          currentTeam: c.currentTeam && c.currentTeam.id !== editedTeamId ? c.currentTeam : null,
+          currentTeam,
         };
       });
   });
@@ -172,6 +176,12 @@ export class TeamDialog {
       return;
     }
     firstField.focus();
+  }
+
+  /** « Réessayer » détruit le bouton cliqué : le focus passe au premier champ pour rester dans le dialogue. */
+  protected retry(firstField: HTMLInputElement): void {
+    firstField.focus();
+    this.store.loadCandidates();
   }
 
   protected close(): void {

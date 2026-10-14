@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
+import { providePrimeNG } from 'primeng/config';
+import { PRIMENG_FR } from '../../../core/theme/primeng-fr';
 import { of, Subject, throwError } from 'rxjs';
 import { Role, TeamAccountSummary, TeamMemberCandidateResponse, TeamResponse, TeamsService } from '../../../core/api/generated';
 import { TeamDialog } from './team-dialog';
@@ -50,6 +52,7 @@ describe('TeamDialog', () => {
       providers: [
         { provide: TeamsService, useValue: { createTeam, updateTeam, listTeams, listTeamManagerCandidates, listTeamMemberCandidates } },
         { provide: MessageService, useValue: { add } },
+        providePrimeNG({ translation: PRIMENG_FR }),
       ],
     });
     fixture = TestBed.createComponent(TeamDialog);
@@ -232,6 +235,52 @@ describe('TeamDialog', () => {
     await fixture.whenStable();
     expect(el('option-membre-10')?.textContent).toContain('Inactif');
     expect(el('option-membre-11')?.textContent).not.toContain('Inactif');
+  });
+
+  it('B1 : à 3 membres et plus, toutes les pastilles restent visibles et aucun « items selected » n’apparaît', async () => {
+    const members = [10, 11, 12, 13].map((id) => ({ id, firstName: `Paul${id}`, lastName: `Martin${id}`, email: `user${id}@x.fr`, role: Role.User, active: id !== 12 }));
+    listTeamMemberCandidates.mockReturnValue(of(members.map((m) => candidate(m.id, { active: m.active }))));
+    await open(existingTeam({ members }));
+    const chips = Array.from(el('champ-membres')?.querySelectorAll('.p-chip-label') ?? []).map((c) => c.textContent?.trim());
+    expect(chips).toEqual(['Paul10 Martin10', 'Paul11 Martin11', 'Paul12 Martin12 (inactif)', 'Paul13 Martin13']);
+    expect(el('champ-membres')?.textContent).not.toContain('items selected');
+    expect(el('champ-membres')?.textContent).not.toContain('sélectionnés');
+  });
+
+  it('B4 : le libellé de l’option et de la pastille annonce l’équipe actuelle du compte, comme « (inactif) »', async () => {
+    listTeamMemberCandidates.mockReturnValue(of([candidate(10, { currentTeam: { id: 8, name: 'Alpha' } }), candidate(11, { active: false }), candidate(12)]));
+    await open();
+    await pick('champ-membres', 'option-membre-10');
+    const label = (id: number) => el(`option-membre-${id}`)?.closest('li')?.getAttribute('aria-label');
+    expect(label(10)).toBe('Paul10 Martin10 (équipe Alpha)');
+    expect(label(11)).toBe('Paul11 Martin11 (inactif)');
+    expect(label(12)).toBe('Paul12 Martin12');
+    expect(el('champ-membres')?.querySelector('.p-chip-label')?.textContent?.trim()).toBe('Paul10 Martin10 (équipe Alpha)');
+  });
+
+  it('B5 : le membre retiré parce qu’il devient manager est signalé par un p-message d’information', async () => {
+    listTeamManagerCandidates.mockReturnValue(of([manager(1)]));
+    listTeamMemberCandidates.mockReturnValue(of([candidate(1, { role: Role.Manager, firstName: 'Manon1', lastName: 'Dupont1' }), candidate(10)]));
+    await open();
+    await pick('champ-membres', 'option-membre-1');
+    await pick('champ-manager', 'option-manager-1');
+    const info = el('info-membre-retire');
+    expect(info?.tagName).toBe('P-MESSAGE');
+    expect(info?.classList.contains('p-message-info')).toBe(true);
+  });
+
+  it('M3 : les textes de PrimeNG sont en français (croix d’une pastille)', async () => {
+    await open(existingTeam());
+    expect(el('champ-membres')?.querySelector('.p-chip-remove-icon')?.getAttribute('aria-label')).toBe('Retirer');
+  });
+
+  it('B3 : « Réessayer » rend le focus au premier champ du dialogue au lieu de le perdre avec le bouton détruit', async () => {
+    listTeamManagerCandidates.mockReturnValueOnce(throwError(() => new HttpErrorResponse({ status: 500, error: { detail: 'Panne serveur' } })));
+    await open();
+    el('btn-reessayer')?.querySelector('button')?.click();
+    await fixture.whenStable();
+    expect(el('btn-reessayer')).toBeNull();
+    expect(document.activeElement).toBe(input('champ-nom-equipe'));
   });
 
   it('RG-05-01 : un nom d’un caractère est refusé, sans appel à l’API', async () => {
