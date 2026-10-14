@@ -34,6 +34,14 @@ import { datesLabel, periodLabel } from './time-entry.ui';
       <span class="text-sm font-medium text-color tabular-nums" data-cy="saisie-duree">{{
         entry().durationMinutes | duration
       }}</span>
+      @if (showComment() && entry().comment; as comment) {
+        <p
+          class="m-0 text-xs text-muted-color whitespace-pre-line wrap-anywhere"
+          data-cy="saisie-commentaire"
+        >
+          {{ comment }}
+        </p>
+      }
       @if (editable()) {
         <div class="flex gap-2">
           <p-button
@@ -65,6 +73,8 @@ export class TimeEntryCard {
   readonly entry = input.required<TimeEntryResponse>();
   /** RG-01-10 : « Modifier » et « Supprimer » ne sont rendus que sur son propre journal. */
   readonly editable = input(true);
+  /** SFD-04 E2 : seul le journal d'un membre liste le commentaire ; « Mon journal » (SFD-01 E1) ne l'affiche pas. */
+  readonly showComment = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
 

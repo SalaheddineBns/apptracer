@@ -65,6 +65,8 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     // jsdom n'a pas matchMedia, utilisé par les panneaux déroulants de PrimeNG (p-select), ni scrollIntoView.
     vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
     HTMLElement.prototype.scrollIntoView = vi.fn();
+    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     listMyManagedTeams.mockReset();
     getTeamWeekSummary.mockReset();
     TestBed.resetTestingModule();

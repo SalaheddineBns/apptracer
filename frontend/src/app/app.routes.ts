@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/team-view/pages/team-week').then((m) => m.TeamWeekPage),
       },
       {
+        path: 'equipe/membres/:userId',
+        canActivate: [roleGuard(Role.Manager)],
+        loadComponent: () => import('./features/team-view/pages/member-journal').then((m) => m.MemberJournalPage),
+      },
+      {
         path: 'admin/comptes',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),

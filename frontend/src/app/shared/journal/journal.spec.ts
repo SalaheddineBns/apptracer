@@ -116,6 +116,22 @@ describe('TimeEntryCard', () => {
     expect(cy('btn-modifier-saisie-1')).toBeNull();
     expect(cy('btn-supprimer-saisie-1')).toBeNull();
   });
+
+  it('SFD-04 E2 : le commentaire n’est affiché que si showComment est vrai (faux par défaut)', async () => {
+    const entry = hour({ comment: 'Revue du lot 2' });
+    const { fixture, cy } = await render(entry);
+    expect(cy('saisie-commentaire')).toBeNull();
+    fixture.componentRef.setInput('showComment', true);
+    await fixture.whenStable();
+    expect(cy('saisie-commentaire')?.textContent).toContain('Revue du lot 2');
+  });
+
+  it('SFD-04 E2 : showComment n’affiche rien pour une saisie sans commentaire', async () => {
+    const { fixture, cy } = await render(hour({ comment: null }));
+    fixture.componentRef.setInput('showComment', true);
+    await fixture.whenStable();
+    expect(cy('saisie-commentaire')).toBeNull();
+  });
 });
 
 describe('WeekJournal', () => {
@@ -186,6 +202,19 @@ describe('WeekJournal', () => {
     const { root } = await render(week([hour()], 90), false);
     expect(root.querySelector('[data-cy="saisie-1"]')).not.toBeNull();
     expect(root.querySelector('button')).toBeNull();
+  });
+
+  it('SFD-04 E2 : le commentaire des saisies est relayé aux cartes quand showComment est vrai, sinon absent', async () => {
+    const { fixture, root } = await render(week([hour({ comment: 'Point hebdo' })], 90), false);
+    expect(root.querySelector('[data-cy="saisie-commentaire"]')).toBeNull();
+    fixture.componentRef.setInput('showComment', true);
+    await fixture.whenStable();
+    expect(root.querySelector('[data-cy="saisie-commentaire"]')?.textContent).toContain('Point hebdo');
+  });
+
+  it('SFD-04 E2 : en lecture seule, aucun « + » de jour, même sur un jour passé', async () => {
+    const { root } = await render(week([], 0), false, '2026-10-14');
+    expect(root.querySelector('[data-cy^="btn-ajouter-saisie-"]')).toBeNull();
   });
 
   it('SFD-01 E1 : chaque jour porte un « + » nommé, qui émet la date de ce jour', async () => {

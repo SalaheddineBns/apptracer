@@ -1,0 +1,57 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h1 class="flex flex-wrap items-center gap-2 text-2xl font-semibold text-color m-0 wrap-anywhere" data-cy="titre-journal-membre">
+      @if (memberName(); as name) {
+        <span>Journal de {{ name }}</span>
+        @if (store.memberJournal()?.member?.active === false) {
+          <p-tag value="Inactif" severity="secondary" [attr.data-cy]="'tag-inactif-' + store.memberJournal()?.member?.id" />
+        }
+      } @else {
+        <span>Journal d’un membre</span>
+      }
+    </h1>
+    <p-button
+      type="button"
+      label="Retour à Mon équipe"
+      icon="pi pi-arrow-left"
+      severity="secondary"
+      (onClick)="backToTeam()"
+      data-cy="btn-retour-equipe"
+    />
+  </div>
+
+  @if (!forbidden()) {
+    <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
+  }
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+    @if (forbidden()) {
+      <!-- RG-04-02 : compte hors du périmètre (membre retiré, lien périmé) ; « Réessayer » n'y changerait rien. -->
+      <div class="flex flex-col items-start gap-4" data-cy="message-membre-interdit">
+        <p-message severity="warn">Ce compte ne fait pas partie de vos équipes.</p-message>
+      </div>
+    } @else if (store.memberError(); as message) {
+      <app-error-state [message]="message" (retry)="store.reloadMemberJournal()" />
+    } @else if (store.memberJournal(); as journal) {
+      @if (journal.week.entries.length === 0) {
+        <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar" />
+      }
+      <!-- RG-04-03 : lecture seule, aucun bouton de création, de modification ni de suppression. -->
+      <app-week-journal [week]="journal.week" [editable]="false" [showComment]="true" />
+    } @else {
+      <div
+        class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2"
+        data-cy="etat-chargement"
+        aria-busy="true"
+        aria-label="Chargement en cours"
+      >
+        @for (day of skeletonDays; track day) {
+          <div class="flex flex-col gap-2">
+            <p-skeleton width="5rem" height="1.25rem" />
+            <p-skeleton height="6rem" />
+          </div>
+        }
+      </div>
+    }
+  </section>
+</div>
