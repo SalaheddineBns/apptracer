@@ -29,4 +29,18 @@ public class WeeklyEntriesReader {
   public List<TimeEntry> read(Long userId, LocalDate weekStart) {
     return entries.findWeek(userId, weekStart, weekStart.plusDays(6));
   }
+
+  /**
+   * RG-04-05 : mêmes saisies que {@link #read} pour plusieurs comptes, en une requête, regroupées
+   * par compte (un compte sans saisie n'a pas de clé).
+   */
+  @Transactional(readOnly = true)
+  public java.util.Map<Long, List<TimeEntry>> readAll(
+      java.util.Collection<Long> userIds, LocalDate weekStart) {
+    if (userIds.isEmpty()) {
+      return java.util.Map.of();
+    }
+    return entries.findWeekForUsers(userIds, weekStart, weekStart.plusDays(6)).stream()
+        .collect(java.util.stream.Collectors.groupingBy(TimeEntry::getUserId));
+  }
 }

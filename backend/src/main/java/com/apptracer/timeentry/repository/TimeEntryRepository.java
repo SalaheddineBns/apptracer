@@ -73,4 +73,24 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
       @Param("userId") Long userId,
       @Param("weekStart") java.time.LocalDate weekStart,
       @Param("weekEnd") java.time.LocalDate weekEnd);
+
+  /**
+   * RG-04-05 : même lecture que {@link #findWeek} pour plusieurs comptes en une requête (vue
+   * équipe).
+   */
+  @Query(
+      """
+      select e from TimeEntry e
+      join fetch e.activityType
+      left join fetch e.project
+      where e.userId in :userIds
+        and e.deletedAt is null
+        and e.startDate <= :weekEnd
+        and e.endDate >= :weekStart
+      order by e.startDate, e.startTime nulls first, e.id
+      """)
+  List<TimeEntry> findWeekForUsers(
+      @Param("userIds") java.util.Collection<Long> userIds,
+      @Param("weekStart") java.time.LocalDate weekStart,
+      @Param("weekEnd") java.time.LocalDate weekEnd);
 }

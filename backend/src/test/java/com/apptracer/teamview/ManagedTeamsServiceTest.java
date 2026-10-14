@@ -8,9 +8,11 @@ import static org.mockito.Mockito.when;
 import com.apptracer.account.domain.Role;
 import com.apptracer.account.domain.User;
 import com.apptracer.team.domain.Team;
+import com.apptracer.team.repository.TeamMemberRepository;
 import com.apptracer.team.repository.TeamRepository;
 import com.apptracer.teamview.service.ManagedScope;
 import com.apptracer.teamview.service.TeamViewService;
+import com.apptracer.timeentry.service.WeeklyEntriesReader;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,7 +20,11 @@ import org.junit.jupiter.api.Test;
 class ManagedTeamsServiceTest {
 
   private final TeamRepository teams = mock(TeamRepository.class);
-  private final TeamViewService service = new TeamViewService(new ManagedScope(teams));
+  private final TeamViewService service =
+      new TeamViewService(
+          new ManagedScope(teams),
+          mock(TeamMemberRepository.class),
+          mock(WeeklyEntriesReader.class));
 
   private static Team team(String name) {
     return new Team(name, new User("m@example.com", "M", "Mgr", "hash", Role.MANAGER));
