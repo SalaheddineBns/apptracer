@@ -4,7 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
-import { ActivityTypesService, AppSettingsService, AuthenticationService, ProjectsService, Role, UsersService } from '../api/generated';
+import { ActivityTypesService, AppSettingsService, AuthenticationService, ProjectsService, Role, TeamsService, UsersService } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
 
 const user = (role: Role) => ({ id: 1, email: 'ada@x.fr', firstName: 'Ada', lastName: 'Martin', role });
@@ -15,6 +15,7 @@ describe('coquille applicative (E2) et routes', () => {
   const listUsers = vi.fn();
   const listActivityTypes = vi.fn();
   const listProjects = vi.fn();
+  const listTeams = vi.fn();
   const getAppSettings = vi.fn();
   const updateAppSettings = vi.fn();
   let harness: RouterTestingHarness;
@@ -35,6 +36,7 @@ describe('coquille applicative (E2) et routes', () => {
         { provide: UsersService, useValue: { listUsers } },
         { provide: ActivityTypesService, useValue: { listActivityTypes } },
         { provide: ProjectsService, useValue: { listProjects } },
+        { provide: TeamsService, useValue: { listTeams } },
         { provide: AppSettingsService, useValue: { getAppSettings, updateAppSettings } },
       ],
     });
@@ -54,6 +56,8 @@ describe('coquille applicative (E2) et routes', () => {
     listActivityTypes.mockReturnValue(of([]));
     listProjects.mockReset();
     listProjects.mockReturnValue(of([]));
+    listTeams.mockReset();
+    listTeams.mockReturnValue(of([]));
     getAppSettings.mockReset();
     getAppSettings.mockReturnValue(of({ standardDayMinutes: 420, version: 0, lastModifiedAt: null }));
     updateAppSettings.mockReset();
@@ -124,6 +128,27 @@ describe('coquille applicative (E2) et routes', () => {
     expect(url()).toBe(shown ? '/admin/parametres' : home);
     expect(getAppSettings).toHaveBeenCalledTimes(shown ? 1 : 0);
     expect(updateAppSettings).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [Role.User, '/journal', false],
+    [Role.Manager, '/journal', false],
+    [Role.Admin, '/admin/comptes', true],
+  ])('CA-05-11 : %s, entrée « Équipes » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
+    await start(role);
+    await harness.navigateByUrl(home);
+    expect(!!cy('nav-equipes')).toBe(shown);
+    await harness.navigateByUrl('/admin/equipes');
+    await harness.fixture.whenStable();
+    expect(url()).toBe(shown ? '/admin/equipes' : home);
+    expect(listTeams).toHaveBeenCalledTimes(shown ? 1 : 0);
+  });
+
+  it('les entrées ADMIN sont dans l’ordre de l’architecture : Comptes, Équipes, Types d’activité, Projets, Paramètres', async () => {
+    await start(Role.Admin);
+    await harness.navigateByUrl('/admin/comptes');
+    const order = Array.from(document.body.querySelectorAll('nav [data-cy^="nav-"]')).map((a) => a.getAttribute('data-cy'));
+    expect(order).toEqual(['nav-comptes', 'nav-equipes', 'nav-types-activite', 'nav-projets', 'nav-parametres']);
   });
 
   it('Échap annule toute confirmation sans appeler accept, la croix est nommée « Fermer » et le focus revient au déclencheur', async () => {

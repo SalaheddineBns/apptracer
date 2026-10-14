@@ -52,6 +52,8 @@ export class Shell {
   // RG-03-10 : « Mon journal » pour USER et MANAGER (hiérarchie), « Comptes » pour ADMIN uniquement.
   protected readonly showJournal = computed(() => this.auth.hasRole(Role.User));
   protected readonly showAccounts = computed(() => this.auth.hasRole(Role.Admin));
+  // RG-05-08, CA-05-11 : « Équipes » réservé à l'ADMIN.
+  protected readonly showTeams = computed(() => this.auth.hasRole(Role.Admin));
   // RG-02-08, CA-02-09 : « Types d'activité » réservé à l'ADMIN.
   protected readonly showActivityTypes = computed(() => this.auth.hasRole(Role.Admin));
   // RG-02-08, CA-02-09 : « Projets » réservé à l'ADMIN.

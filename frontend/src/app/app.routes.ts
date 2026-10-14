@@ -28,6 +28,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),
       },
       {
+        // RG-05-08 : gestion des équipes réservée à l'ADMIN.
+        path: 'admin/equipes',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/teams/pages/teams').then((m) => m.TeamsPage),
+      },
+      {
         path: 'admin/types-activite',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/referentials/pages/activity-types').then((m) => m.ActivityTypesPage),
