@@ -43,4 +43,13 @@ public interface TeamRepository extends JpaRepository<Team, Long> {
       order by lower(t.name), t.id
       """)
   List<String> findActiveNamesByManagerId(@Param("managerId") Long managerId);
+
+  // RG-04-02, RG-04-08 : équipes non supprimées dont le compte est manager, triées par nom
+  @Query(
+      """
+      select t from Team t
+      where t.manager.id = :managerId and t.deletedAt is null
+      order by lower(t.name), t.id
+      """)
+  List<Team> findActiveByManagerId(@Param("managerId") Long managerId);
 }
