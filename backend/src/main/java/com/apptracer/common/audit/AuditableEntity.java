@@ -34,6 +34,15 @@ public abstract class AuditableEntity {
   @Column(name = "updated_by")
   private Long updatedBy;
 
+  /**
+   * Marque explicitement l'entité comme modifiée (RG-00-04) quand le changement porte sur des
+   * données hors de l'entité, par exemple ses rattachements.
+   */
+  public void touch(Instant at, Long by) {
+    this.updatedAt = at;
+    this.updatedBy = by;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
