@@ -2,6 +2,7 @@ package com.apptracer.team;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -168,6 +169,76 @@ class TeamAccountRulesControllerTest {
             asAdmin(put("/api/v1/users/" + freeManager.getId()), roleBody(freeManager, "USER")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.role").value("USER"));
+  }
+
+  @Test
+  @DisplayName("RG-05-12 : un membre dont le rôle devient ADMIN est retiré, l'équipe est tracée")
+  void memberBecomingAdminIsRemovedFromTeam() throws Exception {
+    long versionBefore = teams.findActiveById(produit.getId()).orElseThrow().getVersion();
+
+    mockMvc
+        .perform(asAdmin(put("/api/v1/users/" + alice.getId()), roleBody(alice, "ADMIN")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.role").value("ADMIN"));
+
+    assertThat(members.findByUserId(alice.getId())).isEmpty();
+    Team after = teams.findActiveById(produit.getId()).orElseThrow();
+    assertThat(after.getUpdatedBy()).isEqualTo(admin.getId());
+    assertThat(after.getVersion()).isEqualTo(versionBefore + 1);
+    mockMvc
+        .perform(asAdmin(get("/api/v1/teams/" + produit.getId()), null))
+        .andExpect(jsonPath("$.memberCount").value(0));
+  }
+
+  @Test
+  @DisplayName(
+      "RG-05-12 : un MANAGER membre d'une équipe, sans équipe à gérer, devenu ADMIN est retiré")
+  void memberManagerBecomingAdminIsRemoved() throws Exception {
+    SecurityContextHolder.getContext()
+        .setAuthentication(
+            UsernamePasswordAuthenticationToken.authenticated(
+                String.valueOf(admin.getId()), null, java.util.List.of()));
+    try {
+      members.saveAndFlush(new TeamMember(freeManager.getId(), produit.getId()));
+    } finally {
+      SecurityContextHolder.clearContext();
+    }
+
+    mockMvc
+        .perform(
+            asAdmin(put("/api/v1/users/" + freeManager.getId()), roleBody(freeManager, "ADMIN")))
+        .andExpect(status().isOk());
+
+    assertThat(members.findByUserId(freeManager.getId())).isEmpty();
+    assertThat(members.findByUserId(alice.getId())).isPresent();
+  }
+
+  @Test
+  @DisplayName("RG-05-12 : un membre qui devient MANAGER reste dans son équipe")
+  void memberBecomingManagerStays() throws Exception {
+    mockMvc
+        .perform(asAdmin(put("/api/v1/users/" + alice.getId()), roleBody(alice, "MANAGER")))
+        .andExpect(status().isOk());
+
+    assertThat(members.findByUserId(alice.getId())).isPresent();
+  }
+
+  @Test
+  @DisplayName("CA-05-10 : désactiver un membre le laisse dans l'équipe, signalé inactif")
+  void deactivatedMemberStaysInTeamFlaggedInactive() throws Exception {
+    mockMvc
+        .perform(asAdmin(post("/api/v1/users/" + alice.getId() + "/deactivation"), null))
+        .andExpect(status().isOk());
+
+    assertThat(members.findByUserId(alice.getId())).isPresent();
+    mockMvc
+        .perform(asAdmin(get("/api/v1/teams/" + produit.getId()), null))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberCount").value(1))
+        .andExpect(jsonPath("$.members[0].id").value(alice.getId()))
+        .andExpect(jsonPath("$.members[0].active").value(false));
+    // la version de l'équipe n'a pas bougé : l'équipe n'est pas modifiée
+    assertThat(teams.findActiveById(produit.getId()).orElseThrow().getVersion()).isZero();
   }
 
   @Test

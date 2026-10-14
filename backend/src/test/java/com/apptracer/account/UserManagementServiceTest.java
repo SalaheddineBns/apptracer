@@ -243,6 +243,51 @@ class UserManagementServiceTest {
   }
 
   @Test
+  @DisplayName("RG-05-12 : un compte dont le rôle devient ADMIN est retiré de son équipe")
+  void becomingAdminRemovesTeamMembership() throws Exception {
+    existing(USER_ID, Role.USER, true);
+
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+
+    verify(teamLinks).removeFromTeam(ADMIN_ID, USER_ID);
+    verify(revoker).revokeAllOnRoleChange(USER_ID);
+  }
+
+  @Test
+  @DisplayName("RG-05-12 : un MANAGER sans équipe à gérer devenu ADMIN est retiré de son équipe")
+  void managerBecomingAdminRemovesTeamMembership() throws Exception {
+    existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of());
+
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+
+    verify(teamLinks).removeFromTeam(ADMIN_ID, USER_ID);
+  }
+
+  @Test
+  @DisplayName(
+      "RG-05-12 : un autre changement de rôle ou un ADMIN inchangé ne touche pas aux équipes")
+  void otherRoleChangesKeepMembership() throws Exception {
+    existing(USER_ID, Role.USER, true);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, 0);
+    existing(3L, Role.ADMIN, true);
+    service.update(ADMIN_ID, 3L, "A", "B", Role.ADMIN, 0);
+
+    verify(teamLinks, never()).removeFromTeam(any(), any());
+  }
+
+  @Test
+  @DisplayName("RG-05-11 : désactiver un compte ne touche pas à son rattachement")
+  void deactivationKeepsMembership() throws Exception {
+    existing(USER_ID, Role.USER, true);
+
+    service.deactivate(ADMIN_ID, USER_ID);
+
+    verify(teamLinks, never()).removeFromTeam(any(), any());
+  }
+
+  @Test
   @DisplayName("Concurrence : update et deactivate chargent le compte avec un verrou exclusif")
   void accountIsLockedForUpdate() throws Exception {
     existing(USER_ID, Role.USER, true);

@@ -14,4 +14,11 @@ public interface AccountTeamLinks {
    * vide si le compte n'est manager d'aucune équipe.
    */
   List<String> managedTeamNames(Long userId);
+
+  /**
+   * RG-05-12 : retire le compte de son équipe, s'il en a une, et trace la modification de l'équipe
+   * (RG-05-14). Sans effet si le compte n'est membre d'aucune équipe. {@code actorId} est l'ADMIN
+   * connecté.
+   */
+  void removeFromTeam(Long actorId, Long userId);
 }

@@ -139,12 +139,18 @@ public class UserService {
             "Le rôle MANAGER ne peut pas être retiré : le compte est manager d'une équipe.");
       }
     }
-    boolean roleChanged = user.getRole() != role;
+    Role previousRole = user.getRole();
+    boolean roleChanged = previousRole != role;
     user.setFirstName(firstName.strip());
     user.setLastName(lastName.strip());
     user.setRole(role); // RG-03-10 : exactement un rôle
     // RG-00-04 : updated_at / updated_by renseignés par l'audit JPA
     User saved = users.saveAndFlush(user);
+    if (role == Role.ADMIN && previousRole != Role.ADMIN) {
+      // RG-05-12 : un ADMIN ne peut être membre d'aucune équipe (RG-05-03), son rattachement est
+      // retiré dans la même transaction ; la modification de l'équipe est tracée (RG-05-14)
+      teamLinks.removeFromTeam(actorId, id);
+    }
     if (roleChanged) {
       // RG-03-14 : un changement de rôle révoque tous les refresh tokens du compte
       sessionRevoker.revokeAllOnRoleChange(id);
