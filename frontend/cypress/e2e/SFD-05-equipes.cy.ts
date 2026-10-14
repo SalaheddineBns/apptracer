@@ -5,8 +5,8 @@
 // `user.e2e` / `manager.e2e` comme manager ou membre : RG-05-10 et RG-05-04 les bloqueraient pour les autres fichiers.
 // Seul le compte ADMIN partagé sert (jeton, session) : il n'est jamais modifié.
 //
-// CA-05-12 : la consultation par l'ancien et le nouveau manager exige la vue équipe (SFD-04, pas encore livrée). Elle est
-// reportée à T-04-9 et n'est pas simulée ; le test vérifie le changement de manager (écran et API).
+// CA-05-12 : ce fichier vérifie le changement de manager (écran et API) ; la consultation par l'ancien et le nouveau manager
+// est jouée dans SFD-04-vue-equipe.cy.ts (T-04-9).
 
 // Module : évite les collisions de types globaux avec les autres fichiers de test.
 export {};
