@@ -141,7 +141,7 @@
             }
           },
           "409" : {
-            "description" : "Règle RG-03-13 violée, ou compte modifié entre-temps (conflit de version)",
+            "description" : "Règle RG-03-13 violée (retrait de son propre rôle ADMIN), RG-05-10 violée (rôle MANAGER retiré à un compte manager d'une équipe, erreur sur le champ role), ou compte modifié entre-temps (conflit de version)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -335,6 +335,199 @@
           },
           "404" : {
             "description" : "Saisie introuvable ou déjà supprimée (RG-01-11)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/{id}" : {
+      "get" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Lire une équipe",
+        "operationId" : "getTeam",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Équipe, membres triés par nom puis prénom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Équipe introuvable (ou supprimée)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Modifier une équipe (nom, manager et liste complète des membres)",
+        "operationId" : "updateTeam",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTeamRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Équipe modifiée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide (RG-05-01 longueur du nom)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Équipe introuvable (ou supprimée)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Règle de gestion violée : RG-05-01 (nom déjà utilisé), RG-05-02 (manager non éligible), RG-05-03 (membre non éligible), RG-05-04 (membre déjà dans une autre équipe), RG-05-05 (manager choisi comme membre) ; ou équipe modifiée entre-temps (conflit de version, sans code)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Supprimer définitivement une équipe (comptes et saisies des membres intacts)",
+        "operationId" : "deleteTeam",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "204" : {
+            "description" : "Équipe supprimée"
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Équipe introuvable (ou déjà supprimée)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1045,7 +1238,7 @@
             }
           },
           "409" : {
-            "description" : "Désactivation de son propre compte (RG-03-13)",
+            "description" : "Désactivation de son propre compte (RG-03-13), ou d'un compte manager d'une équipe (RG-05-10, le message nomme l'équipe)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1173,6 +1366,115 @@
           },
           "409" : {
             "description" : "Règle violée : RG-01-01, RG-01-03, RG-01-04, RG-01-05, RG-01-07, RG-02-06",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams" : {
+      "get" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Lister les équipes avec leurs membres (triées par nom)",
+        "operationId" : "listTeams",
+        "responses" : {
+          "200" : {
+            "description" : "Équipes triées par nom, membres par nom/prénom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TeamResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Créer une équipe",
+        "operationId" : "createTeam",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateTeamRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Équipe créée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide (RG-05-01 longueur du nom)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Règle de gestion violée : RG-05-01 (nom déjà utilisé), RG-05-02 (manager non éligible), RG-05-03 (membre non éligible), RG-05-04 (membre déjà dans une autre équipe), RG-05-05 (manager choisi comme membre)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1744,6 +2046,90 @@
         }
       }
     },
+    "/api/v1/teams/member-candidates" : {
+      "get" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Lister les comptes pouvant être membre, avec leur équipe actuelle",
+        "operationId" : "listTeamMemberCandidates",
+        "responses" : {
+          "200" : {
+            "description" : "Comptes USER ou MANAGER (actifs ou non) triés par nom puis prénom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TeamMemberCandidateResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/teams/manager-candidates" : {
+      "get" : {
+        "tags" : [ "Teams" ],
+        "summary" : "Lister les comptes pouvant être manager (actifs, rôle MANAGER)",
+        "operationId" : "listTeamManagerCandidates",
+        "responses" : {
+          "200" : {
+            "description" : "Comptes triés par nom puis prénom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/TeamAccountSummary"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-05-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me" : {
       "get" : {
         "tags" : [ "Authentication" ],
@@ -1997,6 +2383,87 @@
         },
         "required" : [ "activityType", "durationMinutes", "granularity", "id", "startDate", "version" ]
       },
+      "UpdateTeamRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 2
+          },
+          "managerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "memberIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "managerId", "memberIds", "name", "version" ]
+      },
+      "TeamAccountSummary" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/Role"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "email", "firstName", "id", "lastName", "role" ]
+      },
+      "TeamResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          },
+          "manager" : {
+            "$ref" : "#/components/schemas/TeamAccountSummary"
+          },
+          "members" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/TeamAccountSummary"
+            }
+          },
+          "memberCount" : {
+            "type" : "integer",
+            "format" : "int32"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "id", "manager", "memberCount", "members", "name", "version" ]
+      },
       "UpdateProjectRequest" : {
         "type" : "object",
         "properties" : {
@@ -2231,6 +2698,28 @@
         },
         "required" : [ "activityTypeCode", "granularity", "startDate" ]
       },
+      "CreateTeamRequest" : {
+        "type" : "object",
+        "properties" : {
+          "name" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 2
+          },
+          "managerId" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "memberIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "integer",
+              "format" : "int64"
+            }
+          }
+        },
+        "required" : [ "managerId", "memberIds", "name" ]
+      },
       "CreateProjectRequest" : {
         "type" : "object",
         "properties" : {
@@ -2389,6 +2878,48 @@
           }
         },
         "required" : [ "entries", "totalMinutes", "weekEnd", "weekStart" ]
+      },
+      "TeamMemberCandidateResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/Role"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "currentTeam" : {
+            "type" : "null",
+            "$ref" : "#/components/schemas/TeamRef"
+          }
+        },
+        "required" : [ "active", "email", "firstName", "id", "lastName", "role" ]
+      },
+      "TeamRef" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name" ]
       }
     }
   }

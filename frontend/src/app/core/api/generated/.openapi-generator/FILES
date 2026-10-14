@@ -7,6 +7,7 @@ api/api.ts
 api/appSettings.service.ts
 api/authentication.service.ts
 api/projects.service.ts
+api/teams.service.ts
 api/timeEntries.service.ts
 api/users.service.ts
 configuration.ts
@@ -20,6 +21,7 @@ model/authTokensResponse.ts
 model/changePasswordRequest.ts
 model/createActivityTypeRequest.ts
 model/createProjectRequest.ts
+model/createTeamRequest.ts
 model/createTimeEntryRequest.ts
 model/createUserRequest.ts
 model/currentUserResponse.ts
@@ -35,10 +37,15 @@ model/refreshSessionRequest.ts
 model/role.ts
 model/settingsAuthor.ts
 model/tagColor.ts
+model/teamAccountSummary.ts
+model/teamMemberCandidateResponse.ts
+model/teamRef.ts
+model/teamResponse.ts
 model/timeEntryResponse.ts
 model/updateActivityTypeRequest.ts
 model/updateAppSettingsRequest.ts
 model/updateProjectRequest.ts
+model/updateTeamRequest.ts
 model/updateTimeEntryRequest.ts
 model/updateUserRequest.ts
 model/userResponse.ts
