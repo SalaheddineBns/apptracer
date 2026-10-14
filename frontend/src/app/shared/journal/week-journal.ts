@@ -43,6 +43,8 @@ import { coversDay } from './time-entry.ui';
                 [entry]="entry"
                 [editable]="editable()"
                 [showComment]="showComment()"
+                [showDuration]="showDuration()"
+                [clampComment]="clampComment()"
                 (edit)="edit.emit($event)"
                 (remove)="remove.emit($event)"
               />
@@ -65,8 +67,12 @@ export class WeekJournal {
   readonly week = input.required<WeeklyTimeEntriesResponse>();
   /** RG-01-10, RG-04-03 : faux pour le journal d'un autre compte : ni « + », ni « Modifier », ni « Supprimer ». */
   readonly editable = input(true);
-  /** SFD-04 E2 : affiche le commentaire de chaque saisie (« Mon journal » ne le liste pas). */
+  /** Affiche le commentaire de chaque saisie. */
   readonly showComment = input(false);
+  /** Durée enregistrée sur chaque carte (SFD-04 E2) ; « Mon journal » affiche le commentaire à la place. */
+  readonly showDuration = input(true);
+  /** Commentaire limité à 3 lignes. */
+  readonly clampComment = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
   /** Date du jour (`YYYY-MM-DD`), à Paris par défaut (RG-00-01) : borne des jours où l'on peut saisir. */

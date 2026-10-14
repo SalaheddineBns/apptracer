@@ -226,7 +226,8 @@ describe('SFD-01 : saisie des activités', () => {
         cy.getCy('jour-2026-10-05').within(() => {
           cy.getCy('activity-type-tag').should('contain', 'Réunion');
           cy.getCy('saisie-periode').should('contain', '09:00 – 10:30');
-          cy.getCy('saisie-duree').should('have.text', '1 h 30');
+          // La carte affiche la description à la place de la durée ; la durée se lit dans le total.
+          cy.getCy('saisie-duree').should('not.exist');
         });
         cy.getCy('total-semaine').should('have.text', '1,5 h');
       });
@@ -395,8 +396,8 @@ describe('SFD-01 : saisie des activités', () => {
         createEntry(account, MEETING);
         createEntry(account, FULL_DAY);
         openJournal(account);
-        cy.getCy('jour-2026-10-05').find('[data-cy="saisie-duree"]').should('have.text', '1 h 30');
-        cy.getCy('jour-2026-10-06').find('[data-cy="saisie-duree"]').should('have.text', '7 h 00');
+        cy.getCy('jour-2026-10-05').find('[data-cy="saisie-periode"]').should('contain', '09:00 – 10:30');
+        cy.getCy('jour-2026-10-06').find('[data-cy="saisie-periode"]').should('contain', 'Journée entière');
         cy.getCy('total-semaine').should('have.text', '8,5 h');
       });
     });
@@ -482,7 +483,7 @@ describe('SFD-01 : saisie des activités', () => {
         expect(response?.statusCode).to.eq(201);
         expect(response?.body.durationMinutes).to.eq(450);
       });
-      cy.getCy('jour-2026-10-06').find('[data-cy="saisie-duree"]').should('have.text', '7 h 30');
+      cy.getCy('jour-2026-10-06').find('[data-cy="saisie-periode"]').should('contain', 'Journée entière');
       cy.getCy('total-semaine').should('have.text', '7,5 h');
     });
   });
@@ -499,7 +500,7 @@ describe('SFD-01 : saisie des activités', () => {
             .should('eq', 420),
         );
         openJournal(account);
-        cy.getCy('jour-2026-10-06').find('[data-cy="saisie-duree"]').should('have.text', '7 h 00');
+        cy.getCy('jour-2026-10-06').find('[data-cy="saisie-periode"]').should('contain', 'Journée entière');
         cy.getCy('total-semaine').should('have.text', '7 h');
       });
     });
@@ -613,6 +614,18 @@ describe('SFD-01 : saisie des activités', () => {
     });
   });
 
+  it('SFD-01 E1 : la carte d’une saisie affiche sa description à la place de sa durée', () => {
+    createAccount('USER').then((account) => {
+      createEntry(account, { ...MEETING, comment: 'Point hebdo avec l’équipe' });
+      openJournal(account);
+      cy.getCy('jour-2026-10-05').within(() => {
+        cy.getCy('saisie-commentaire').should('have.text', 'Point hebdo avec l’équipe');
+        cy.getCy('saisie-duree').should('not.exist');
+      });
+      cy.getCy('total-semaine').should('have.text', '1,5 h');
+    });
+  });
+
   it('SFD-01 E1 : « Semaine suivante » et « Semaine précédente » changent la semaine affichée et celle de l’URL', () => {
     createAccount('USER').then((account) => {
       createEntry(account, MEETING);
@@ -626,7 +639,7 @@ describe('SFD-01 : saisie des activités', () => {
       cy.getCy('btn-semaine-suivante').find('button').click();
       cy.wait('@week');
       cy.location('search').should('eq', '?semaine=2026-10-05');
-      cy.getCy('jour-2026-10-05').find('[data-cy="saisie-duree"]').should('have.text', '1 h 30');
+      cy.getCy('jour-2026-10-05').find('[data-cy="saisie-periode"]').should('contain', '09:00 – 10:30');
     });
   });
 });

@@ -118,14 +118,40 @@ describe('JournalPage', () => {
     expect(cy('journal-semaine')).not.toBeNull();
   });
 
-  it('CA-01-01 : la saisie du 05/10/2026 de 09:00 à 10:30 en REUNION apparaît dans le journal avec 1 h 30', async () => {
+  it('CA-01-01 : la saisie du 05/10/2026 de 09:00 à 10:30 en REUNION apparaît dans le journal, total 1,5 h', async () => {
     listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
     await open();
     expect(listMyTimeEntries.mock.calls[0][0]).toBe('2026-10-05');
     const card = cy('jour-2026-10-05')?.querySelector('[data-cy="saisie-1"]');
     expect(card?.textContent).toContain('Réunion');
     expect(card?.textContent).toContain('09:00 – 10:30');
-    expect(card?.textContent).toContain('1 h 30');
+    expect(cy('total-semaine')?.textContent).toContain('1,5 h');
+  });
+
+  it('SFD-01 E1 : la carte affiche la description de la saisie à la place de sa durée', async () => {
+    const long = 'Point hebdo. '.repeat(40);
+    listMyTimeEntries.mockReturnValue(
+      of(week([meeting({ comment: 'Point hebdo avec l’équipe' }), fullDay({ comment: long })], 510)),
+    );
+    await open();
+    const card = cy('saisie-1') as HTMLElement;
+    expect(card.querySelector('[data-cy="saisie-duree"]')).toBeNull();
+    // Texte exact : aucune espace ni ligne vide ajoutée autour du commentaire.
+    expect(card.querySelector('[data-cy="saisie-commentaire"]')?.textContent).toBe(
+      'Point hebdo avec l’équipe',
+    );
+    // Description longue limitée à 3 lignes, texte complet au survol et dans le DOM.
+    const longComment = cy('saisie-2')?.querySelector('[data-cy="saisie-commentaire"]');
+    expect(longComment?.classList).toContain('line-clamp-3');
+    expect(longComment?.getAttribute('title')).toBe(long);
+  });
+
+  it('SFD-01 E1 : une saisie sans description n’affiche ni description ni durée', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    await open();
+    const card = cy('saisie-1') as HTMLElement;
+    expect(card.querySelector('[data-cy="saisie-commentaire"]')).toBeNull();
+    expect(card.querySelector('[data-cy="saisie-duree"]')).toBeNull();
   });
 
   it('CA-01-09 : avec des saisies de 90 min et 7 h dans la semaine, le total affiché est 8,5 h', async () => {

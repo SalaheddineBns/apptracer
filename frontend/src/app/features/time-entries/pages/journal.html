@@ -23,6 +23,9 @@
       <!-- Affichée même sans saisie : chaque jour porte son « + ». -->
       <app-week-journal
         [week]="week"
+        [showComment]="true"
+        [showDuration]="false"
+        [clampComment]="true"
         (add)="openCreate($event)"
         (edit)="openEdit($event)"
         (remove)="confirmRemove($event)"

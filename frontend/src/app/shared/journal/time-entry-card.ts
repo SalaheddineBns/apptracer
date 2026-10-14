@@ -31,16 +31,21 @@ import { datesLabel, periodLabel } from './time-entry.ui';
       <span class="text-xs text-muted-color tabular-nums" data-cy="saisie-periode">{{
         period()
       }}</span>
-      <span class="text-sm font-medium text-color tabular-nums" data-cy="saisie-duree">{{
-        entry().durationMinutes | duration
-      }}</span>
+      @if (showDuration()) {
+        <span class="text-sm font-medium text-color tabular-nums" data-cy="saisie-duree">{{
+          entry().durationMinutes | duration
+        }}</span>
+      }
       @if (showComment() && entry().comment; as comment) {
+        <!-- Limité à 3 lignes si demandé : le texte complet reste dans le DOM (lecteurs d'écran) et au survol.
+             Texte collé aux balises : avec whitespace-pre-line, un retour à la ligne du gabarit deviendrait une ligne vide. -->
         <p
           class="m-0 text-xs text-muted-color whitespace-pre-line wrap-anywhere"
+          [class.line-clamp-3]="clampComment()"
+          [attr.title]="clampComment() ? comment : null"
           data-cy="saisie-commentaire"
+          >{{ comment }}</p
         >
-          {{ comment }}
-        </p>
       }
       @if (editable()) {
         <div class="flex gap-2">
@@ -73,8 +78,12 @@ export class TimeEntryCard {
   readonly entry = input.required<TimeEntryResponse>();
   /** RG-01-10 : « Modifier » et « Supprimer » ne sont rendus que sur son propre journal. */
   readonly editable = input(true);
-  /** SFD-04 E2 : seul le journal d'un membre liste le commentaire ; « Mon journal » (SFD-01 E1) ne l'affiche pas. */
+  /** Commentaire de la saisie : « Mon journal » (SFD-01 E1) et journal d'un membre (SFD-04 E2). */
   readonly showComment = input(false);
+  /** SFD-04 E2 affiche la durée enregistrée ; « Mon journal » (SFD-01 E1) affiche le commentaire à sa place. */
+  readonly showDuration = input(true);
+  /** Commentaire limité à 3 lignes (cartes étroites de « Mon journal »). */
+  readonly clampComment = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
 
