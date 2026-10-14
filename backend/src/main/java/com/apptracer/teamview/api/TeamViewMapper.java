@@ -2,14 +2,22 @@ package com.apptracer.teamview.api;
 
 import com.apptracer.account.domain.User;
 import com.apptracer.team.domain.Team;
+import com.apptracer.teamview.service.TeamViewService.MemberJournal;
 import com.apptracer.teamview.service.TeamViewService.MemberWeek;
 import com.apptracer.teamview.service.TeamViewService.TeamWeek;
+import com.apptracer.timeentry.api.TimeEntryMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TeamViewMapper {
+
+  private final TimeEntryMapper timeEntryMapper;
+
+  public TeamViewMapper(TimeEntryMapper timeEntryMapper) {
+    this.timeEntryMapper = timeEntryMapper;
+  }
 
   public ManagedTeamResponse toResponse(Team t) {
     return new ManagedTeamResponse(t.getId(), t.getName());
@@ -33,5 +41,10 @@ public class TeamViewMapper {
       days.add(new DailyTotal(w.weekStart().plusDays(i), m.totals().minutesPerDay().get(i)));
     }
     return new MemberWeekSummary(toMember(m.member()), days, m.totals().totalMinutes());
+  }
+
+  public MemberWeeklyTimeEntriesResponse toResponse(MemberJournal j) {
+    return new MemberWeeklyTimeEntriesResponse(
+        toResponse(j.team()), toMember(j.member()), timeEntryMapper.toResponse(j.week()));
   }
 }

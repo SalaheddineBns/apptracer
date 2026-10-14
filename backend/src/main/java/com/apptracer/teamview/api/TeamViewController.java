@@ -80,4 +80,31 @@ public class TeamViewController {
     return mapper.toResponse(
         service.getTeamWeekSummary(currentUser.currentUserId(), teamId, weekStart));
   }
+
+  @GetMapping("/members/{userId}/time-entries")
+  @PreAuthorize("hasRole('MANAGER')")
+  @Operation(
+      operationId = "listTeamMemberTimeEntries",
+      summary = "Journal de la semaine d'un membre de mes équipes (lecture seule)")
+  @ApiResponse(responseCode = "200", description = "Saisies de la semaine et total en minutes")
+  @ApiResponse(
+      responseCode = "400",
+      description = "weekStart absent, mal formé ou qui n'est pas un lundi",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-04-01) ou compte hors de mes équipes (RG-04-02)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public MemberWeeklyTimeEntriesResponse listTeamMemberTimeEntries(
+      @PathVariable Long userId,
+      @RequestParam @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Un lundi")
+          LocalDate weekStart) {
+    // RG-00-03 : le manager vient du jeton
+    return mapper.toResponse(
+        service.listTeamMemberTimeEntries(currentUser.currentUserId(), userId, weekStart));
+  }
 }

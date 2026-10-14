@@ -2,6 +2,8 @@ package com.apptracer.teamview.service;
 
 import com.apptracer.common.error.ForbiddenOperationException;
 import com.apptracer.team.domain.Team;
+import com.apptracer.team.domain.TeamMember;
+import com.apptracer.team.repository.TeamMemberRepository;
 import com.apptracer.team.repository.TeamRepository;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -18,9 +20,23 @@ public class ManagedScope {
   static final String DENIED = "Vous n'avez pas accès à cette équipe ou à ce compte.";
 
   private final TeamRepository teams;
+  private final TeamMemberRepository members;
 
-  public ManagedScope(TeamRepository teams) {
+  public ManagedScope(TeamRepository teams, TeamMemberRepository members) {
     this.teams = teams;
+    this.members = members;
+  }
+
+  /**
+   * RG-04-02, RG-04-06 : le compte doit être, à cet instant, membre d'une équipe du manager. Le
+   * manager lui-même n'est pas membre de son équipe (RG-04-10, RG-05-05). 403 que le compte existe
+   * ou non (H11).
+   */
+  @Transactional(readOnly = true)
+  public TeamMember requireMember(Long managerId, Long userId) {
+    return members
+        .findManagedMember(userId, managerId)
+        .orElseThrow(() -> new ForbiddenOperationException(RG, DENIED));
   }
 
   /** RG-04-02 : 403 que l'équipe existe ou non (H11). */

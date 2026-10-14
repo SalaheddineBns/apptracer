@@ -41,7 +41,7 @@ class TeamWeekSummaryServiceTest {
   private final TeamMemberRepository members = mock(TeamMemberRepository.class);
   private final WeeklyEntriesReader reader = mock(WeeklyEntriesReader.class);
   private final TeamViewService service =
-      new TeamViewService(new ManagedScope(teams), members, reader);
+      new TeamViewService(new ManagedScope(teams, members), members, reader);
 
   private static void set(Object target, String name, Object value) {
     try {

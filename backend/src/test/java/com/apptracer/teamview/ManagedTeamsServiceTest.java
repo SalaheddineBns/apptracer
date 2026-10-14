@@ -22,7 +22,7 @@ class ManagedTeamsServiceTest {
   private final TeamRepository teams = mock(TeamRepository.class);
   private final TeamViewService service =
       new TeamViewService(
-          new ManagedScope(teams),
+          new ManagedScope(teams, mock(TeamMemberRepository.class)),
           mock(TeamMemberRepository.class),
           mock(WeeklyEntriesReader.class));
 

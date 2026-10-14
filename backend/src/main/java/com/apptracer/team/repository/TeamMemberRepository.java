@@ -38,4 +38,13 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
   @Modifying(flushAutomatically = true)
   @Query("delete from TeamMember m where m.teamId = :teamId")
   void deleteByTeamId(@Param("teamId") Long teamId);
+
+  // RG-04-02, RG-04-06 : rattachement actuel du compte à une équipe non supprimée de ce manager
+  @Query(
+      """
+      select m from TeamMember m join fetch m.user join fetch m.team t
+      where m.userId = :userId and t.manager.id = :managerId and t.deletedAt is null
+      """)
+  Optional<TeamMember> findManagedMember(
+      @Param("userId") Long userId, @Param("managerId") Long managerId);
 }
