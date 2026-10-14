@@ -23,6 +23,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/time-entries/pages/journal').then((m) => m.JournalPage),
       },
       {
+        // RG-04-01 : vue équipe réservée au MANAGER (ni USER ni ADMIN).
+        path: 'equipe',
+        canActivate: [roleGuard(Role.Manager)],
+        loadComponent: () => import('./features/team-view/pages/team-week').then((m) => m.TeamWeekPage),
+      },
+      {
         path: 'admin/comptes',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),

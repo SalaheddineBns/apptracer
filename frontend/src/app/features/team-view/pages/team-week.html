@@ -1,0 +1,16 @@
+<div class="flex flex-col gap-6">
+  <h1 class="text-2xl font-semibold text-color" data-cy="titre-equipe">Mon équipe</h1>
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+    @if (store.teamsError(); as message) {
+      <app-error-state [message]="message" (retry)="store.loadTeams()" />
+    } @else if (!store.teamsLoaded()) {
+      <app-loading-state [rows]="6" />
+    } @else if (store.teams().length === 0) {
+      <!-- RG-04-01, CA-04-09 : un MANAGER sans équipe accède à la vue et en est informé. -->
+      <div data-cy="message-aucune-equipe">
+        <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
+      </div>
+    }
+  </section>
+</div>
