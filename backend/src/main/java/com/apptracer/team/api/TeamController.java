@@ -11,15 +11,18 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -147,6 +150,29 @@ public class TeamController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public TeamResponse getTeam(@PathVariable Long id) {
     return mapper.toResponse(service.get(id));
+  }
+
+  @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "deleteTeam",
+      summary = "Supprimer définitivement une équipe (comptes et saisies des membres intacts)")
+  @ApiResponse(responseCode = "204", description = "Équipe supprimée")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-05-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Équipe introuvable (ou déjà supprimée)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public void deleteTeam(@PathVariable Long id) {
+    service.delete(currentUser.currentUserId(), id);
   }
 
   @PutMapping("/{id}")

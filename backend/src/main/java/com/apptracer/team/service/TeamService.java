@@ -129,6 +129,22 @@ public class TeamService {
     return new TeamDetails(saved, sorted(checked.members()));
   }
 
+  /**
+   * RG-05-09 : suppression définitive. Les rattachements disparaissent, les membres se retrouvent
+   * sans équipe ; leurs comptes et leurs saisies ne sont pas touchés. RG-05-14 : la ligne de
+   * l'équipe est conservée, marquée supprimée (qui, quand), et son nom redevient disponible.
+   */
+  @Transactional
+  public void delete(Long actorId, Long id) {
+    Team team =
+        teams
+            .findActiveById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+    members.deleteByTeamId(id);
+    team.markDeleted(actorId, Instant.now(clock));
+    teams.saveAndFlush(team);
+  }
+
   @Transactional(readOnly = true)
   public TeamDetails get(Long id) {
     // RG-05-09 : une équipe supprimée est introuvable
