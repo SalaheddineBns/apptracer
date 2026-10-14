@@ -2130,6 +2130,184 @@
         }
       }
     },
+    "/api/v1/team-view/teams" : {
+      "get" : {
+        "tags" : [ "TeamView" ],
+        "summary" : "Lister les équipes dont je suis manager (triées par nom)",
+        "operationId" : "listMyManagedTeams",
+        "responses" : {
+          "200" : {
+            "description" : "Équipes, liste vide si aucune (RG-04-01)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/ManagedTeamResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-04-01)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-view/teams/{teamId}/week" : {
+      "get" : {
+        "tags" : [ "TeamView" ],
+        "summary" : "Durée par jour et total de la semaine de chaque membre d'une de mes équipes",
+        "operationId" : "getTeamWeekSummary",
+        "parameters" : [ {
+          "name" : "teamId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "weekStart",
+          "in" : "query",
+          "description" : "Un lundi",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Un lundi"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Membres triés par nom puis prénom",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/TeamWeekSummaryResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "weekStart absent, mal formé ou qui n'est pas un lundi",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-04-01) ou équipe hors de mon périmètre (RG-04-02)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/team-view/members/{userId}/time-entries" : {
+      "get" : {
+        "tags" : [ "TeamView" ],
+        "summary" : "Journal de la semaine d'un membre de mes équipes (lecture seule)",
+        "operationId" : "listTeamMemberTimeEntries",
+        "parameters" : [ {
+          "name" : "userId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "weekStart",
+          "in" : "query",
+          "description" : "Un lundi",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "format" : "date",
+            "description" : "Un lundi"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Saisies de la semaine et total en minutes",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/MemberWeeklyTimeEntriesResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "weekStart absent, mal formé ou qui n'est pas un lundi",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-04-01) ou compte hors de mes équipes (RG-04-02)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me" : {
       "get" : {
         "tags" : [ "Authentication" ],
@@ -2920,6 +3098,109 @@
           }
         },
         "required" : [ "id", "name" ]
+      },
+      "ManagedTeamResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name" ]
+      },
+      "DailyTotal" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "minutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "date", "minutes" ]
+      },
+      "MemberWeekSummary" : {
+        "type" : "object",
+        "properties" : {
+          "member" : {
+            "$ref" : "#/components/schemas/TeamViewMember"
+          },
+          "days" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DailyTotal"
+            }
+          },
+          "totalMinutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "days", "member", "totalMinutes" ]
+      },
+      "TeamViewMember" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "firstName" : {
+            "type" : "string"
+          },
+          "lastName" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "firstName", "id", "lastName" ]
+      },
+      "TeamWeekSummaryResponse" : {
+        "type" : "object",
+        "properties" : {
+          "team" : {
+            "$ref" : "#/components/schemas/ManagedTeamResponse"
+          },
+          "weekStart" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "weekEnd" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "members" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/MemberWeekSummary"
+            }
+          }
+        },
+        "required" : [ "members", "team", "weekEnd", "weekStart" ]
+      },
+      "MemberWeeklyTimeEntriesResponse" : {
+        "type" : "object",
+        "properties" : {
+          "team" : {
+            "$ref" : "#/components/schemas/ManagedTeamResponse"
+          },
+          "member" : {
+            "$ref" : "#/components/schemas/TeamViewMember"
+          },
+          "week" : {
+            "$ref" : "#/components/schemas/WeeklyTimeEntriesResponse"
+          }
+        },
+        "required" : [ "member", "team", "week" ]
       }
     }
   }

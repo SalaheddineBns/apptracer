@@ -7,6 +7,7 @@ api/api.ts
 api/appSettings.service.ts
 api/authentication.service.ts
 api/projects.service.ts
+api/teamView.service.ts
 api/teams.service.ts
 api/timeEntries.service.ts
 api/users.service.ts
@@ -25,9 +26,13 @@ model/createTeamRequest.ts
 model/createTimeEntryRequest.ts
 model/createUserRequest.ts
 model/currentUserResponse.ts
+model/dailyTotal.ts
 model/granularity.ts
 model/loginRequest.ts
 model/logoutRequest.ts
+model/managedTeamResponse.ts
+model/memberWeekSummary.ts
+model/memberWeeklyTimeEntriesResponse.ts
 model/models.ts
 model/pageUserResponse.ts
 model/problemDetail.ts
@@ -41,6 +46,8 @@ model/teamAccountSummary.ts
 model/teamMemberCandidateResponse.ts
 model/teamRef.ts
 model/teamResponse.ts
+model/teamViewMember.ts
+model/teamWeekSummaryResponse.ts
 model/timeEntryResponse.ts
 model/updateActivityTypeRequest.ts
 model/updateAppSettingsRequest.ts
