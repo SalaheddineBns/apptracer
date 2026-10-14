@@ -1,16 +1,118 @@
 <div class="flex flex-col gap-6">
-  <h1 class="text-2xl font-semibold text-color" data-cy="titre-equipe">Mon équipe</h1>
-
-  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
-    @if (store.teamsError(); as message) {
-      <app-error-state [message]="message" (retry)="store.loadTeams()" />
-    } @else if (!store.teamsLoaded()) {
-      <app-loading-state [rows]="6" />
-    } @else if (store.teams().length === 0) {
-      <!-- RG-04-01, CA-04-09 : un MANAGER sans équipe accède à la vue et en est informé. -->
-      <div data-cy="message-aucune-equipe">
-        <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
-      </div>
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <h1 class="text-2xl font-semibold text-color" data-cy="titre-equipe">Mon équipe</h1>
+    <!-- RG-04-08 : le choix de l'équipe n'est proposé que si le MANAGER en a plusieurs. -->
+    @if (store.teams().length > 1) {
+      <p-select
+        [options]="store.teams()"
+        optionLabel="name"
+        optionValue="id"
+        [ngModel]="teamId()"
+        (onChange)="selectTeam($event.value)"
+        [showClear]="false"
+        placeholder="Choisir une équipe"
+        ariaLabel="Équipe affichée"
+        styleClass="w-64 max-w-full"
+        data-cy="select-equipe"
+      >
+        <ng-template #item let-team>
+          <span [attr.data-cy]="'option-equipe-' + team.id">{{ team.name }}</span>
+        </ng-template>
+      </p-select>
     }
-  </section>
+  </div>
+
+  @if (store.teamsError(); as message) {
+    <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+      <app-error-state [message]="message" (retry)="store.loadTeams()" />
+    </section>
+  } @else if (!store.teamsLoaded()) {
+    <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+      <app-loading-state [rows]="6" />
+    </section>
+  } @else if (store.teams().length === 0) {
+    <!-- RG-04-01, CA-04-09 : un MANAGER sans équipe accède à la vue et en est informé. -->
+    <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6" data-cy="message-aucune-equipe">
+      <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
+    </section>
+  } @else {
+    <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
+
+    <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+      @if (store.summaryForbidden()) {
+        <!-- RG-04-02 : équipe hors du périmètre (lien périmé) ; « Réessayer » n'y changerait rien. -->
+        <div class="flex flex-col items-start gap-4" data-cy="message-equipe-interdite">
+          <p-message severity="warn">Cette équipe ne fait pas partie de celles dont vous êtes manager.</p-message>
+          <p-button
+            type="button"
+            label="Afficher mes équipes"
+            icon="pi pi-users"
+            severity="secondary"
+            (onClick)="showMyTeams()"
+            data-cy="btn-afficher-mes-equipes"
+          />
+        </div>
+      } @else if (store.summaryError(); as message) {
+        <app-error-state [message]="message" (retry)="store.reloadSummary()" />
+      } @else if (store.summary(); as summary) {
+        @if (summary.members.length === 0) {
+          <app-empty-state message="Cette équipe n'a aucun membre." icon="pi pi-users" />
+        } @else {
+          <p-table
+            [value]="summary.members"
+            [scrollable]="true"
+            dataKey="member.id"
+            class="text-sm"
+            data-cy="table-equipe-semaine"
+          >
+            <ng-template #header>
+              <tr>
+                <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Membre</th>
+                @for (day of days(); track day.iso) {
+                  <th scope="col" class="text-right whitespace-nowrap" [attr.data-cy]="'colonne-jour-' + day.iso">
+                    <span class="capitalize">{{ day.name }}</span>
+                    <span class="block text-xs font-normal text-muted-color tabular-nums">{{ day.label }}</span>
+                  </th>
+                }
+                <th scope="col" class="text-right whitespace-nowrap">Total</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-row>
+              <tr [attr.data-cy]="'ligne-membre-' + row.member.id">
+                <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">
+                  <span class="flex flex-wrap items-center gap-2">
+                    <a
+                      [routerLink]="['/equipe/membres', row.member.id]"
+                      [queryParams]="{ semaine: weekStart() }"
+                      class="text-primary font-medium hover:underline"
+                      [attr.data-cy]="'lien-membre-' + row.member.id"
+                      >{{ memberName(row.member) }}</a
+                    >
+                    @if (!row.member.active) {
+                      <p-tag value="Inactif" severity="secondary" [attr.data-cy]="'tag-inactif-' + row.member.id" />
+                    }
+                  </span>
+                </td>
+                @for (day of row.days; track day.date) {
+                  <td class="text-right tabular-nums whitespace-nowrap" [attr.data-cy]="'duree-membre-' + row.member.id + '-' + day.date">
+                    @if (day.minutes === 0) {
+                      <span aria-hidden="true" class="text-muted-color">–</span>
+                      <span class="sr-only">0 h</span>
+                    } @else {
+                      {{ day.minutes | decimalHours }}
+                    }
+                  </td>
+                }
+                <td class="text-right font-semibold tabular-nums whitespace-nowrap" [attr.data-cy]="'total-membre-' + row.member.id">
+                  {{ row.totalMinutes | decimalHours }}
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        }
+      } @else {
+        <app-loading-state [rows]="5" />
+      }
+    </section>
+  }
 </div>
