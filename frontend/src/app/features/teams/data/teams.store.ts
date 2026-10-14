@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { forkJoin, Observable, tap } from 'rxjs';
 import {
   CreateTeamRequest,
+  UpdateTeamRequest,
   TeamAccountSummary,
   TeamMemberCandidateResponse,
   TeamResponse,
@@ -91,5 +92,10 @@ export class TeamsStore {
   /** RG-05-01 à RG-05-08 : création. La liste est rechargée pour respecter l'ordre du back (RG-05-13). */
   create(request: CreateTeamRequest): Observable<TeamResponse> {
     return this.api.createTeam(request).pipe(tap(() => this.load()));
+  }
+
+  /** RG-05-01 à RG-05-08 : modification d'un bloc (nom, manager, liste complète des membres) avec la version reçue. */
+  update(id: number, request: UpdateTeamRequest): Observable<TeamResponse> {
+    return this.api.updateTeam(id, request).pipe(tap(() => this.load()));
   }
 }

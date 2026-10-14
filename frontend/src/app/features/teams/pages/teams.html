@@ -20,6 +20,7 @@
             <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Nom</th>
             <th scope="col">Manager</th>
             <th scope="col">Membres</th>
+            <th scope="col">Actions</th>
           </tr>
         </ng-template>
         <ng-template #body let-team>
@@ -27,6 +28,18 @@
             <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere" [attr.data-cy]="'nom-equipe-' + team.id">{{ team.name }}</td>
             <td [attr.data-cy]="'manager-equipe-' + team.id">{{ fullName(team.manager) }}</td>
             <td class="tabular-nums" [attr.data-cy]="'membres-equipe-' + team.id">{{ memberCountLabel(team.memberCount) }}</td>
+            <td class="sm:whitespace-nowrap">
+              <p-button
+                type="button"
+                label="Modifier"
+                [text]="true"
+                size="small"
+                severity="secondary"
+                [ariaLabel]="'Modifier l’équipe ' + team.name"
+                (onClick)="openEdit(team)"
+                [attr.data-cy]="'btn-modifier-equipe-' + team.id"
+              />
+            </td>
           </tr>
         </ng-template>
       </p-table>
@@ -34,4 +47,4 @@
   </section>
 </div>
 
-<app-team-dialog [(visible)]="dialogVisible" (saved)="onSaved($event)" />
+<app-team-dialog [(visible)]="dialogVisible" [team]="editing()" (saved)="onSaved($event)" (conflict)="store.load()" />

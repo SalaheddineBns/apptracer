@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
-import { TeamAccountSummary } from '../../../core/api/generated';
+import { TeamAccountSummary, TeamResponse } from '../../../core/api/generated';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -21,6 +21,8 @@ export class TeamsPage {
   private readonly messages = inject(MessageService);
 
   protected readonly dialogVisible = signal(false);
+  /** Équipe en cours de modification ; `null` pour une création. */
+  protected readonly editing = signal<TeamResponse | null>(null);
 
   constructor() {
     // Une seule requête par ouverture de l'écran.
@@ -28,6 +30,12 @@ export class TeamsPage {
   }
 
   protected openCreate(): void {
+    this.editing.set(null);
+    this.dialogVisible.set(true);
+  }
+
+  protected openEdit(team: TeamResponse): void {
+    this.editing.set(team);
     this.dialogVisible.set(true);
   }
 

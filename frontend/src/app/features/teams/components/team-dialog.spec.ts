@@ -26,24 +26,36 @@ const candidate = (id: number, over: Partial<TeamMemberCandidateResponse> = {}):
 const created = (over: Partial<TeamResponse> = {}): TeamResponse => ({ id: 9, name: 'Produit', manager: manager(1), members: [], memberCount: 0, version: 0, ...over });
 const httpError = (status: number, body: object) => throwError(() => new HttpErrorResponse({ status, error: body }));
 
-describe('TeamDialog (création)', () => {
+const existingTeam = (over: Partial<TeamResponse> = {}): TeamResponse => {
+  const members = over.members ?? [
+    { id: 10, firstName: 'Paul10', lastName: 'Martin10', email: 'user10@x.fr', role: Role.User, active: true },
+    { id: 11, firstName: 'Paul11', lastName: 'Martin11', email: 'user11@x.fr', role: Role.User, active: false },
+  ];
+  return { id: 4, name: 'Produit', manager: manager(1), members, memberCount: members.length, version: 3, ...over };
+};
+
+describe('TeamDialog', () => {
   const createTeam = vi.fn();
+  const updateTeam = vi.fn();
   const listTeams = vi.fn();
   const listTeamManagerCandidates = vi.fn();
   const listTeamMemberCandidates = vi.fn();
   const add = vi.fn();
   const saved = vi.fn();
+  const conflict = vi.fn();
   let fixture: ReturnType<typeof TestBed.createComponent<TeamDialog>>;
 
-  async function open(): Promise<void> {
+  async function open(team: TeamResponse | null = null): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
-        { provide: TeamsService, useValue: { createTeam, listTeams, listTeamManagerCandidates, listTeamMemberCandidates } },
+        { provide: TeamsService, useValue: { createTeam, updateTeam, listTeams, listTeamManagerCandidates, listTeamMemberCandidates } },
         { provide: MessageService, useValue: { add } },
       ],
     });
     fixture = TestBed.createComponent(TeamDialog);
     fixture.componentInstance.saved.subscribe(saved);
+    fixture.componentInstance.conflict.subscribe(conflict);
+    fixture.componentRef.setInput('team', team);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
     await fixture.whenStable();
@@ -80,7 +92,7 @@ describe('TeamDialog (création)', () => {
     // jsdom n'a pas matchMedia, utilisé par les panneaux déroulants de PrimeNG (p-select, p-multiselect), ainsi que scrollIntoView.
     vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
     HTMLElement.prototype.scrollIntoView = vi.fn();
-    for (const fn of [createTeam, listTeams, listTeamManagerCandidates, listTeamMemberCandidates, add, saved]) {
+    for (const fn of [createTeam, updateTeam, conflict, listTeams, listTeamManagerCandidates, listTeamMemberCandidates, add, saved]) {
       fn.mockReset();
     }
     listTeams.mockReturnValue(of([]));
@@ -205,6 +217,14 @@ describe('TeamDialog (création)', () => {
     expect(el('option-membre-10')).not.toBeNull();
   });
 
+  it('le déclencheur de la liste des membres porte un data-cy (le centre du champ peut tomber sur une pastille supprimable)', async () => {
+    await open();
+    expect(el('btn-ouvrir-membres')).not.toBeNull();
+    el('btn-ouvrir-membres')?.click();
+    await fixture.whenStable();
+    expect(el('option-membre-10')).not.toBeNull();
+  });
+
   it('RG-05-11 : un compte inactif est proposé et signalé « Inactif »', async () => {
     listTeamMemberCandidates.mockReturnValue(of([candidate(10, { active: false }), candidate(11)]));
     await open();
@@ -307,5 +327,121 @@ describe('TeamDialog (création)', () => {
     await fixture.whenStable();
     expect(input('champ-nom-equipe').value).toBe('');
     expect(listTeamManagerCandidates).toHaveBeenCalledTimes(2);
+  });
+
+  describe('modification', () => {
+    beforeEach(() => {
+      listTeamMemberCandidates.mockReturnValue(
+        of([
+          candidate(10, { currentTeam: { id: 4, name: 'Produit' } }),
+          candidate(11, { active: false, currentTeam: { id: 4, name: 'Produit' } }),
+          candidate(12, { currentTeam: { id: 5, name: 'Alpha' } }),
+          candidate(13),
+        ]),
+      );
+    });
+
+    it('s’ouvre avec les valeurs de l’équipe : titre, nom, manager et membres dans l’ordre reçu du back (RG-05-13)', async () => {
+      await open(existingTeam());
+      expect(document.body.querySelector('.p-dialog-title')?.textContent).toContain('Modifier l’équipe');
+      expect(input('champ-nom-equipe').value).toBe('Produit');
+      expect(form().controls['managerId'].value).toBe(1);
+      expect(form().controls['memberIds'].value).toEqual([10, 11]);
+      expect(el('champ-manager')?.textContent).toContain('Manon1 Dupont1');
+      const chips = Array.from(el('champ-membres')?.querySelectorAll('.p-chip-label') ?? []).map((c) => c.textContent?.trim());
+      expect(chips).toEqual(['Paul10 Martin10', 'Paul11 Martin11 (inactif)']);
+    });
+
+    it('CA-05-10 : un membre inactif reste dans l’équipe et est signalé « Inactif » dans la liste et dans sa pastille', async () => {
+      await open(existingTeam());
+      el('champ-membres')?.click();
+      await fixture.whenStable();
+      expect(el('option-membre-11')?.textContent).toContain('Inactif');
+      expect(el('option-membre-10')?.textContent).not.toContain('Inactif');
+      expect(form().controls['memberIds'].value).toContain(11);
+    });
+
+    it('H10 : l’équipe en cours de modification n’est pas signalée sur ses propres membres, celle des autres l’est', async () => {
+      await open(existingTeam());
+      el('champ-membres')?.click();
+      await fixture.whenStable();
+      expect(el('option-membre-10')?.textContent).not.toContain('Déjà dans l’équipe');
+      expect(el('option-membre-12')?.textContent).toContain('Déjà dans l’équipe Alpha');
+    });
+
+    it('CA-05-12 : changer le manager envoie le nouveau manager avec la version, ferme et recharge la liste', async () => {
+      updateTeam.mockReturnValue(of(existingTeam({ manager: manager(2), version: 4 })));
+      await open(existingTeam());
+      await pick('champ-manager', 'option-manager-2');
+      await submit();
+      expect(updateTeam).toHaveBeenCalledWith(4, { name: 'Produit', managerId: 2, memberIds: [10, 11], version: 3 });
+      expect(saved).toHaveBeenCalledWith(expect.objectContaining({ mode: 'update' }));
+      expect(fixture.componentInstance.visible()).toBe(false);
+      expect(listTeams).toHaveBeenCalled();
+      expect(createTeam).not.toHaveBeenCalled();
+    });
+
+    it('envoie la liste complète des membres après ajout et retrait', async () => {
+      updateTeam.mockReturnValue(of(existingTeam()));
+      await open(existingTeam());
+      await pick('champ-membres', 'option-membre-13');
+      await pick('champ-membres', 'option-membre-10');
+      await submit();
+      expect(updateTeam).toHaveBeenCalledWith(4, { name: 'Produit', managerId: 1, memberIds: [11, 13], version: 3 });
+    });
+
+    it('le nom peut être changé ; un 409 RG-05-01 s’affiche sous le champ nom, dialogue ouvert', async () => {
+      updateTeam.mockReturnValue(
+        httpError(409, { status: 409, code: 'RG-05-01', detail: 'Ce nom d’équipe est déjà utilisé.', errors: [{ field: 'name', message: 'Ce nom d’équipe est déjà utilisé.' }] }),
+      );
+      await open(existingTeam());
+      await type('champ-nom-equipe', 'ALPHA');
+      await submit();
+      expect(updateTeam).toHaveBeenCalledWith(4, expect.objectContaining({ name: 'ALPHA' }));
+      expect(error('champ-nom-equipe')?.textContent).toContain('déjà utilisé');
+      expect(fixture.componentInstance.visible()).toBe(true);
+      expect(saved).not.toHaveBeenCalled();
+    });
+
+    it('CA-05-04 : en modification, le 409 RG-05-04 nommant l’autre équipe s’affiche sous les membres', async () => {
+      updateTeam.mockReturnValue(
+        httpError(409, { status: 409, code: 'RG-05-04', detail: 'Paul12 Martin12 est déjà membre de l’équipe « Alpha ».', errors: [{ field: 'memberIds', message: 'Paul12 Martin12 est déjà membre de l’équipe « Alpha ».' }] }),
+      );
+      await open(existingTeam());
+      await pick('champ-membres', 'option-membre-12');
+      await submit();
+      expect(error('champ-membres')?.textContent).toContain('Alpha');
+      expect(fixture.componentInstance.visible()).toBe(true);
+    });
+
+    it('conflit de version : 409 sans code ni errors[], le dialogue se ferme et la liste est rechargée', async () => {
+      updateTeam.mockReturnValue(httpError(409, { status: 409, detail: 'Cette équipe a été modifiée par quelqu’un d’autre.' }));
+      await open(existingTeam());
+      await submit();
+      expect(fixture.componentInstance.visible()).toBe(false);
+      expect(conflict).toHaveBeenCalledTimes(1);
+      expect(saved).not.toHaveBeenCalled();
+    });
+
+    it('une erreur 409 avec code (RG-05-xx) ne ferme pas le dialogue et n’est pas prise pour un conflit de version', async () => {
+      updateTeam.mockReturnValue(httpError(409, { status: 409, code: 'RG-05-02', detail: 'Manager invalide.', errors: [{ field: 'managerId', message: 'Manager invalide.' }] }));
+      await open(existingTeam());
+      await submit();
+      expect(conflict).not.toHaveBeenCalled();
+      expect(error('champ-manager')?.textContent).toContain('Manager invalide');
+    });
+
+    it('rouvrir en création après une modification repart d’un formulaire vide', async () => {
+      await open(existingTeam());
+      fixture.componentRef.setInput('visible', false);
+      fixture.componentRef.setInput('team', null);
+      await fixture.whenStable();
+      fixture.componentRef.setInput('visible', true);
+      await fixture.whenStable();
+      await fixture.whenStable();
+      expect(input('champ-nom-equipe').value).toBe('');
+      expect(form().controls['managerId'].value).toBeNull();
+      expect(form().controls['memberIds'].value).toEqual([]);
+    });
   });
 });

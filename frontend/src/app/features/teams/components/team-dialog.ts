@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, model, output, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, model, output, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
@@ -33,7 +33,7 @@ export interface AccountOption {
   readonly currentTeam: { readonly id: number; readonly name: string } | null;
 }
 
-/** SFD-05 E2 Dialogue équipe : création d'une équipe (nom, manager, membres). */
+/** SFD-05 E2 Dialogue équipe : création (team = null) ou modification d'une équipe existante (nom, manager, membres). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, TagModule, FieldError, ErrorState, LoadingState],
@@ -45,9 +45,14 @@ export class TeamDialog {
   private readonly messages = inject(MessageService);
 
   readonly visible = model(false);
+  /** Équipe à modifier, ou `null` pour une création. */
+  readonly team = input<TeamResponse | null>(null);
   readonly saved = output<TeamSaved>();
+  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
+  protected readonly isEdit = computed(() => this.team() !== null);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     // RG-05-01 : 2 à 100 caractères. La saisie n'est jamais modifiée (espaces compris) : le back retire les espaces de bord
@@ -90,6 +95,7 @@ export class TeamDialog {
    */
   protected readonly memberOptions = computed<AccountOption[]>(() => {
     const managerId = this.selectedManagerId();
+    const editedTeamId = this.team()?.id;
     return this.store
       .memberCandidates()
       .filter((c) => c.id !== managerId)
@@ -101,7 +107,8 @@ export class TeamDialog {
           name,
           email: c.email,
           active: c.active,
-          currentTeam: c.currentTeam ?? null,
+          // H10 : on ne signale pas l'équipe en cours de modification (le compte en est déjà membre).
+          currentTeam: c.currentTeam && c.currentTeam.id !== editedTeamId ? c.currentTeam : null,
         };
       });
   });
@@ -132,8 +139,11 @@ export class TeamDialog {
     this.originCy = active instanceof HTMLElement ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null) : null;
     this.submitting.set(false);
     this.removedMemberName.set(null);
-    this.selectedManagerId.set(null);
-    this.form.reset({ name: '', managerId: null, memberIds: [] });
+    const team = this.team();
+    // Modification : valeurs de l'équipe (membres inactifs conservés, RG-05-11). Sans événement : RG-05-05 ne s'applique qu'à un choix.
+    const managerId = team?.manager.id ?? null;
+    this.selectedManagerId.set(managerId);
+    this.form.reset({ name: team?.name ?? '', managerId, memberIds: team?.members.map((m) => m.id) ?? [] }, { emitEvent: false });
     this.store.loadCandidates();
   }
 
@@ -189,11 +199,14 @@ export class TeamDialog {
       return;
     }
     this.submitting.set(true);
-    this.store.create({ name: value.name, managerId: value.managerId, memberIds: value.memberIds }).subscribe({
+    const edited = this.team();
+    const request = { name: value.name, managerId: value.managerId, memberIds: value.memberIds };
+    const request$ = edited ? this.store.update(edited.id, { ...request, version: edited.version }) : this.store.create(request);
+    request$.subscribe({
       next: (team) => {
         this.submitting.set(false);
         this.visible.set(false);
-        this.saved.emit({ mode: 'create', team });
+        this.saved.emit({ mode: edited ? 'update' : 'create', team });
       },
       error: (error: unknown) => {
         this.submitting.set(false);
@@ -201,6 +214,11 @@ export class TeamDialog {
         // RG-05-01 (name), RG-05-02 (managerId), RG-05-03 / RG-05-04 / RG-05-05 (memberIds) : sous le champ, dialogue ouvert.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 });
+        }
+        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        if (edited && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
+          this.visible.set(false);
+          this.conflict.emit();
         }
       },
     });

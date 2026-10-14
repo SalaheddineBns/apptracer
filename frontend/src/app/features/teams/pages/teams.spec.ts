@@ -22,12 +22,15 @@ const team = (id: number, over: Partial<TeamResponse> = {}): TeamResponse => {
 
 describe('TeamsPage', () => {
   const listTeams = vi.fn();
+  const add = vi.fn();
+  let fixtureRef: ReturnType<typeof TestBed.createComponent<TeamsPage>>;
   let root: HTMLElement;
   let whenStable: () => Promise<unknown>;
 
   async function open(): Promise<void> {
-    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams } }, MessageService] });
+    TestBed.configureTestingModule({ providers: [{ provide: TeamsService, useValue: { listTeams, listTeamManagerCandidates: () => of([]), listTeamMemberCandidates: () => of([]) } }, { provide: MessageService, useValue: { add } }] });
     const fixture = TestBed.createComponent(TeamsPage);
+    fixtureRef = fixture;
     root = fixture.nativeElement as HTMLElement;
     whenStable = () => fixture.whenStable();
     await whenStable();
@@ -39,6 +42,7 @@ describe('TeamsPage', () => {
     // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     listTeams.mockReset();
+    add.mockReset();
     TestBed.resetTestingModule();
   });
 
@@ -94,5 +98,28 @@ describe('TeamsPage', () => {
     listTeams.mockReturnValue(of([team(1)]));
     await open();
     expect(cy('btn-nouvelle-equipe')).not.toBeNull();
+  });
+
+  it('« Modifier » ouvre le dialogue E2 avec l’équipe de la ligne, « Nouvelle équipe » le rouvre en création', async () => {
+    listTeams.mockReturnValue(of([team(1, { name: 'Produit' })]));
+    await open();
+    expect(cy('btn-modifier-equipe-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Modifier l’équipe Produit');
+    const page = fixtureRef.componentInstance as unknown as { dialogVisible(): boolean; editing(): unknown };
+    cy('btn-modifier-equipe-1')?.querySelector('button')?.click();
+    await whenStable();
+    expect(page.dialogVisible()).toBe(true);
+    expect(page.editing()).toEqual(expect.objectContaining({ id: 1 }));
+    cy('btn-nouvelle-equipe')?.querySelector('button')?.click();
+    await whenStable();
+    expect(page.editing()).toBeNull();
+  });
+
+  it('le toast de création a le titre « Équipe créée », celui d’une modification « Équipe mise à jour »', async () => {
+    listTeams.mockReturnValue(of([]));
+    await open();
+    const page = fixtureRef.componentInstance as unknown as { onSaved(e: { mode: 'create' | 'update'; team: TeamResponse }): void };
+    page.onSaved({ mode: 'create', team: team(1) });
+    page.onSaved({ mode: 'update', team: team(1) });
+    expect(add.mock.calls.map((c) => c[0].summary)).toEqual(['Équipe créée', 'Équipe mise à jour']);
   });
 });

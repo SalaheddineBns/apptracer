@@ -1,5 +1,5 @@
 <p-dialog
-  header="Nouvelle équipe"
+  [header]="isEdit() ? 'Modifier l’équipe' : 'Nouvelle équipe'"
   [(visible)]="visible"
   [modal]="true"
   [draggable]="false"
@@ -80,6 +80,7 @@
           filterPlaceholder="Rechercher un membre"
           [filter]="true"
           [showToggleAll]="false"
+          [pt]="{ dropdown: { 'data-cy': 'btn-ouvrir-membres' } }"
           [readonly]="submitting()"
           inputId="team-members"
           ariaLabelledBy="team-members-label"
