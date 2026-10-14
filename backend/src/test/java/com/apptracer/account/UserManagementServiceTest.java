@@ -11,10 +11,12 @@ import static org.mockito.Mockito.when;
 import com.apptracer.account.domain.Role;
 import com.apptracer.account.domain.User;
 import com.apptracer.account.repository.UserRepository;
+import com.apptracer.account.service.AccountTeamLinks;
 import com.apptracer.account.service.SessionRevoker;
 import com.apptracer.account.service.UserService;
 import com.apptracer.common.error.BusinessException;
 import com.apptracer.common.error.ResourceNotFoundException;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,7 +31,9 @@ class UserManagementServiceTest {
 
   private final UserRepository users = mock(UserRepository.class);
   private final SessionRevoker revoker = mock(SessionRevoker.class);
-  private final UserService service = new UserService(users, new BCryptPasswordEncoder(4), revoker);
+  private final AccountTeamLinks teamLinks = mock(AccountTeamLinks.class);
+  private final UserService service =
+      new UserService(users, new BCryptPasswordEncoder(4), revoker, teamLinks);
 
   @BeforeEach
   void setUp() {
@@ -43,6 +47,7 @@ class UserManagementServiceTest {
     f.setAccessible(true);
     f.set(u, id);
     when(users.findById(id)).thenReturn(Optional.of(u));
+    when(users.findByIdForUpdate(id)).thenReturn(Optional.of(u));
     return u;
   }
 
@@ -144,6 +149,108 @@ class UserManagementServiceTest {
     assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 5))
         .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     verify(users, never()).saveAndFlush(any());
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : un manager d'équipe ne peut pas être désactivé (équipe nommée)")
+  void managerOfTeamCannotBeDeactivated() throws Exception {
+    User u = existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit"));
+
+    assertThatThrownBy(() -> service.deactivate(ADMIN_ID, USER_ID))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e -> {
+              assertThat(e.getRgCode()).isEqualTo("RG-05-10");
+              assertThat(e.getMessage()).contains("« Produit »");
+              assertThat(e.getErrors()).isEmpty();
+            });
+    assertThat(u.isActive()).isTrue();
+    verify(users, never()).saveAndFlush(any());
+    verify(revoker, never()).revokeAllOnDeactivation(any());
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : le message nomme toutes les équipes dont le compte est manager")
+  void messageNamesAllTeams() throws Exception {
+    existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit", "Technique"));
+
+    assertThatThrownBy(() -> service.deactivate(ADMIN_ID, USER_ID))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e -> assertThat(e.getMessage()).contains("« Produit »").contains("« Technique »"));
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : un manager sans équipe se désactive")
+  void managerWithoutTeamCanBeDeactivated() throws Exception {
+    existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of());
+
+    assertThat(service.deactivate(ADMIN_ID, USER_ID).isActive()).isFalse();
+    verify(revoker).revokeAllOnDeactivation(USER_ID);
+  }
+
+  @Test
+  @DisplayName(
+      "RG-05-10 : le rôle MANAGER ne peut pas être retiré (vers USER) à un manager d'équipe")
+  void managerRoleCannotBeRemovedToUser() throws Exception {
+    User u = existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit"));
+
+    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 0))
+        .isInstanceOfSatisfying(
+            BusinessException.class,
+            e -> {
+              assertThat(e.getRgCode()).isEqualTo("RG-05-10");
+              assertThat(e.getErrors()).extracting("field").containsExactly("role");
+            });
+    assertThat(u.getRole()).isEqualTo(Role.MANAGER);
+    verify(users, never()).saveAndFlush(any());
+    verify(revoker, never()).revokeAllOnRoleChange(any());
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : le rôle MANAGER ne peut pas être retiré (vers ADMIN) non plus")
+  void managerRoleCannotBeRemovedToAdmin() throws Exception {
+    existing(USER_ID, Role.MANAGER, true);
+    when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit"));
+
+    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0))
+        .isInstanceOfSatisfying(
+            BusinessException.class, e -> assertThat(e.getRgCode()).isEqualTo("RG-05-10"));
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : modifier le nom d'un manager d'équipe en gardant MANAGER est permis")
+  void managerOfTeamCanBeRenamedKeepingRole() throws Exception {
+    existing(USER_ID, Role.MANAGER, true);
+
+    service.update(ADMIN_ID, USER_ID, "Nouveau", "Nom", Role.MANAGER, 0);
+
+    verify(teamLinks, never()).managedTeamNames(any());
+  }
+
+  @Test
+  @DisplayName("RG-05-10 : un compte qui n'est pas MANAGER n'est pas interrogé sur ses équipes")
+  void nonManagerIsNotChecked() throws Exception {
+    existing(USER_ID, Role.USER, true);
+
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+
+    verify(teamLinks, never()).managedTeamNames(any());
+  }
+
+  @Test
+  @DisplayName("Concurrence : update et deactivate chargent le compte avec un verrou exclusif")
+  void accountIsLockedForUpdate() throws Exception {
+    existing(USER_ID, Role.USER, true);
+
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 0);
+    service.deactivate(ADMIN_ID, USER_ID);
+
+    verify(users, org.mockito.Mockito.times(2)).findByIdForUpdate(USER_ID);
   }
 
   @Test

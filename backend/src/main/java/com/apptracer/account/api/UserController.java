@@ -144,7 +144,10 @@ public class UserController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "409",
-      description = "Règle RG-03-13 violée, ou compte modifié entre-temps (conflit de version)",
+      description =
+          "Règle RG-03-13 violée (retrait de son propre rôle ADMIN), RG-05-10 violée (rôle MANAGER"
+              + " retiré à un compte manager d'une équipe, erreur sur le champ role), ou compte"
+              + " modifié entre-temps (conflit de version)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public UserResponse updateUser(
       @PathVariable Long id, @Valid @RequestBody UpdateUserRequest request) {
@@ -178,7 +181,9 @@ public class UserController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "409",
-      description = "Désactivation de son propre compte (RG-03-13)",
+      description =
+          "Désactivation de son propre compte (RG-03-13), ou d'un compte manager d'une équipe"
+              + " (RG-05-10, le message nomme l'équipe)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public UserResponse deactivateUser(@PathVariable Long id) {
     return mapper.toResponse(userService.deactivate(currentUser.currentUserId(), id));

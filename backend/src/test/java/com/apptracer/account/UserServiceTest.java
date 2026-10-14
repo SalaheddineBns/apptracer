@@ -28,7 +28,11 @@ class UserServiceTest {
   private final UserRepository users = mock(UserRepository.class);
   private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(4);
   private final UserService service =
-      new UserService(users, encoder, mock(com.apptracer.account.service.SessionRevoker.class));
+      new UserService(
+          users,
+          encoder,
+          mock(com.apptracer.account.service.SessionRevoker.class),
+          mock(com.apptracer.account.service.AccountTeamLinks.class));
 
   private User create() {
     when(users.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
