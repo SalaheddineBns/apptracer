@@ -25,7 +25,8 @@ class TeamQueryServiceTest {
   private final TeamRepository teams = mock(TeamRepository.class);
   private final TeamMemberRepository members = mock(TeamMemberRepository.class);
   private final UserRepository users = mock(UserRepository.class);
-  private final TeamService service = new TeamService(teams, members, users);
+  private final TeamService service =
+      new TeamService(teams, members, users, java.time.Clock.systemUTC());
 
   private static void set(Object target, String name, Object value) {
     try {

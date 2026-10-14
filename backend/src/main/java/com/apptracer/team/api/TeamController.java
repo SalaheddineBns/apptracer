@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -146,5 +147,47 @@ public class TeamController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public TeamResponse getTeam(@PathVariable Long id) {
     return mapper.toResponse(service.get(id));
+  }
+
+  @PutMapping("/{id}")
+  @PreAuthorize("hasRole('ADMIN')")
+  @Operation(
+      operationId = "updateTeam",
+      summary = "Modifier une équipe (nom, manager et liste complète des membres)")
+  @ApiResponse(responseCode = "200", description = "Équipe modifiée")
+  @ApiResponse(
+      responseCode = "400",
+      description = "Requête invalide (RG-05-01 longueur du nom)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Rôle insuffisant (RG-05-08)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "404",
+      description = "Équipe introuvable (ou supprimée)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "409",
+      description =
+          "Règle de gestion violée : RG-05-01 (nom déjà utilisé), RG-05-02 (manager non éligible),"
+              + " RG-05-03 (membre non éligible), RG-05-04 (membre déjà dans une autre équipe),"
+              + " RG-05-05 (manager choisi comme membre) ; ou équipe modifiée entre-temps"
+              + " (conflit de version, sans code)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public TeamResponse updateTeam(
+      @PathVariable Long id, @Valid @RequestBody UpdateTeamRequest request) {
+    return mapper.toResponse(
+        service.update(
+            currentUser.currentUserId(),
+            id,
+            request.name(),
+            request.managerId(),
+            request.memberIds(),
+            request.version()));
   }
 }

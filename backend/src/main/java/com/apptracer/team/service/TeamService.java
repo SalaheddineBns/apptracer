@@ -10,6 +10,8 @@ import com.apptracer.team.domain.Team;
 import com.apptracer.team.domain.TeamMember;
 import com.apptracer.team.repository.TeamMemberRepository;
 import com.apptracer.team.repository.TeamRepository;
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,11 +53,14 @@ public class TeamService {
   private final TeamRepository teams;
   private final TeamMemberRepository members;
   private final UserRepository users;
+  private final Clock clock;
 
-  public TeamService(TeamRepository teams, TeamMemberRepository members, UserRepository users) {
+  public TeamService(
+      TeamRepository teams, TeamMemberRepository members, UserRepository users, Clock clock) {
     this.teams = teams;
     this.members = members;
     this.users = users;
+    this.clock = clock;
   }
 
   /**
@@ -74,6 +80,53 @@ public class TeamService {
     // RG-05-04 : la clé primaire de team_members couvre les créations concurrentes
     members.saveAllAndFlush(ids.stream().map(id -> new TeamMember(id, team.getId())).toList());
     return new TeamDetails(team, sorted(checked.members()));
+  }
+
+  /**
+   * Remplace d'un bloc le nom, le manager et la liste complète des membres, avec les mêmes
+   * contrôles qu'à la création (hors RG-05-04 pour les membres déjà dans cette équipe). Les membres
+   * conservés gardent leur rattachement, les retirés le perdent, les nouveaux en reçoivent un.
+   * RG-05-14 : tout changement de manager ou de membres met à jour l'équipe (date, auteur,
+   * version).
+   */
+  @Transactional
+  public TeamDetails update(
+      Long actorId, Long id, String name, Long managerId, List<Long> memberIds, long version) {
+    // RG-05-09 : une équipe supprimée est introuvable
+    Team team =
+        teams
+            .findActiveById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    if (team.getVersion() != version) {
+      throw new ObjectOptimisticLockingFailureException(Team.class, id);
+    }
+    String teamName = normalizeName(name);
+    checkNameAvailable(teamName, id);
+    Set<Long> ids = distinct(memberIds);
+    Checked checked = checkManagerAndMembers(managerId, ids, id);
+
+    List<TeamMember> current = members.findByTeamIdsSorted(List.of(id));
+    Set<Long> currentIds = current.stream().map(TeamMember::getUserId).collect(Collectors.toSet());
+    List<TeamMember> removed = current.stream().filter(m -> !ids.contains(m.getUserId())).toList();
+    List<TeamMember> added =
+        ids.stream().filter(u -> !currentIds.contains(u)).map(u -> new TeamMember(u, id)).toList();
+
+    team.setName(teamName);
+    team.setManager(checked.manager());
+    if (!removed.isEmpty() || !added.isEmpty()) {
+      // RG-05-14 : un changement de membres trace la modification sur l'équipe elle-même
+      team.touch(Instant.now(clock), actorId);
+    }
+    if (!removed.isEmpty()) {
+      members.deleteAll(removed);
+      members.flush();
+    }
+    // RG-05-04 : la clé primaire de team_members couvre les modifications concurrentes
+    members.saveAll(added);
+    // RG-00-04 : updated_at / updated_by renseignés par l'audit JPA
+    Team saved = teams.saveAndFlush(team);
+    return new TeamDetails(saved, sorted(checked.members()));
   }
 
   @Transactional(readOnly = true)
