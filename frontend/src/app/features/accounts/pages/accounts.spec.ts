@@ -136,6 +136,23 @@ describe('AccountsPage', () => {
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'success' }));
   });
 
+  it('CA-05-07 : le refus 409 RG-05-10 laisse la ligne « Actif », sans toast de succès, et le bouton « Désactiver » redevient disponible', async () => {
+    listUsers.mockReturnValue(pageOf([account(2, { role: Role.Manager })]));
+    deactivateUser.mockReturnValue(
+      throwError(() => new HttpErrorResponse({ status: 409, error: { code: 'RG-05-10', detail: 'Ce compte est manager de l’équipe « Produit ».' } })),
+    );
+    await open();
+    await click('btn-desactiver-2');
+    confirm.mock.calls[0][0].accept();
+    await whenStable();
+    expect(deactivateUser).toHaveBeenCalledWith(2);
+    expect(cy('statut-compte-2')?.textContent).toContain('Actif');
+    expect(cy('btn-desactiver-2')).not.toBeNull();
+    expect((cy('btn-desactiver-2')?.querySelector('button') as HTMLButtonElement).disabled).toBe(false);
+    expect(cy('btn-reactiver-2')).toBeNull();
+    expect(add).not.toHaveBeenCalled();
+  });
+
   it('désactivation annulée : aucun appel à l’API', async () => {
     listUsers.mockReturnValue(pageOf([account(2)]));
     await open();

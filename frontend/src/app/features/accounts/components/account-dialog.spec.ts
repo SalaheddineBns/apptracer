@@ -154,6 +154,36 @@ describe('AccountDialog', () => {
     expect(fixture.componentInstance.visible()).toBe(true);
   });
 
+  it('CA-05-08 : retirer le rôle MANAGER à un manager d’équipe, le 409 RG-05-10 s’affiche sous le champ rôle, dialogue ouvert, sans toast', async () => {
+    const detail = 'Ce compte est manager de l’équipe « Produit ». Désignez un autre manager ou supprimez l’équipe avant de changer son rôle.';
+    updateUser.mockReturnValue(httpError(409, { status: 409, code: 'RG-05-10', detail, errors: [{ field: 'role', message: detail }] }));
+    await open(existing({ role: Role.Manager }));
+    fixture.componentInstance['form'].controls.role.setValue(Role.User);
+    await submit();
+    expect(updateUser).toHaveBeenCalledWith(2, expect.objectContaining({ role: Role.User }));
+    expect(error('champ-role')?.textContent).toContain('« Produit »');
+    expect(fixture.componentInstance.visible()).toBe(true);
+    expect(fixture.componentInstance['form'].controls.role.value).toBe(Role.User);
+    expect(add).not.toHaveBeenCalled();
+    expect(saved).not.toHaveBeenCalled();
+    expect(conflict).not.toHaveBeenCalled();
+  });
+
+  it('CA-05-08 : un nouveau choix de rôle efface le message RG-05-10 et permet de réenregistrer', async () => {
+    updateUser
+      .mockReturnValueOnce(httpError(409, { status: 409, code: 'RG-05-10', detail: 'Manager d’une équipe.', errors: [{ field: 'role', message: 'Manager d’une équipe.' }] }))
+      .mockReturnValueOnce(of(existing({ role: Role.Manager })));
+    await open(existing({ role: Role.Manager }));
+    fixture.componentInstance['form'].controls.role.setValue(Role.User);
+    await submit();
+    expect(error('champ-role')).not.toBeNull();
+    fixture.componentInstance['form'].controls.role.setValue(Role.Manager);
+    await fixture.whenStable();
+    expect(error('champ-role')).toBeNull();
+    await submit();
+    expect(saved).toHaveBeenCalledTimes(1);
+  });
+
   it('modification concurrente : 409 sans code, le dialogue se ferme et la liste est rechargée', async () => {
     updateUser.mockReturnValue(httpError(409, { status: 409, type: 'https://apptracer/errors/concurrent-modification', detail: 'Ce compte a été modifié entre-temps.' }));
     await open(existing());

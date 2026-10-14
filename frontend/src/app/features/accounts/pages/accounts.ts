@@ -100,7 +100,12 @@ export class AccountsPage {
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>
-        this.store.deactivate(user.id).subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est désactivé.`)),
+        this.store.deactivate(user.id).subscribe({
+          next: () => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est désactivé.`),
+          // RG-05-10 (manager d'une équipe, 409 nommant l'équipe), RG-03-13 : le refus est affiché en toast par l'intercepteur
+          // d'erreurs, la ligne reste inchangée (« Actif ») et son bouton est de nouveau disponible.
+          error: () => undefined,
+        }),
     });
   }
 

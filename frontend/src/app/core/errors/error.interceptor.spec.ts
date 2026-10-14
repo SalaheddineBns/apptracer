@@ -35,6 +35,13 @@ describe('errorInterceptor', () => {
     expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'error', detail: 'Compte déjà existant' }));
   });
 
+  it('CA-05-07 : un 409 RG-05-10 sans errors[] s’affiche en toast avec le détail, qui nomme l’équipe', () => {
+    const detail = 'Ce compte est manager de l’équipe « Produit ». Désignez un autre manager ou supprimez l’équipe avant de le désactiver.';
+    fail({ detail, code: 'RG-05-10' }, 409);
+    expect(add).toHaveBeenCalledWith(expect.objectContaining({ severity: 'error', detail }));
+    expect(add.mock.calls[0][0].detail).toContain('« Produit »');
+  });
+
   it('n’affiche pas de toast pour un 401 (traité par l’intercepteur JWT)', () => {
     fail({ detail: 'Non authentifié' }, 401);
     expect(add).not.toHaveBeenCalled();
