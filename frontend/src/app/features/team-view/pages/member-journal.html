@@ -3,6 +3,7 @@
     <h1 class="flex flex-wrap items-center gap-2 text-2xl font-semibold text-color m-0 wrap-anywhere" data-cy="titre-journal-membre">
       @if (memberName(); as name) {
         <span>Journal de {{ name }}</span>
+        <!-- RG-04-07 : membre inactif signalé, ses saisies restent consultables. -->
         @if (store.memberJournal()?.member?.active === false) {
           <p-tag value="Inactif" severity="secondary" [attr.data-cy]="'tag-inactif-' + store.memberJournal()?.member?.id" />
         }

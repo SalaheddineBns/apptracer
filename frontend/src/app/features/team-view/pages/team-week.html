@@ -40,7 +40,8 @@
       <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
     </section>
   } @else {
-    <!-- Masquée quand la vue est refusée : chaque semaine renverrait le même refus. -->
+    <!-- RG-04-04 : semaine du lundi au dimanche, précédente et suivante. Masquée quand la vue est refusée : chaque
+         semaine renverrait le même refus. -->
     @if (!store.summaryForbidden()) {
       <app-week-navigator [weekStart]="weekStart()" (weekStartChange)="goToWeek($event)" />
     }
@@ -65,6 +66,7 @@
         @if (summary.members.length === 0) {
           <app-empty-state message="Cette équipe n'a aucun membre." icon="pi pi-users" />
         } @else {
+          <!-- RG-04-09 : membres triés par nom puis prénom par l'API ; l'ordre reçu n'est jamais retrié ici. -->
           <p-table
             [value]="summary.members"
             [scrollable]="true"
@@ -95,6 +97,7 @@
                       [attr.data-cy]="'lien-membre-' + row.member.id"
                       >{{ memberName(row.member) }}</a
                     >
+                    <!-- RG-04-07 : un membre inactif reste affiché, signalé comme tel. -->
                     @if (!row.member.active) {
                       <p-tag value="Inactif" severity="secondary" [attr.data-cy]="'tag-inactif-' + row.member.id" />
                     }
