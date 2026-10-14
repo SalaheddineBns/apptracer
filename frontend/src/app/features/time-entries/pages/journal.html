@@ -26,13 +26,14 @@
             data-cy="btn-nouvelle-saisie-vide"
           />
         </app-empty-state>
-      } @else {
-        <app-week-journal
-          [week]="week"
-          (edit)="openEdit($event)"
-          (remove)="confirmRemove($event)"
-        />
       }
+      <!-- Affichée même sans saisie : chaque jour porte son « + ». -->
+      <app-week-journal
+        [week]="week"
+        (add)="openCreate($event)"
+        (edit)="openEdit($event)"
+        (remove)="confirmRemove($event)"
+      />
     } @else {
       <div
         class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2"
@@ -54,6 +55,7 @@
 <app-time-entry-dialog
   [(visible)]="dialogVisible"
   [entry]="editing()"
+  [initialDate]="initialDate()"
   (saved)="onSaved($event)"
   (conflict)="store.reload()"
 />

@@ -168,11 +168,11 @@ function openJournal(account: Credentials, week = WEEK): void {
 }
 
 /** Ouvre le dialogue de saisie et attend les listes et la journée standard qu'il relit à chaque ouverture. */
-function openNewEntry(): void {
+function openNewEntry(button = 'btn-nouvelle-saisie'): void {
   cy.intercept('GET', '/api/v1/activity-types').as('types');
   cy.intercept('GET', SETTINGS_URL).as('settings');
   cy.intercept('POST', ENTRIES_URL).as('create');
-  cy.getCy('btn-nouvelle-saisie').find('button').click();
+  cy.getCy(button).find('button').click();
   cy.getCy('dialogue-saisie').should('be.visible');
   cy.wait('@types');
   cy.wait('@settings');
@@ -592,6 +592,25 @@ describe('SFD-01 : saisie des activités', () => {
     cy.getCy('nav-comptes').should('be.visible');
     cy.getCy('nav-mon-journal').should('not.exist');
     cy.getCy('titre-journal').should('not.exist');
+  });
+
+  it('SFD-01 E1 : le « + » d’un jour ouvre la saisie à la date de ce jour, même dans une semaine sans saisie', () => {
+    createAccount('USER').then((account) => {
+      openJournal(account);
+      cy.getCy('etat-vide').should('be.visible');
+      openNewEntry('btn-ajouter-saisie-2026-10-07');
+      cy.getCy('champ-date-debut').find('input').should('have.value', '07/10/2026');
+      typeIn('champ-heure-debut', '14:00');
+      typeIn('champ-heure-fin', '15:00');
+      chooseType('REUNION');
+      save();
+      cy.wait('@create').then(({ request, response }) => {
+        expect(request.body.startDate).to.eq('2026-10-07');
+        expect(response?.statusCode).to.eq(201);
+      });
+      cy.getCy('jour-2026-10-07').find('[data-cy="saisie-periode"]').should('contain', '14:00 – 15:00');
+      cy.getCy('etat-vide').should('not.exist');
+    });
   });
 
   it('SFD-01 E1 : « Semaine suivante » et « Semaine précédente » changent la semaine affichée et celle de l’URL', () => {

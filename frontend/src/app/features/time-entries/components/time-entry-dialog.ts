@@ -77,6 +77,8 @@ export class TimeEntryDialog {
   readonly visible = model(false);
   /** Saisie à modifier, ou `null` pour une création. */
   readonly entry = input<TimeEntryResponse | null>(null);
+  /** Date de début proposée pour une création (`YYYY-MM-DD`, « + » d'un jour du journal) ; la date du jour sinon. */
+  readonly initialDate = input<string | null>(null);
   readonly saved = output<TimeEntrySaved>();
   /** Modification concurrente détectée : l'appelant recharge la semaine. */
   readonly conflict = output<void>();
@@ -226,11 +228,12 @@ export class TimeEntryDialog {
     this.settings.load();
     this.today.set(isoToLocalDate(todayInParis()));
     const entry = this.entry();
+    const initialDate = this.initialDate();
     // RG-01-12 : tous les champs sont repris, granularité comprise. RG-02-06 : un type ou un projet désactivé n'est
     // plus proposé, sa valeur n'est pas reprise et l'utilisateur doit en choisir un actif.
     this.form.reset({
       granularity: entry?.granularity ?? Granularity.Hour,
-      startDate: entry ? isoToLocalDate(entry.startDate) : this.today(),
+      startDate: isoToLocalDate(entry?.startDate ?? initialDate ?? todayInParis()),
       endDate: entry?.endDate ? isoToLocalDate(entry.endDate) : null,
       startTime: entry?.startTime ? timeStringToDate(entry.startTime) : null,
       endTime: entry?.endTime ? timeStringToDate(entry.endTime) : null,

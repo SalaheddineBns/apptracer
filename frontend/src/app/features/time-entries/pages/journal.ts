@@ -57,6 +57,8 @@ export class JournalPage {
   protected readonly dialogVisible = signal(false);
   /** Saisie en cours de modification ; `null` pour une création. */
   protected readonly editing = signal<TimeEntryResponse | null>(null);
+  /** Date de début proposée à la création, quand elle vient du « + » d'un jour. */
+  protected readonly initialDate = signal<string | null>(null);
 
   constructor() {
     effect(() => {
@@ -65,7 +67,9 @@ export class JournalPage {
     });
   }
 
-  protected openCreate(): void {
+  /** `day` : date du « + » d'un jour du journal ; sans elle (bouton « Nouvelle saisie »), la date du jour est proposée. */
+  protected openCreate(day: string | null = null): void {
+    this.initialDate.set(day);
     this.editing.set(null);
     this.dialogVisible.set(true);
   }

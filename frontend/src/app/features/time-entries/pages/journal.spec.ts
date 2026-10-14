@@ -179,6 +179,31 @@ describe('JournalPage', () => {
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-10-05');
   });
 
+  it('SFD-01 E1 : le « + » d’un jour ouvre une création à la date de ce jour, « Nouvelle saisie » sans date proposée', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
+    await open();
+    const page = harness.routeDebugElement?.componentInstance as {
+      dialogVisible: { (): boolean; set(value: boolean): void };
+      editing(): TimeEntryResponse | null;
+      initialDate(): string | null;
+    };
+    await click('btn-ajouter-saisie-2026-10-07');
+    expect(page.dialogVisible()).toBe(true);
+    expect(page.editing()).toBeNull();
+    expect(page.initialDate()).toBe('2026-10-07');
+    page.dialogVisible.set(false);
+    await click('btn-nouvelle-saisie');
+    expect(page.initialDate()).toBeNull();
+  });
+
+  it('SFD-01 E1 : une semaine sans saisie affiche quand même ses jours et leurs « + »', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([], 0)));
+    await open();
+    expect(cy('etat-vide')).not.toBeNull();
+    expect(cy('jour-2026-10-05')).not.toBeNull();
+    expect(cy('btn-ajouter-saisie-2026-10-05')).not.toBeNull();
+  });
+
   it('RG-01-12 : « Modifier » ouvre le dialogue sur la saisie, « Nouvelle saisie » repart d’une création', async () => {
     listMyTimeEntries.mockReturnValue(of(week([meeting()], 90)));
     await open();

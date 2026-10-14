@@ -119,10 +119,11 @@ describe('TimeEntryCard', () => {
 });
 
 describe('WeekJournal', () => {
-  async function render(value: WeeklyTimeEntriesResponse, editable = true) {
+  async function render(value: WeeklyTimeEntriesResponse, editable = true, today = '2026-10-14') {
     const fixture = TestBed.createComponent(WeekJournal);
     fixture.componentRef.setInput('week', value);
     fixture.componentRef.setInput('editable', editable);
+    fixture.componentRef.setInput('today', today);
     await fixture.whenStable();
     const root = fixture.nativeElement as HTMLElement;
     const entriesOf = (iso: string) =>
@@ -181,10 +182,35 @@ describe('WeekJournal', () => {
     expect(removed).toHaveBeenCalledWith(expect.objectContaining({ id: 1 }));
   });
 
-  it('en lecture seule, les saisies n’ont aucun bouton', async () => {
+  it('en lecture seule, ni les saisies ni les jours n’ont de bouton', async () => {
     const { root } = await render(week([hour()], 90), false);
     expect(root.querySelector('[data-cy="saisie-1"]')).not.toBeNull();
-    expect(root.querySelector('[data-cy="saisie-1"] button')).toBeNull();
+    expect(root.querySelector('button')).toBeNull();
+  });
+
+  it('SFD-01 E1 : chaque jour porte un « + » nommé, qui émet la date de ce jour', async () => {
+    const { fixture, root } = await render(week([hour()], 90));
+    const added = vi.fn();
+    fixture.componentInstance.add.subscribe(added);
+    expect(root.querySelectorAll('[data-cy^="btn-ajouter-saisie-"]')).toHaveLength(7);
+    const button = root.querySelector<HTMLElement>(
+      '[data-cy="btn-ajouter-saisie-2026-10-07"] button',
+    );
+    expect(button?.getAttribute('aria-label')).toBe('Ajouter une saisie le mercredi 07/10');
+    button?.click();
+    expect(added).toHaveBeenCalledWith('2026-10-07');
+  });
+
+  it('RG-01-07 : pas de « + » sur un jour futur ; le jour même en porte un', async () => {
+    const { root } = await render(week([], 0), true, '2026-10-07');
+    const days = Array.from(root.querySelectorAll('[data-cy^="btn-ajouter-saisie-"]')).map((b) =>
+      b.getAttribute('data-cy'),
+    );
+    expect(days).toEqual([
+      'btn-ajouter-saisie-2026-10-05',
+      'btn-ajouter-saisie-2026-10-06',
+      'btn-ajouter-saisie-2026-10-07',
+    ]);
   });
 });
 

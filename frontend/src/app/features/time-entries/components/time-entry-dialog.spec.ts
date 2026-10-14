@@ -62,7 +62,10 @@ describe('TimeEntryDialog', () => {
   const conflict = vi.fn();
   let fixture: ReturnType<typeof TestBed.createComponent<TimeEntryDialog>>;
 
-  async function open(entry: TimeEntryResponse | null = null): Promise<void> {
+  async function open(
+    entry: TimeEntryResponse | null = null,
+    initialDate: string | null = null,
+  ): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
         { provide: ActivityTypesService, useValue: { listActivityTypes } },
@@ -79,6 +82,7 @@ describe('TimeEntryDialog', () => {
     fixture.componentInstance.saved.subscribe(saved);
     fixture.componentInstance.conflict.subscribe(conflict);
     fixture.componentRef.setInput('entry', entry);
+    fixture.componentRef.setInput('initialDate', initialDate);
     fixture.componentRef.setInput('visible', true);
     await fixture.whenStable();
     await fixture.whenStable();
@@ -478,6 +482,27 @@ describe('TimeEntryDialog', () => {
       );
       await fixture.whenStable();
       expect(fixture.componentInstance.visible()).toBe(true);
+    });
+  });
+
+  describe('date proposée', () => {
+    it('SFD-01 E1 : ouvert par le « + » d’un jour, le dialogue propose la date de ce jour', async () => {
+      createTimeEntry.mockReturnValue(of(savedEntry()));
+      await open(null, '2026-10-07');
+      expect(form().get('startDate')?.value).toEqual(date('2026-10-07'));
+      await fill({ startTime: time('09:00'), endTime: time('10:30'), activityTypeCode: 'REUNION' });
+      await submit();
+      expect(createTimeEntry.mock.calls[0][0].startDate).toBe('2026-10-07');
+    });
+
+    it('sans date proposée, une nouvelle saisie part de la date du jour à Paris', async () => {
+      await open();
+      expect(form().get('startDate')?.value).toEqual(date(todayInParis()));
+    });
+
+    it('RG-01-12 : en modification, la date de la saisie prime sur la date proposée', async () => {
+      await open(savedEntry(), '2026-10-07');
+      expect(form().get('startDate')?.value).toEqual(date('2026-10-05'));
     });
   });
 
