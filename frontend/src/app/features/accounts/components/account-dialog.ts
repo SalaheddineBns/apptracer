@@ -1,4 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, model, output, signal, untracked } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  effect,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  untracked,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -22,7 +34,15 @@ export interface AccountSaved {
 /** SFD-03 E5 Dialogue compte : création (account = null) ou modification d'un compte existant. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, FieldError, PasswordField],
+  imports: [
+    ReactiveFormsModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
+    SelectModule,
+    FieldError,
+    PasswordField,
+  ],
   selector: 'app-account-dialog',
   templateUrl: './account-dialog.html',
 })
@@ -86,7 +106,9 @@ export class AccountDialog {
       }
     };
     window.addEventListener('keydown', blockEscapeWhileSubmitting, true);
-    inject(DestroyRef).onDestroy(() => window.removeEventListener('keydown', blockEscapeWhileSubmitting, true));
+    inject(DestroyRef).onDestroy(() =>
+      window.removeEventListener('keydown', blockEscapeWhileSubmitting, true),
+    );
 
     effect(() => {
       if (this.visible()) {
@@ -98,7 +120,10 @@ export class AccountDialog {
   private prepare(): void {
     const account = this.account();
     const active = document.activeElement;
-    this.originCy = active instanceof HTMLElement ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null) : null;
+    this.originCy =
+      active instanceof HTMLElement
+        ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null)
+        : null;
     this.submitting.set(false);
     this.form.reset({
       firstName: account?.firstName ?? '',
@@ -127,7 +152,11 @@ export class AccountDialog {
    */
   protected focusFirstField(firstField: HTMLInputElement): void {
     const active = document.activeElement;
-    if (active !== firstField && active instanceof HTMLElement && firstField.form?.contains(active)) {
+    if (
+      active !== firstField &&
+      active instanceof HTMLElement &&
+      firstField.form?.contains(active)
+    ) {
       return;
     }
     firstField.focus();
@@ -141,7 +170,11 @@ export class AccountDialog {
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {
-      setTimeout(() => document.querySelector<HTMLElement>(`[data-cy="${cy}"] button, button[data-cy="${cy}"]`)?.focus());
+      setTimeout(() =>
+        document
+          .querySelector<HTMLElement>(`[data-cy="${cy}"] button, button[data-cy="${cy}"]`)
+          ?.focus(),
+      );
     }
   }
 
@@ -157,7 +190,12 @@ export class AccountDialog {
     const account = this.account();
     const value = this.form.getRawValue();
     const request$ = account
-      ? this.store.update(account.id, { firstName: value.firstName, lastName: value.lastName, role: value.role, version: account.version })
+      ? this.store.update(account.id, {
+          firstName: value.firstName,
+          lastName: value.lastName,
+          role: value.role,
+          version: account.version,
+        })
       : this.store.create({
           firstName: value.firstName,
           lastName: value.lastName,
@@ -176,10 +214,20 @@ export class AccountDialog {
         const problem = toProblem(error);
         // CA-03-10 / RG-03-02 / RG-03-13 : les errors[] de l'API s'affichent sous le champ, le dialogue reste ouvert.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
-          this.messages.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 });
+          this.messages.add({
+            severity: 'error',
+            summary: 'Erreur',
+            detail: e.message,
+            life: 5000,
+          });
         }
         // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
-        if (account && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
+        if (
+          account &&
+          problem.status === 409 &&
+          problem.code === null &&
+          problem.fieldErrors.length === 0
+        ) {
           this.visible.set(false);
           this.conflict.emit();
         }
