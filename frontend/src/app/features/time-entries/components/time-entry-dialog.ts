@@ -41,6 +41,7 @@ import {
   notFutureValidator,
   quarterHourValidator,
   TIME_STEP_MINUTES,
+  quarterHourFloor,
   timeStringToDate,
   toTimeString,
 } from './time-entry-period';
@@ -121,6 +122,16 @@ export class TimeEntryDialog {
     { initialValue: this.form.getRawValue() },
   );
   protected readonly granularity = computed(() => this.value().granularity);
+
+  /** RG-01-01 : heure de l'ouverture du dialogue, arrondie au quart d'heure inférieur. */
+  private readonly openedAt = signal(quarterHourFloor(new Date()));
+  /** Heure proposée par le sélecteur de début quand il est vide : toujours un multiple de 15 minutes. */
+  protected readonly defaultStartTime = computed(() => this.openedAt());
+  /** Sélecteur de fin vide : il part de l'heure de début saisie (alignée), sinon de la même heure que le début. */
+  protected readonly defaultEndTime = computed(() => {
+    const start = this.value().startTime;
+    return start instanceof Date ? quarterHourFloor(start) : this.openedAt();
+  });
 
   /** RG-01-05, RG-02-03 : le projet n'est demandé que si le type choisi l'exige (CA-01-06). */
   protected readonly projectRequired = computed(() => {
@@ -227,6 +238,7 @@ export class TimeEntryDialog {
     // CA-06-03 : la journée standard est rechargée à chaque ouverture pour suivre une modification du paramètre.
     this.settings.load();
     this.today.set(isoToLocalDate(todayInParis()));
+    this.openedAt.set(quarterHourFloor(new Date()));
     const entry = this.entry();
     const initialDate = this.initialDate();
     // RG-01-12 : tous les champs sont repris, granularité comprise. RG-02-06 : un type ou un projet désactivé n'est

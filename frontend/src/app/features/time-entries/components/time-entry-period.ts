@@ -31,6 +31,16 @@ export function timeStringToDate(time: string): Date {
   return date;
 }
 
+/**
+ * RG-01-01 : heure proposée par un sélecteur vide, alignée sur le pas de 15 minutes (arrondie au quart d'heure
+ * inférieur). Sans elle, PrimeNG part de l'heure courante (14:07) et ses flèches donnent 14:22, 14:37…
+ */
+export function quarterHourFloor(time: Date): Date {
+  const date = new Date(time);
+  date.setMinutes(Math.floor(date.getMinutes() / TIME_STEP_MINUTES) * TIME_STEP_MINUTES, 0, 0);
+  return date;
+}
+
 function sibling(control: AbstractControl, name: string): Date | null {
   const value: unknown = control.parent?.get(name)?.value;
   return value instanceof Date ? value : null;

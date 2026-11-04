@@ -16,10 +16,12 @@ import {
 } from '../../../core/api/generated';
 import { addDays, isoToLocalDate, todayInParis } from '../../../shared/dates/week';
 import { TimeEntryDialog } from './time-entry-dialog';
-import { timeStringToDate } from './time-entry-period';
+import { quarterHourFloor, timeStringToDate } from './time-entry-period';
 
 const date = (iso: string) => isoToLocalDate(iso);
 const time = (value: string) => timeStringToDate(value);
+const toTime = (date: Date) =>
+  `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 const type = (id: number, code: string, projectRequired = false): ActivityTypeResponse => ({
   id,
   code,
@@ -482,6 +484,38 @@ describe('TimeEntryDialog', () => {
       );
       await fixture.whenStable();
       expect(fixture.componentInstance.visible()).toBe(true);
+    });
+  });
+
+  describe('heure proposée par les sélecteurs vides', () => {
+    afterEach(() => vi.useRealTimers());
+
+    it('RG-01-01 : l’arrondi part du quart d’heure inférieur', () => {
+      const at = (h: number, m: number) => new Date(2026, 9, 5, h, m, 42, 123);
+      expect(toTime(quarterHourFloor(at(14, 7)))).toBe('14:00');
+      expect(toTime(quarterHourFloor(at(14, 15)))).toBe('14:15');
+      expect(toTime(quarterHourFloor(at(14, 59)))).toBe('14:45');
+      expect(quarterHourFloor(at(14, 7)).getSeconds()).toBe(0);
+    });
+
+    it('RG-01-01 : à 14:07, les heures de début et de fin proposées sont 14:00, jamais 14:07', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 5, 14, 7, 30));
+      await open();
+      const dialog = fixture.componentInstance as unknown as {
+        defaultStartTime(): Date;
+        defaultEndTime(): Date;
+      };
+      expect(toTime(dialog.defaultStartTime())).toBe('14:00');
+      expect(toTime(dialog.defaultEndTime())).toBe('14:00');
+      expect(form().get('startTime')?.value).toBeNull();
+    });
+
+    it('RG-01-01 : une fois l’heure de début saisie, le sélecteur de fin part de cette heure', async () => {
+      await open();
+      await fill({ startTime: time('09:30') });
+      const dialog = fixture.componentInstance as unknown as { defaultEndTime(): Date };
+      expect(toTime(dialog.defaultEndTime())).toBe('09:30');
     });
   });
 
