@@ -6,6 +6,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
 import {
   ActivityTypesService,
+  CreateTimeEntryRequest,
+  UpdateTimeEntryRequest,
   AppSettingsService,
   Granularity,
   ProjectsService,
@@ -15,6 +17,7 @@ import {
   WeeklyTimeEntriesResponse,
 } from '../../../core/api/generated';
 import { mondayOf, todayInParis } from '../../../shared/dates/week';
+import { TimeEntriesStore } from '../data/time-entries.store';
 import { JournalPage } from './journal';
 
 const meeting = (over: Partial<TimeEntryResponse> = {}): TimeEntryResponse => ({
@@ -45,6 +48,24 @@ const week = (
   totalMinutes: number,
   weekStart = '2026-10-05',
 ): WeeklyTimeEntriesResponse => ({ weekStart, weekEnd: '2026-10-11', totalMinutes, days: [], entries });
+
+/** Semaine du 05/10/2026 avec les totaux par jour de l'API (lundi → dimanche), à 0 par défaut. */
+const weekWithDays = (
+  entries: TimeEntryResponse[],
+  minutesByDate: Record<string, number>,
+): WeeklyTimeEntriesResponse => {
+  const days = ['05', '06', '07', '08', '09', '10', '11'].map((day) => ({
+    date: `2026-10-${day}`,
+    minutes: minutesByDate[`2026-10-${day}`] ?? 0,
+  }));
+  return {
+    weekStart: '2026-10-05',
+    weekEnd: '2026-10-11',
+    totalMinutes: days.reduce((sum, day) => sum + day.minutes, 0),
+    days,
+    entries,
+  };
+};
 
 describe('JournalPage', () => {
   const listMyTimeEntries = vi.fn();
@@ -354,5 +375,122 @@ describe('JournalPage', () => {
     await click('btn-semaine-precedente');
     expect(TestBed.inject(Router).url).toBe('/journal?semaine=2026-09-28');
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-09-28');
+  });
+
+  describe('SFD-07 : total du jour', () => {
+    const total = (iso: string) => cy(`total-jour-${iso}`)?.textContent?.trim();
+    const label = (iso: string) =>
+      cy(`jour-${iso}`)?.querySelector('.sr-only')?.textContent?.trim();
+
+    it('CA-07-01 : le lundi 05/10/2026 avec 09:00–10:30 et 14:00–16:00 affiche 3,5 h', async () => {
+      listMyTimeEntries.mockReturnValue(
+        of(
+          weekWithDays(
+            [meeting(), meeting({ id: 3, startTime: '14:00', endTime: '16:00', durationMinutes: 120 })],
+            { '2026-10-05': 210 },
+          ),
+        ),
+      );
+      await open();
+      expect(total('2026-10-05')).toBe('3,5 h');
+      expect(label('2026-10-05')).toBe('Total du lundi : 3,5 h');
+    });
+
+    it('CA-07-02 : une PLAGE du jeudi au mardi affiche 8 h le jeudi et le vendredi, « – » le week-end', async () => {
+      const range = meeting({
+        granularity: Granularity.Range,
+        startDate: '2026-10-08',
+        endDate: '2026-10-13',
+        startTime: null,
+        endTime: null,
+        durationMinutes: 2880,
+      });
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([range], { '2026-10-08': 480, '2026-10-09': 480 })));
+      await open();
+      expect(total('2026-10-08')).toBe('8 h');
+      expect(total('2026-10-09')).toBe('8 h');
+      expect(total('2026-10-10')).toBe('–');
+      expect(total('2026-10-11')).toBe('–');
+    });
+
+    it('CA-07-03 : une JOURNEE le samedi 10/10/2026 affiche 8 h', async () => {
+      listMyTimeEntries.mockReturnValue(
+        of(weekWithDays([fullDay({ startDate: '2026-10-10', durationMinutes: 480 })], { '2026-10-10': 480 })),
+      );
+      await open();
+      expect(total('2026-10-10')).toBe('8 h');
+    });
+
+    it('CA-07-04 : après la suppression de la saisie, le lundi passe de 3,5 h à 2 h et le total de la semaine diminue de 1,5 h', async () => {
+      const second = meeting({ id: 3, startTime: '14:00', endTime: '16:00', durationMinutes: 120 });
+      listMyTimeEntries.mockReturnValueOnce(of(weekWithDays([meeting(), second], { '2026-10-05': 210 })));
+      deleteTimeEntry.mockReturnValue(of(null));
+      await open();
+      expect(total('2026-10-05')).toBe('3,5 h');
+      expect(cy('total-semaine')?.textContent).toContain('3,5 h');
+      await click('btn-supprimer-saisie-1');
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([second], { '2026-10-05': 120 })));
+      confirm.mock.calls[0][0].accept();
+      await harness.fixture.whenStable();
+      expect(total('2026-10-05')).toBe('2 h');
+      expect(cy('total-semaine')?.textContent).toContain('2 h');
+    });
+
+    it('RG-07-07 : après une création puis une modification, la semaine est rechargée et le total du jour suit', async () => {
+      const createTimeEntry = vi.fn().mockReturnValue(of(meeting()));
+      const updateTimeEntry = vi.fn().mockReturnValue(of(meeting()));
+      listMyTimeEntries.mockReturnValueOnce(of(weekWithDays([], {})));
+      await open();
+      Object.assign(TestBed.inject(TimeEntriesService), { createTimeEntry, updateTimeEntry });
+      const store = TestBed.inject(TimeEntriesStore);
+      expect(total('2026-10-05')).toBe('–');
+
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([meeting()], { '2026-10-05': 90 })));
+      store.create({} as CreateTimeEntryRequest).subscribe();
+      await harness.fixture.whenStable();
+      expect(total('2026-10-05')).toBe('1,5 h');
+
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([meeting()], { '2026-10-05': 120 })));
+      store.update(1, {} as UpdateTimeEntryRequest).subscribe();
+      await harness.fixture.whenStable();
+      expect(total('2026-10-05')).toBe('2 h');
+    });
+
+    it('CA-07-05 : 90 min le lundi et une JOURNEE le mardi donnent 1,5 h, 8 h, « – » ailleurs, et 9,5 h pour la semaine', async () => {
+      listMyTimeEntries.mockReturnValue(
+        of(weekWithDays([meeting(), fullDay({ durationMinutes: 480 })], { '2026-10-05': 90, '2026-10-06': 480 })),
+      );
+      await open();
+      expect(total('2026-10-05')).toBe('1,5 h');
+      expect(total('2026-10-06')).toBe('8 h');
+      for (const day of ['07', '08', '09', '10', '11']) {
+        expect(total(`2026-10-${day}`)).toBe('–');
+      }
+      expect(cy('total-semaine')?.textContent).toContain('9,5 h');
+    });
+
+    it('CA-07-07 : un MANAGER voit les totaux de ses jours sur la même page « Mon journal »', async () => {
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([meeting()], { '2026-10-05': 90 })));
+      await open();
+      expect(cy('titre-journal')?.textContent).toContain('Mon journal');
+      expect(total('2026-10-05')).toBe('1,5 h');
+      expect(root.querySelectorAll('[data-cy^="total-jour-"]')).toHaveLength(7);
+    });
+
+    it('CA-07-08 : une saisie de 09:00 à 09:15 le lundi affiche 0,25 h', async () => {
+      listMyTimeEntries.mockReturnValue(
+        of(weekWithDays([meeting({ endTime: '09:15', durationMinutes: 15 })], { '2026-10-05': 15 })),
+      );
+      await open();
+      expect(total('2026-10-05')).toBe('0,25 h');
+    });
+
+    it('RG-07-01 : une semaine sans saisie affiche « – » chaque jour, lu « Total du lundi : 0 h »', async () => {
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([], {})));
+      await open();
+      expect(total('2026-10-05')).toBe('–');
+      expect(label('2026-10-05')).toBe('Total du lundi : 0 h');
+      expect(cy('total-jour-2026-10-05')?.getAttribute('aria-hidden')).toBe('true');
+    });
   });
 });

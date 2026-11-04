@@ -25,7 +25,16 @@ import { coversDay } from './time-entry.ui';
                 <span class="capitalize">{{ day.name }}</span>
                 <span class="text-muted-color tabular-nums"> {{ day.label }}</span>
               </h2>
-              @if (editable() && day.addable) {
+              <div class="flex items-center gap-2">
+                @if (showDayTotals()) {
+                  <span class="text-sm tabular-nums text-color">
+                    <span aria-hidden="true" [class.text-muted-color]="day.minutes === 0" [attr.data-cy]="'total-jour-' + day.iso">{{
+                      day.minutes === 0 ? '–' : (day.minutes | decimalHours)
+                    }}</span>
+                    <span class="sr-only">Total du {{ day.name }} : {{ day.minutes | decimalHours }}</span>
+                  </span>
+                }
+                @if (editable() && day.addable) {
                 <p-button
                   type="button"
                   icon="pi pi-plus"
@@ -36,7 +45,8 @@ import { coversDay } from './time-entry.ui';
                   (onClick)="add.emit(day.iso)"
                   [attr.data-cy]="'btn-ajouter-saisie-' + day.iso"
                 />
-              }
+                }
+              </div>
             </div>
             @for (entry of day.entries; track entry.id) {
               <app-time-entry-card
@@ -73,6 +83,8 @@ export class WeekJournal {
   readonly showDuration = input(true);
   /** Commentaire limité à 3 lignes. */
   readonly clampComment = input(false);
+  /** SFD-07 E1 : total du jour dans l'en-tête, tiré de `week.days` (RG-07-02, aucun recalcul) ; faux hors « Mon journal ». */
+  readonly showDayTotals = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
   /** Date du jour (`YYYY-MM-DD`), à Paris par défaut (RG-00-01) : borne des jours où l'on peut saisir. */
@@ -83,12 +95,14 @@ export class WeekJournal {
   protected readonly days = computed(() => {
     const week = this.week();
     const today = this.today();
+    const totals = new Map(week.days.map((total) => [total.date, total.minutes]));
     return weekDays(week.weekStart).map((iso) => ({
       iso,
       // RG-01-07 : pas de saisie à une date de début future, donc pas de « + » sur un jour à venir.
       addable: iso <= today,
       name: formatWeekdayName(iso),
       label: formatDayMonth(iso),
+      minutes: totals.get(iso) ?? 0,
       // L'ordre de l'API (date puis heure de début) est conservé.
       entries: week.entries.filter((entry) => coversDay(entry, iso)),
     }));

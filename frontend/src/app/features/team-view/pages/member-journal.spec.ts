@@ -137,6 +137,16 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     expect(buttons.every((name) => ['btn-retour-equipe', 'btn-semaine-precedente', 'btn-semaine-suivante'].includes(name ?? ''))).toBe(true);
   });
 
+  it('SFD-07 : le journal d’un membre n’affiche pas le total de chaque jour', async () => {
+    const data = journal([meeting()], 90);
+    data.week.days = [{ date: '2026-10-05', minutes: 90 }];
+    listTeamMemberTimeEntries.mockReturnValue(of(data));
+    await open();
+    expect(cy('jour-2026-10-05')).not.toBeNull();
+    expect(root.querySelector('[data-cy^="total-jour-"]')).toBeNull();
+    expect(root.textContent).not.toContain('Total du lundi');
+  });
+
   it('CA-04-12 : un membre dont le compte est désactivé affiche la mention « Inactif » et ses saisies restent consultables', async () => {
     listTeamMemberTimeEntries.mockReturnValue(of(journal([meeting()], 90, false)));
     await open();
