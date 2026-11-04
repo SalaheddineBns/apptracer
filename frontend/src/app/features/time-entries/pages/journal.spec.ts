@@ -44,7 +44,7 @@ const week = (
   entries: TimeEntryResponse[],
   totalMinutes: number,
   weekStart = '2026-10-05',
-): WeeklyTimeEntriesResponse => ({ weekStart, weekEnd: '2026-10-11', totalMinutes, entries });
+): WeeklyTimeEntriesResponse => ({ weekStart, weekEnd: '2026-10-11', totalMinutes, days: [], entries });
 
 describe('JournalPage', () => {
   const listMyTimeEntries = vi.fn();

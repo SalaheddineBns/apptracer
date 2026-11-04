@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { DailyTotal } from './dailyTotal';
 import { TimeEntryResponse } from './timeEntryResponse';
 
 
@@ -14,6 +15,7 @@ export interface WeeklyTimeEntriesResponse {
     weekStart: string;
     weekEnd: string;
     totalMinutes: number;
+    days: Array<DailyTotal>;
     entries: Array<TimeEntryResponse>;
 }
 

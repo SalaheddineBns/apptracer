@@ -3033,6 +3033,20 @@
         },
         "required" : [ "content", "page", "size", "totalElements" ]
       },
+      "DailyTotal" : {
+        "type" : "object",
+        "properties" : {
+          "date" : {
+            "type" : "string",
+            "format" : "date"
+          },
+          "minutes" : {
+            "type" : "integer",
+            "format" : "int32"
+          }
+        },
+        "required" : [ "date", "minutes" ]
+      },
       "WeeklyTimeEntriesResponse" : {
         "type" : "object",
         "properties" : {
@@ -3048,6 +3062,12 @@
             "type" : "integer",
             "format" : "int32"
           },
+          "days" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/DailyTotal"
+            }
+          },
           "entries" : {
             "type" : "array",
             "items" : {
@@ -3055,7 +3075,7 @@
             }
           }
         },
-        "required" : [ "entries", "totalMinutes", "weekEnd", "weekStart" ]
+        "required" : [ "days", "entries", "totalMinutes", "weekEnd", "weekStart" ]
       },
       "TeamMemberCandidateResponse" : {
         "type" : "object",
@@ -3111,20 +3131,6 @@
           }
         },
         "required" : [ "id", "name" ]
-      },
-      "DailyTotal" : {
-        "type" : "object",
-        "properties" : {
-          "date" : {
-            "type" : "string",
-            "format" : "date"
-          },
-          "minutes" : {
-            "type" : "integer",
-            "format" : "int32"
-          }
-        },
-        "required" : [ "date", "minutes" ]
       },
       "MemberWeekSummary" : {
         "type" : "object",

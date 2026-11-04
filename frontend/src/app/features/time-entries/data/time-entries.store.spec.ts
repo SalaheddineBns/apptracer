@@ -24,7 +24,7 @@ function entry(id: number, durationMinutes: number): TimeEntryResponse {
 }
 
 function week(weekStart: string, entries: TimeEntryResponse[], totalMinutes: number) {
-  return { weekStart, weekEnd: '2026-10-11', totalMinutes, entries } as WeeklyTimeEntriesResponse;
+  return { weekStart, weekEnd: '2026-10-11', totalMinutes, days: [], entries } as WeeklyTimeEntriesResponse;
 }
 
 describe('TimeEntriesStore', () => {

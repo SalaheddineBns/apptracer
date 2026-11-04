@@ -32,7 +32,7 @@ const journal = (
 ): MemberWeeklyTimeEntriesResponse => ({
   team: { id: 7, name: 'Alpha' },
   member: { id: 10, firstName: 'Ada', lastName: 'Durand', active },
-  week: { weekStart: '2026-10-05', weekEnd: '2026-10-11', totalMinutes, entries },
+  week: { weekStart: '2026-10-05', weekEnd: '2026-10-11', totalMinutes, days: [], entries },
 });
 
 describe('MemberJournalPage (SFD-04 E2)', () => {

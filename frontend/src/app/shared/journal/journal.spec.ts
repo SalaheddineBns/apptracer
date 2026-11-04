@@ -48,6 +48,7 @@ const week = (entries: TimeEntryResponse[], totalMinutes: number): WeeklyTimeEnt
   weekStart: '2026-10-05',
   weekEnd: '2026-10-11',
   totalMinutes,
+  days: [],
   entries,
 });
 
