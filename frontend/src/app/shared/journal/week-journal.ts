@@ -20,14 +20,14 @@ import { coversDay } from './time-entry.ui';
       <ol class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2 list-none m-0 p-0">
         @for (day of days(); track day.iso) {
           <li class="flex flex-col gap-2 min-w-0" [attr.data-cy]="'jour-' + day.iso">
-            <div class="flex items-center justify-between gap-2 min-h-8">
-              <h2 class="text-sm font-medium text-color m-0">
-                <span class="capitalize">{{ day.name }}</span>
-                <span class="text-muted-color tabular-nums"> {{ day.label }}</span>
+            <div class="flex items-center justify-between gap-2 min-h-8 md:flex-col md:items-start md:justify-start md:gap-1">
+              <h2 class="text-sm font-medium text-color m-0 min-w-0 md:flex md:flex-col md:w-full">
+                <span class="capitalize md:truncate">{{ day.name }}</span>
+                <span class="text-muted-color tabular-nums md:truncate"> {{ day.label }}</span>
               </h2>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center justify-end gap-2 md:justify-between md:w-full md:min-h-8">
                 @if (showDayTotals()) {
-                  <span class="text-sm tabular-nums text-color">
+                  <span class="text-sm tabular-nums text-color whitespace-nowrap">
                     <span aria-hidden="true" [class.text-muted-color]="day.minutes === 0" [attr.data-cy]="'total-jour-' + day.iso">{{
                       day.minutes === 0 ? '–' : (day.minutes | decimalHours)
                     }}</span>

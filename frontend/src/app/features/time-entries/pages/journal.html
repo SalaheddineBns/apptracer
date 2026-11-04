@@ -40,7 +40,10 @@
       >
         @for (day of skeletonDays; track day) {
           <div class="flex flex-col gap-2">
-            <p-skeleton width="5rem" height="1.25rem" />
+            <div class="flex items-center justify-between gap-2 min-h-8 md:flex-col md:items-start md:justify-start md:gap-1">
+              <p-skeleton width="5rem" height="1.25rem" styleClass="md:h-10!" />
+              <p-skeleton width="2rem" height="2rem" styleClass="md:self-end" />
+            </div>
             <p-skeleton height="6rem" />
           </div>
         }
