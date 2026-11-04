@@ -29,7 +29,7 @@ const day = (over: Partial<TimeEntryResponse> = {}): TimeEntryResponse =>
     endTime: null,
     activityType: { code: 'TRAVAIL_PROJET', label: 'Travail projet', color: TagColor.Info, active: true },
     project: { code: 'APOLLO', name: 'Apollo', active: true },
-    durationMinutes: 420,
+    durationMinutes: 480,
     ...over,
   });
 const range = (over: Partial<TimeEntryResponse> = {}): TimeEntryResponse =>
@@ -75,7 +75,7 @@ describe('TimeEntryCard', () => {
     const { cy } = await render(day());
     expect(cy('saisie-projet')?.textContent).toContain('Apollo');
     expect(cy('saisie-periode')?.textContent).toContain('Journée entière');
-    expect(cy('saisie-duree')?.textContent).toContain('7 h 00');
+    expect(cy('saisie-duree')?.textContent).toContain('8 h 00');
   });
 
   it('affiche les bornes et la durée enregistrée d’une PLAGE', async () => {
@@ -151,7 +151,7 @@ describe('WeekJournal', () => {
   }
 
   it('SFD-01 E1 : sept jours du lundi au dimanche, chaque saisie sur son jour', async () => {
-    const { root, entriesOf } = await render(week([hour(), day()], 510));
+    const { root, entriesOf } = await render(week([hour(), day()], 570));
     const days = Array.from(root.querySelectorAll('[data-cy^="jour-"]'));
     expect(days.map((d) => d.getAttribute('data-cy'))).toEqual([
       'jour-2026-10-05',
@@ -171,20 +171,20 @@ describe('WeekJournal', () => {
     expect(root.querySelector('[data-cy="jour-2026-10-07"]')?.textContent).toContain('Aucune saisie');
   });
 
-  it('CA-01-09 : des saisies de 90 min et 7 h donnent un total affiché de 8,5 h', async () => {
-    const { root } = await render(week([hour(), day()], 510));
-    expect(root.querySelector('[data-cy="total-semaine"]')?.textContent).toContain('8,5 h');
+  it('CA-01-09 : des saisies de 90 min et 8 h donnent un total affiché de 9,5 h', async () => {
+    const { root } = await render(week([hour(), day()], 570));
+    expect(root.querySelector('[data-cy="total-semaine"]')?.textContent).toContain('9,5 h');
   });
 
   it('RG-01-13 : une PLAGE est affichée sur chaque jour couvert, week-end compris, et le total vient de l’API', async () => {
     // Plage du jeudi 08/10 au mardi 13/10 : 4 jours ouvrés au total, dont 2 dans la semaine affichée.
-    const { root, entriesOf } = await render(week([range()], 840));
+    const { root, entriesOf } = await render(week([range()], 960));
     expect(entriesOf('2026-10-07')).toEqual([]);
     for (const iso of ['2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']) {
       expect(entriesOf(iso)).toEqual(['saisie-3']);
     }
-    // Le front n'additionne pas la durée enregistrée de la plage (28 h) : il affiche le total de l'API (14 h).
-    expect(root.querySelector('[data-cy="total-semaine"]')?.textContent).toContain('14 h');
+    // Le front n'additionne pas la durée enregistrée de la plage (32 h) : il affiche le total de l'API (16 h).
+    expect(root.querySelector('[data-cy="total-semaine"]')?.textContent).toContain('16 h');
   });
 
   it('relaie « Modifier » et « Supprimer » d’une saisie', async () => {

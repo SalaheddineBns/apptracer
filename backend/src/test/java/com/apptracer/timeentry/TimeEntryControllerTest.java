@@ -74,7 +74,7 @@ class TimeEntryControllerTest {
     // saisies avant comptes ; types et projets de test avant comptes ; installation restaurée
     jdbc.execute("DELETE FROM time_entries");
     jdbc.execute(
-        "UPDATE app_settings SET standard_day_minutes = 420, version = 0,"
+        "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL");
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN"
@@ -168,7 +168,7 @@ class TimeEntryControllerTest {
     TimeEntry saved = entries.findAll().get(0);
     assertThat(saved.getUserId()).isEqualTo(user.getId());
     assertThat(saved.getCreatedBy()).isEqualTo(user.getId());
-    assertThat(saved.getStandardDayMinutes()).isEqualTo(420);
+    assertThat(saved.getStandardDayMinutes()).isEqualTo(480);
   }
 
   @Test
@@ -251,7 +251,7 @@ class TimeEntryControllerTest {
   void dayShape() throws Exception {
     create(user, dayBody("2026-10-10")) // samedi
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.durationMinutes").value(420))
+        .andExpect(jsonPath("$.durationMinutes").value(480))
         .andExpect(jsonPath("$.startTime").doesNotExist());
     create(
             user,
@@ -269,11 +269,11 @@ class TimeEntryControllerTest {
   }
 
   @Test
-  @DisplayName("CA-01-03 : RG-01-03, PLAGE FORMATION du 05/10 au 16/10/2026 = 4200 min")
+  @DisplayName("CA-01-03 : RG-01-03, PLAGE FORMATION du 05/10 au 16/10/2026 = 4800 min")
   void rangeCreated() throws Exception {
     create(user, rangeBody("2026-10-05", "2026-10-16", "FORMATION", null))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.durationMinutes").value(4200))
+        .andExpect(jsonPath("$.durationMinutes").value(4800))
         .andExpect(jsonPath("$.endDate").value("2026-10-16"));
   }
 
@@ -425,11 +425,11 @@ class TimeEntryControllerTest {
   }
 
   @Test
-  @DisplayName("CA-06-04 : passer la journée standard à 450 ne change pas une saisie à 420 min")
+  @DisplayName("CA-06-04 : passer la journée standard à 450 ne change pas une saisie à 480 min")
   void existingEntryKeepsItsDuration() throws Exception {
     create(user, dayBody("2026-10-05"))
         .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.durationMinutes").value(420));
+        .andExpect(jsonPath("$.durationMinutes").value(480));
     Long id = entries.findAll().get(0).getId();
     mockMvc
         .perform(
@@ -441,8 +441,8 @@ class TimeEntryControllerTest {
     mockMvc
         .perform(as(get(URL + "/" + id), user, null))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.durationMinutes").value(420));
-    assertThat(entries.findById(id).orElseThrow().getStandardDayMinutes()).isEqualTo(420);
+        .andExpect(jsonPath("$.durationMinutes").value(480));
+    assertThat(entries.findById(id).orElseThrow().getStandardDayMinutes()).isEqualTo(480);
   }
 
   @Test

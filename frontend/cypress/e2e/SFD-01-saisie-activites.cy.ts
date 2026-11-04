@@ -6,7 +6,7 @@
 // qui saisiraient sur le même compte se gêneraient par chevauchement (RG-01-06) : chaque test crée donc par l'API
 // son ou ses comptes (e-mail unique), ses types et ses projets. Dates fixes et passées : semaine du lundi 05/10/2026.
 //
-// État partagé : la journée standard est une valeur unique pour toute l'application. Tout test la retrouve à 420
+// État partagé : la journée standard est une valeur unique pour toute l'application. Tout test la retrouve à 480
 // grâce au `afterEach`, qui la rétablit par l'API (y compris après un échec).
 
 // Module : évite les collisions de types globaux avec les autres fichiers de test.
@@ -45,7 +45,7 @@ const ENTRY_ROLES: EntryRole[] = ['USER', 'MANAGER'];
 const ENTRIES_URL = '/api/v1/time-entries';
 const SETTINGS_URL = '/api/v1/app-settings';
 const WEEK = '2026-10-05';
-const DEFAULT_MINUTES = 420;
+const DEFAULT_MINUTES = 480;
 const PASSWORD = 'Saisie-Test-2026';
 const MEETING = {
   granularity: 'HOUR',
@@ -249,7 +249,7 @@ describe('SFD-01 : saisie des activités', () => {
     });
   });
 
-  it('CA-01-03 : une PLAGE du lundi 05/10/2026 au vendredi 16/10/2026 en FORMATION vaut 10 jours ouvrés, 4 200 min', () => {
+  it('CA-01-03 : une PLAGE du lundi 05/10/2026 au vendredi 16/10/2026 en FORMATION vaut 10 jours ouvrés, 4 800 min', () => {
     createAccount('USER').then((account) => {
       openJournal(account);
       openNewEntry();
@@ -257,7 +257,7 @@ describe('SFD-01 : saisie des activités', () => {
       typeIn('champ-date-debut', '05/10/2026');
       typeIn('champ-date-fin', '16/10/2026');
       chooseType('FORMATION');
-      cy.getCy('duree-calculee').should('have.text', '70 h 00 (10 jours ouvrés)');
+      cy.getCy('duree-calculee').should('have.text', '80 h 00 (10 jours ouvrés)');
       save();
       cy.wait('@create').then(({ request, response }) => {
         expect(request.body).to.deep.eq({
@@ -267,13 +267,13 @@ describe('SFD-01 : saisie des activités', () => {
           activityTypeCode: 'FORMATION',
         });
         expect(response?.statusCode).to.eq(201);
-        expect(response?.body.durationMinutes).to.eq(4200);
+        expect(response?.body.durationMinutes).to.eq(4800);
       });
       // RG-01-13 : la plage est affichée sur chaque jour couvert ; le total ne compte que les 5 jours ouvrés de la semaine.
       ['2026-10-05', '2026-10-09', '2026-10-10', '2026-10-11'].forEach((day) => {
         cy.getCy(`jour-${day}`).find('[data-cy="saisie-periode"]').should('contain', 'Du 05/10 au 16/10');
       });
-      cy.getCy('total-semaine').should('have.text', '35 h');
+      cy.getCy('total-semaine').should('have.text', '40 h');
     });
   });
 
@@ -390,7 +390,7 @@ describe('SFD-01 : saisie des activités', () => {
     });
   });
 
-  it('CA-01-09 : avec des saisies de 90 min et 7 h dans la semaine, le total affiché est 8,5 h', () => {
+  it('CA-01-09 : avec des saisies de 90 min et 8 h dans la semaine, le total affiché est 9,5 h', () => {
     ENTRY_ROLES.forEach((role) => {
       createAccount(role).then((account) => {
         createEntry(account, MEETING);
@@ -398,7 +398,7 @@ describe('SFD-01 : saisie des activités', () => {
         openJournal(account);
         cy.getCy('jour-2026-10-05').find('[data-cy="saisie-periode"]').should('contain', '09:00 – 10:30');
         cy.getCy('jour-2026-10-06').find('[data-cy="saisie-periode"]').should('contain', 'Journée entière');
-        cy.getCy('total-semaine').should('have.text', '8,5 h');
+        cy.getCy('total-semaine').should('have.text', '9,5 h');
       });
     });
   });
@@ -488,20 +488,20 @@ describe('SFD-01 : saisie des activités', () => {
     });
   });
 
-  it('CA-06-04 : une JOURNEE enregistrée à 420 minutes reste à 420 quand l’ADMIN passe la journée standard à 450', () => {
+  it('CA-06-04 : une JOURNEE enregistrée à 480 minutes reste à 480 quand l’ADMIN passe la journée standard à 450', () => {
     createAccount('USER').then((account) => {
       createEntry(account, FULL_DAY).then((entry) => {
-        expect(entry.durationMinutes).to.eq(420);
+        expect(entry.durationMinutes).to.eq(480);
         setStandardDay(450);
         tokenOf(account).then((token) =>
           cy
             .request({ url: `${ENTRIES_URL}/${entry.id}`, headers: bearer(token) })
             .its('body.durationMinutes')
-            .should('eq', 420),
+            .should('eq', 480),
         );
         openJournal(account);
         cy.getCy('jour-2026-10-06').find('[data-cy="saisie-periode"]').should('contain', 'Journée entière');
-        cy.getCy('total-semaine').should('have.text', '7 h');
+        cy.getCy('total-semaine').should('have.text', '8 h');
       });
     });
   });
@@ -523,7 +523,7 @@ describe('SFD-01 : saisie des activités', () => {
           chooseType('TRAVAIL_PROJET');
           cy.getCy('select-projet').click();
           cy.getCy(`option-${project.code}`).click();
-          cy.getCy('duree-calculee').should('have.text', '7 h 00');
+          cy.getCy('duree-calculee').should('have.text', '8 h 00');
           save();
           cy.wait('@update').then(({ request, response }) => {
             expect(request.body).to.deep.eq({
@@ -534,14 +534,14 @@ describe('SFD-01 : saisie des activités', () => {
               version: entry.version,
             });
             expect(response?.statusCode).to.eq(200);
-            expect(response?.body.durationMinutes).to.eq(420);
+            expect(response?.body.durationMinutes).to.eq(480);
           });
           cy.getCy('toast').should('contain', 'Saisie modifiée');
           cy.getCy('jour-2026-10-05').within(() => {
             cy.getCy('saisie-projet').should('contain', project.name);
             cy.getCy('saisie-periode').should('contain', 'Journée entière');
           });
-          cy.getCy('total-semaine').should('have.text', '7 h');
+          cy.getCy('total-semaine').should('have.text', '8 h');
         });
       });
     });
@@ -553,7 +553,7 @@ describe('SFD-01 : saisie des activités', () => {
       createEntry(account, MEETING).then((entry) => {
         openJournal(account);
         cy.intercept('DELETE', `${ENTRIES_URL}/${entry.id}`).as('remove');
-        cy.getCy('total-semaine').should('have.text', '8,5 h');
+        cy.getCy('total-semaine').should('have.text', '9,5 h');
         cy.getCy(`btn-supprimer-saisie-${entry.id}`).find('button').click();
         cy.contains('Supprimer la saisie « Réunion » du 05/10 (1 h 30) ?').should('be.visible');
         // Annuler ne supprime rien.
@@ -565,7 +565,7 @@ describe('SFD-01 : saisie des activités', () => {
         cy.wait('@remove').its('response.statusCode').should('eq', 204);
         cy.getCy('toast').should('contain', 'Saisie supprimée');
         cy.getCy(`saisie-${entry.id}`).should('not.exist');
-        cy.getCy('total-semaine').should('have.text', '7 h');
+        cy.getCy('total-semaine').should('have.text', '8 h');
         // La saisie supprimée n'est plus lisible et ne bloque plus le même créneau.
         tokenOf(account).then((token) =>
           cy

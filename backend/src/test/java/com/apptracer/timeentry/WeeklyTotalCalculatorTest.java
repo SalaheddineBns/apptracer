@@ -23,7 +23,7 @@ class WeeklyTotalCalculatorTest {
   private static TimeEntry hour(LocalDate d, int from, int to, int minutes) {
     TimeEntry e = new TimeEntry(1L, TYPE);
     e.setPeriod(Granularity.HOUR, d, d, LocalTime.of(from, 0), LocalTime.of(to, 0));
-    e.setDuration(minutes, 420);
+    e.setDuration(minutes, 480);
     return e;
   }
 
@@ -42,12 +42,12 @@ class WeeklyTotalCalculatorTest {
   }
 
   @Test
-  @DisplayName("CA-01-09 : 90 min et 7 h dans la semaine donnent 510 min, soit 8,5 h")
+  @DisplayName("CA-01-09 : 90 min et 8 h dans la semaine donnent 570 min, soit 9,5 h")
   void ninetyMinutesAndSevenHours() {
     WeekTotals t =
-        calc.compute(List.of(hour(WEEK, 9, 10, 90), hour(WEEK.plusDays(1), 9, 10, 420)), WEEK);
-    assertThat(t.totalMinutes()).isEqualTo(510);
-    assertThat(t.minutesPerDay()).containsExactly(90, 420, 0, 0, 0, 0, 0);
+        calc.compute(List.of(hour(WEEK, 9, 10, 90), hour(WEEK.plusDays(1), 9, 10, 480)), WEEK);
+    assertThat(t.totalMinutes()).isEqualTo(570);
+    assertThat(t.minutesPerDay()).containsExactly(90, 480, 0, 0, 0, 0, 0);
   }
 
   @Test
@@ -62,13 +62,13 @@ class WeeklyTotalCalculatorTest {
   @DisplayName(
       "RG-01-13 : PLAGE du jeudi 08/10 au mardi 13/10 = 2 jours ouvrés dans chaque semaine")
   void rangeAcrossTwoWeeks() {
-    TimeEntry r = range(LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 13), 420, 4 * 420);
+    TimeEntry r = range(LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 13), 480, 4 * 480);
     WeekTotals first = calc.compute(List.of(r), WEEK);
-    assertThat(first.totalMinutes()).isEqualTo(840); // CA-04-07 : jeudi + vendredi
-    assertThat(first.minutesPerDay()).containsExactly(0, 0, 0, 420, 420, 0, 0);
+    assertThat(first.totalMinutes()).isEqualTo(960); // CA-04-07 : jeudi + vendredi
+    assertThat(first.minutesPerDay()).containsExactly(0, 0, 0, 480, 480, 0, 0);
     WeekTotals second = calc.compute(List.of(r), WEEK.plusDays(7));
-    assertThat(second.totalMinutes()).isEqualTo(840); // lundi + mardi
-    assertThat(second.minutesPerDay()).containsExactly(420, 420, 0, 0, 0, 0, 0);
+    assertThat(second.totalMinutes()).isEqualTo(960); // lundi + mardi
+    assertThat(second.minutesPerDay()).containsExactly(480, 480, 0, 0, 0, 0, 0);
     // la somme des semaines égale la durée enregistrée
     assertThat(first.totalMinutes() + second.totalMinutes()).isEqualTo(r.getDurationMinutes());
   }
@@ -76,16 +76,16 @@ class WeeklyTotalCalculatorTest {
   @Test
   @DisplayName("RG-01-13 : PLAGE entièrement sur un week-end compte 0")
   void rangeOnWeekendOnly() {
-    TimeEntry r = range(LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 11), 420, 0);
+    TimeEntry r = range(LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 11), 480, 0);
     assertThat(calc.compute(List.of(r), WEEK).totalMinutes()).isZero();
   }
 
   @Test
   @DisplayName("RG-01-08 : JOURNEE un samedi compte une journée standard dans la semaine")
   void dayOnSaturday() {
-    WeekTotals t = calc.compute(List.of(day(LocalDate.of(2026, 10, 10), 420)), WEEK);
-    assertThat(t.totalMinutes()).isEqualTo(420);
-    assertThat(t.minutesPerDay().get(5)).isEqualTo(420);
+    WeekTotals t = calc.compute(List.of(day(LocalDate.of(2026, 10, 10), 480)), WEEK);
+    assertThat(t.totalMinutes()).isEqualTo(480);
+    assertThat(t.minutesPerDay().get(5)).isEqualTo(480);
   }
 
   @Test
@@ -114,11 +114,11 @@ class WeeklyTotalCalculatorTest {
         calc.compute(
             List.of(
                 hour(WEEK, 9, 10, 60),
-                day(WEEK.plusDays(2), 420),
-                range(WEEK.plusDays(3), WEEK.plusDays(9), 420, 5 * 420)),
+                day(WEEK.plusDays(2), 480),
+                range(WEEK.plusDays(3), WEEK.plusDays(9), 480, 5 * 480)),
             WEEK);
     assertThat(t.totalMinutes())
         .isEqualTo(t.minutesPerDay().stream().mapToInt(Integer::intValue).sum());
-    assertThat(t.totalMinutes()).isEqualTo(60 + 420 + 2 * 420);
+    assertThat(t.totalMinutes()).isEqualTo(60 + 480 + 2 * 480);
   }
 }

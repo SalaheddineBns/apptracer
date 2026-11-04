@@ -13,7 +13,7 @@ class DurationCalculatorTest {
   private final DurationCalculator calc = new DurationCalculator();
 
   private int hour(LocalTime from, LocalTime to) {
-    return calc.compute(Granularity.HOUR, LocalDate.of(2026, 10, 5), null, from, to, 420);
+    return calc.compute(Granularity.HOUR, LocalDate.of(2026, 10, 5), null, from, to, 480);
   }
 
   private int day(LocalDate d, int std) {
@@ -54,49 +54,49 @@ class DurationCalculatorTest {
   @Test
   @DisplayName("RG-01-08 : JOURNEE vaut une journée standard, un jour de semaine")
   void dayWeekday() {
-    assertThat(day(LocalDate.of(2026, 10, 5), 420)).isEqualTo(420);
+    assertThat(day(LocalDate.of(2026, 10, 5), 480)).isEqualTo(480);
     assertThat(day(LocalDate.of(2026, 10, 5), 480)).isEqualTo(480);
   }
 
   @Test
   @DisplayName("RG-01-08 : JOURNEE un samedi ou un dimanche vaut une journée standard")
   void dayWeekend() {
-    assertThat(day(LocalDate.of(2026, 10, 10), 420)).isEqualTo(420); // samedi
-    assertThat(day(LocalDate.of(2026, 10, 11), 420)).isEqualTo(420); // dimanche
+    assertThat(day(LocalDate.of(2026, 10, 10), 480)).isEqualTo(480); // samedi
+    assertThat(day(LocalDate.of(2026, 10, 11), 480)).isEqualTo(480); // dimanche
   }
 
   @Test
-  @DisplayName("CA-01-03 : PLAGE du lundi 05/10 au vendredi 16/10/2026 = 10 jours ouvrés, 4200 min")
+  @DisplayName("CA-01-03 : PLAGE du lundi 05/10 au vendredi 16/10/2026 = 10 jours ouvrés, 4800 min")
   void rangeTwoWeeks() {
-    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 16), 420)).isEqualTo(4200);
+    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 16), 480)).isEqualTo(4800);
   }
 
   @Test
   @DisplayName("RG-01-08 : PLAGE, week-ends exclus du décompte")
   void rangeSkipsWeekends() {
     // vendredi 09/10 -> lundi 12/10 : 2 jours ouvrés
-    assertThat(range(LocalDate.of(2026, 10, 9), LocalDate.of(2026, 10, 12), 420)).isEqualTo(840);
+    assertThat(range(LocalDate.of(2026, 10, 9), LocalDate.of(2026, 10, 12), 480)).isEqualTo(960);
     // lundi -> dimanche : 5 jours ouvrés
-    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 11), 420)).isEqualTo(2100);
+    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 11), 480)).isEqualTo(2400);
   }
 
   @Test
   @DisplayName("RG-01-08 : PLAGE samedi-dimanche sans jour ouvré vaut 0 min")
   void rangeWithoutWeekday() {
-    assertThat(range(LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 11), 420)).isZero();
+    assertThat(range(LocalDate.of(2026, 10, 10), LocalDate.of(2026, 10, 11), 480)).isZero();
   }
 
   @Test
   @DisplayName("RG-01-08 : PLAGE, bornes de 2 jours et de 31 jours")
   void rangeBounds() {
     // 2 jours ouvrés consécutifs
-    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 6), 420)).isEqualTo(840);
+    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 6), 480)).isEqualTo(960);
     // 31 jours du lundi 05/10 au mercredi 04/11/2026 : 23 jours ouvrés
-    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 11, 4), 420))
-        .isEqualTo(23 * 420);
+    assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 11, 4), 480))
+        .isEqualTo(23 * 480);
     // 31 jours du samedi 03/10 au lundi 02/11/2026 : 21 jours ouvrés
-    assertThat(range(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 11, 2), 420))
-        .isEqualTo(21 * 420);
+    assertThat(range(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 11, 2), 480))
+        .isEqualTo(21 * 480);
   }
 
   @Test

@@ -78,18 +78,18 @@ describe('SettingsPage', () => {
     );
     await open();
     expect(cy('etat-erreur')?.textContent).toContain('Panne serveur');
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     (cy('btn-reessayer')?.querySelector('button') as HTMLButtonElement).click();
     await whenStable();
     expect(cy('form-parametres')).not.toBeNull();
     expect(cy('etat-erreur')).toBeNull();
   });
 
-  it('état nominal : la valeur du back est affichée en heures et minutes (420 min = 7 h 00), jamais modifiée', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+  it('état nominal : la valeur du back est affichée en heures et minutes (480 min = 8 h 00), jamais modifiée', async () => {
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     expect(getAppSettings).toHaveBeenCalledTimes(1);
-    expect(page.form.getRawValue()).toEqual({ hours: 7, minutes: 0 });
+    expect(page.form.getRawValue()).toEqual({ hours: 8, minutes: 0 });
     expect(root.querySelector('label[for="standard-day-hours"]')?.textContent).toContain('Heures');
     expect(root.querySelector('label[for="standard-day-minutes"]')?.textContent).toContain(
       'Minutes',
@@ -99,19 +99,19 @@ describe('SettingsPage', () => {
   });
 
   it('RG-06-06 : « Enregistrer » est inactif tant que la valeur n’a pas changé, sans requête', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     expect(button().disabled).toBe(true);
     await submit();
     expect(updateAppSettings).not.toHaveBeenCalled();
     await enter(7, 30);
     expect(button().disabled).toBe(false);
-    await enter(7, 0);
+    await enter(8, 0);
     expect(button().disabled).toBe(true);
   });
 
   it('CA-06-02 : enregistrer 7 h 30 envoie 450 minutes, affiche la valeur et la dernière modification (heure de Paris)', async () => {
-    getAppSettings.mockReturnValue(of(settings(420, 2)));
+    getAppSettings.mockReturnValue(of(settings(480, 2)));
     updateAppSettings.mockReturnValue(
       of(
         settings(450, 3, {
@@ -137,7 +137,7 @@ describe('SettingsPage', () => {
   });
 
   it('CA-06-05 : 7 h 10 met le champ en erreur et ne lance aucune requête', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     await enter(7, 10);
     await submit();
@@ -146,7 +146,7 @@ describe('SettingsPage', () => {
   });
 
   it('un 400 du back sur standardDayMinutes s’affiche sous le champ, sans toast', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     updateAppSettings.mockReturnValue(
       throwError(
         () =>
@@ -168,7 +168,7 @@ describe('SettingsPage', () => {
 
   it('modification concurrente (409) : message clair et le formulaire reprend la valeur rechargée', async () => {
     getAppSettings
-      .mockReturnValueOnce(of(settings(420, 0)))
+      .mockReturnValueOnce(of(settings(480, 0)))
       .mockReturnValueOnce(of(settings(480, 1)));
     updateAppSettings.mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 409, error: { detail: 'Conflit' } })),
@@ -182,7 +182,7 @@ describe('SettingsPage', () => {
   });
 
   it('clics rapprochés : une seule requête, bouton en chargement pendant l’appel', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     updateAppSettings.mockReturnValue(new Subject());
     await open();
     await enter(7, 30);
@@ -210,7 +210,7 @@ describe('SettingsPage', () => {
   }
 
   it('F2 : une valeur tapée hors bornes n’est jamais ramenée en silence, elle reste en erreur sans requête', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     await typeInto('champ-heures', '75');
     expect(page.form.getRawValue().hours).toBe(75);
@@ -224,7 +224,7 @@ describe('SettingsPage', () => {
   });
 
   it('F1 : une minute tapée à 50 reste 50 et donne l’erreur de validation, jamais 45', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     await typeInto('champ-minutes', '50');
     expect(page.form.getRawValue().minutes).toBe(50);
@@ -234,7 +234,7 @@ describe('SettingsPage', () => {
   });
 
   it('F1 : les flèches des minutes ne donnent que 0, 15, 30 et 45', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     await open();
     const seen: (number | null)[] = [];
     for (let i = 0; i < 5; i++) {
@@ -250,7 +250,7 @@ describe('SettingsPage', () => {
 
   it('F3 : un 409 suivi d’un rechargement en échec le dit (état d’erreur, « Réessayer »), sans prétendre afficher la valeur actuelle', async () => {
     getAppSettings
-      .mockReturnValueOnce(of(settings(420, 0)))
+      .mockReturnValueOnce(of(settings(480, 0)))
       .mockReturnValueOnce(
         throwError(() => new HttpErrorResponse({ status: 500, error: { detail: 'Panne' } })),
       );
@@ -272,7 +272,7 @@ describe('SettingsPage', () => {
   });
 
   it('F4 : les champs sont en lecture seule pendant l’envoi', async () => {
-    getAppSettings.mockReturnValue(of(settings(420)));
+    getAppSettings.mockReturnValue(of(settings(480)));
     const pending = new Subject<AppSettingsResponse>();
     updateAppSettings.mockReturnValue(pending);
     await open();
@@ -323,6 +323,6 @@ describe('standard-day (RG-06-02)', () => {
 
   it('conversions heures/minutes', () => {
     expect(toMinutes({ hours: 7, minutes: 30 })).toBe(450);
-    expect(fromMinutes(420)).toEqual({ hours: 7, minutes: 0 });
+    expect(fromMinutes(480)).toEqual({ hours: 8, minutes: 0 });
   });
 });

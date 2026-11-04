@@ -1,7 +1,7 @@
 // SFD-07 : temps total de la journée. Un it() par critère d'acceptation (USER, et MANAGER pour CA-07-07, RG-07-08).
 //
 // Isolation : chaque test crée par l'API son compte (e-mail unique) et ses saisies. Semaine du lundi 05/10/2026.
-// État partagé : la journée standard est réglée à 480 par l'API ADMIN, puis rétablie à 420 en `afterEach`.
+// État partagé : la journée standard vaut 480 à l'installation (RG-06-01) ; CA-07-06 la modifie par l'API ADMIN, `afterEach` la rétablit à 480.
 
 // Module : évite les collisions de types globaux avec les autres fichiers de test.
 export {};
@@ -22,8 +22,7 @@ interface Settings {
 const ENTRIES_URL = '/api/v1/time-entries';
 const SETTINGS_URL = '/api/v1/app-settings';
 const WEEK = '2026-10-05';
-const DEFAULT_MINUTES = 420;
-const STANDARD_MINUTES = 480;
+const DEFAULT_MINUTES = 480;
 const PASSWORD = 'Total-Test-2026';
 const DAYS = ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11'];
 const MORNING = {
@@ -125,10 +124,6 @@ function expectDayTotals(expected: Record<string, string>): void {
 }
 
 describe('SFD-07 : temps total de la journée', () => {
-  beforeEach(() => {
-    setStandardDay(STANDARD_MINUTES);
-  });
-
   afterEach(() => {
     setStandardDay(DEFAULT_MINUTES);
   });

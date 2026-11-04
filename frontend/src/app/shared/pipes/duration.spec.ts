@@ -10,8 +10,8 @@ describe('shared/pipes/duration', () => {
     expect(pipe.transform(0)).toBe('0 h 00');
   });
 
-  it('CA-01-09 : 90 min et 7 h font un total de 8,5 h', () => {
-    expect(new DecimalHoursPipe().transform(90 + 420)).toBe('8,5 h');
+  it('CA-01-09 : 90 min et 8 h font un total de 9,5 h', () => {
+    expect(new DecimalHoursPipe().transform(90 + 480)).toBe('9,5 h');
   });
 
   it('RG-01-13 : le total s’affiche en heures décimales, à la virgule', () => {

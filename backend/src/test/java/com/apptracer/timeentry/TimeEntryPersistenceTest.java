@@ -71,7 +71,7 @@ class TimeEntryPersistenceTest {
       Granularity g, LocalDate start, LocalDate end, LocalTime from, LocalTime to) {
     TimeEntry e = new TimeEntry(owner.getId(), type);
     e.setPeriod(g, start, end, from, to);
-    e.setDuration(60, 420);
+    e.setDuration(60, 480);
     return e;
   }
 
@@ -97,7 +97,7 @@ class TimeEntryPersistenceTest {
     assertThat(read.getStartTime()).isEqualTo(LocalTime.of(9, 0));
     assertThat(read.getEndTime()).isEqualTo(LocalTime.of(10, 30));
     assertThat(read.getDurationMinutes()).isEqualTo(60);
-    assertThat(read.getStandardDayMinutes()).isEqualTo(420);
+    assertThat(read.getStandardDayMinutes()).isEqualTo(480);
     entries.saveAndFlush(hour(LocalTime.of(23, 0), LocalTime.of(23, 45)));
   }
 
@@ -175,13 +175,13 @@ class TimeEntryPersistenceTest {
   @DisplayName("RG-01-08 : durée négative ou journée standard nulle refusées par la base")
   void frozenDurationChecks() {
     TimeEntry negative = hour(LocalTime.of(9, 0), LocalTime.of(10, 0));
-    negative.setDuration(-1, 420);
+    negative.setDuration(-1, 480);
     rejected(negative);
     TimeEntry noStandard = hour(LocalTime.of(9, 0), LocalTime.of(10, 0));
     noStandard.setDuration(0, 0);
     rejected(noStandard);
     TimeEntry zeroDuration = range(D, D.plusDays(1)); // plage sans jour ouvré : 0 min
-    zeroDuration.setDuration(0, 420);
+    zeroDuration.setDuration(0, 480);
     entries.saveAndFlush(zeroDuration);
   }
 
@@ -270,7 +270,7 @@ class TimeEntryPersistenceTest {
                 jdbc.update(
                     "INSERT INTO time_entries (user_id, granularity, start_date, end_date,"
                         + " activity_type_id, duration_minutes, standard_day_minutes, created_at,"
-                        + " created_by, updated_at, updated_by) VALUES (?, 'WEEK', ?, ?, ?, 0, 420,"
+                        + " created_by, updated_at, updated_by) VALUES (?, 'WEEK', ?, ?, ?, 0, 480,"
                         + " now(), ?, now(), ?)",
                     owner.getId(),
                     D,
@@ -281,7 +281,7 @@ class TimeEntryPersistenceTest {
         .isInstanceOf(DataIntegrityViolationException.class);
     TimeEntry orphan = new TimeEntry(999_999L, type);
     orphan.setPeriod(Granularity.DAY, D, D, null, null);
-    orphan.setDuration(420, 420);
+    orphan.setDuration(480, 480);
     rejected(orphan);
   }
 }

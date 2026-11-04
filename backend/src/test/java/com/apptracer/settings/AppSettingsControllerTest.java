@@ -54,7 +54,7 @@ class AppSettingsControllerTest {
   void cleanUp() {
     // la ligne est remise à l'état d'installation avant de supprimer les comptes (clé étrangère)
     jdbc.update(
-        "UPDATE app_settings SET standard_day_minutes = 420, version = 0,"
+        "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL WHERE id = 1");
     jdbc.execute("DELETE FROM refresh_tokens");
     jdbc.execute("DELETE FROM users");
@@ -65,13 +65,13 @@ class AppSettingsControllerTest {
   }
 
   @Test
-  @DisplayName("CA-06-01 : une installation neuve renvoie 420 minutes à USER, MANAGER et ADMIN")
-  void freshInstallationReturns420() throws Exception {
+  @DisplayName("CA-06-01 : une installation neuve renvoie 480 minutes à USER, MANAGER et ADMIN")
+  void freshInstallationReturns480() throws Exception {
     for (User u : new User[] {plainUser, manager, admin}) {
       mockMvc
           .perform(get(URL).header(HttpHeaders.AUTHORIZATION, bearer(u)))
           .andExpect(status().isOk())
-          .andExpect(jsonPath("$.standardDayMinutes").value(420))
+          .andExpect(jsonPath("$.standardDayMinutes").value(480))
           .andExpect(jsonPath("$.version").value(0))
           .andExpect(jsonPath("$.lastModifiedAt").isEmpty())
           .andExpect(jsonPath("$.lastModifiedBy").isEmpty());
@@ -174,7 +174,7 @@ class AppSettingsControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errors[0].field").value("standardDayMinutes"));
     putAs(admin, body("\"abc\"", 0)).andExpect(status().isBadRequest());
-    assertThat(storedMinutes()).isEqualTo(420);
+    assertThat(storedMinutes()).isEqualTo(480);
   }
 
   @Test
@@ -192,7 +192,7 @@ class AppSettingsControllerTest {
     for (User u : new User[] {plainUser, manager}) {
       putAs(u, body(450, 0)).andExpect(status().isForbidden());
     }
-    assertThat(storedMinutes()).isEqualTo(420);
+    assertThat(storedMinutes()).isEqualTo(480);
   }
 
   @Test

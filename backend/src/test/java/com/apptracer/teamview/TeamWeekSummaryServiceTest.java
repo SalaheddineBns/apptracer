@@ -76,7 +76,7 @@ class TeamWeekSummaryServiceTest {
     TimeEntry e = new TimeEntry(userId, TYPE);
     e.setPeriod(
         Granularity.HOUR, d, d, java.time.LocalTime.of(9, 0), java.time.LocalTime.of(10, 0));
-    e.setDuration(minutes, 420);
+    e.setDuration(minutes, 480);
     return e;
   }
 
@@ -134,15 +134,15 @@ class TeamWeekSummaryServiceTest {
     when(members.findByTeamIdsSorted(List.of(10L)))
         .thenReturn(List.of(link(anne, alpha), link(paul, alpha)));
     when(reader.readAll(List.of(2L, 3L), WEEK))
-        .thenReturn(Map.of(2L, List.of(hour(2L, WEEK, 90), hour(2L, WEEK.plusDays(2), 420))));
+        .thenReturn(Map.of(2L, List.of(hour(2L, WEEK, 90), hour(2L, WEEK.plusDays(2), 480))));
 
     TeamWeek week = service.getTeamWeekSummary(1L, 10L, WEEK);
 
     assertThat(week.weekEnd()).isEqualTo(WEEK.plusDays(6));
     assertThat(week.members()).hasSize(2);
-    assertThat(week.members().get(0).totals().totalMinutes()).isEqualTo(510);
+    assertThat(week.members().get(0).totals().totalMinutes()).isEqualTo(570);
     assertThat(week.members().get(0).totals().minutesPerDay())
-        .containsExactly(90, 0, 420, 0, 0, 0, 0);
+        .containsExactly(90, 0, 480, 0, 0, 0, 0);
     assertThat(week.members().get(1).totals().totalMinutes()).isZero();
     assertThat(week.members().get(1).totals().minutesPerDay()).containsExactly(0, 0, 0, 0, 0, 0, 0);
   }
@@ -158,13 +158,13 @@ class TeamWeekSummaryServiceTest {
         .thenReturn(
             Map.of(
                 2L,
-                List.of(range(2L, LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 13), 420))));
+                List.of(range(2L, LocalDate.of(2026, 10, 8), LocalDate.of(2026, 10, 13), 480))));
 
     TeamWeek week = service.getTeamWeekSummary(1L, 10L, WEEK);
 
-    assertThat(week.members().get(0).totals().totalMinutes()).isEqualTo(840);
+    assertThat(week.members().get(0).totals().totalMinutes()).isEqualTo(960);
     assertThat(week.members().get(0).totals().minutesPerDay())
-        .containsExactly(0, 0, 0, 420, 420, 0, 0);
+        .containsExactly(0, 0, 0, 480, 480, 0, 0);
   }
 
   @Test

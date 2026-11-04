@@ -2,14 +2,14 @@
 // CA-06-03 et CA-06-04 exigent des saisies d'activité (SFD-01) : reportés à T-01-17, rien n'est simulé.
 //
 // État partagé : la journée standard est UNE valeur pour toute l'application, et la base de la pile est commune à
-// tous les fichiers de test. Tout test qui la modifie la rétablit à 420 dans `afterEach`, par l'API avec le jeton
+// tous les fichiers de test. Tout test qui la modifie la rétablit à 480 dans `afterEach`, par l'API avec le jeton
 // ADMIN (version courante lue d'abord). `afterEach` s'exécute aussi après un échec. Restent non rétablissables :
 // la version et la trace de dernière modification (auteur, date), que la RG-06-05 conserve.
 //
-// CA-06-01 (« installation neuve → 420 ») ne dépend pas de l'ordre : il est écrit pour être vrai dans une base
-// neuve comme dans une base où un autre test a modifié puis rétabli la valeur. Il prouve que la lecture renvoie 420
-// pour les trois rôles (donc que la valeur par défaut posée par la migration V4, ou rétablie à 420, est bien servie) ;
-// il ne peut pas prouver, dans une base déjà modifiée, que 420 vient de la migration. Quand la trace est vide
+// CA-06-01 (« installation neuve → 480 ») ne dépend pas de l'ordre : il est écrit pour être vrai dans une base
+// neuve comme dans une base où un autre test a modifié puis rétabli la valeur. Il prouve que la lecture renvoie 480
+// pour les trois rôles (donc que la valeur par défaut posée par la migration V4 puis V8, ou rétablie à 480, est bien servie) ;
+// il ne peut pas prouver, dans une base déjà modifiée, que 480 vient de la migration. Quand la trace est vide
 // (cas d'une pile neuve, car ce test est le premier du fichier), il vérifie en plus que la valeur n'a jamais été
 // touchée et que l'écran affiche « Jamais modifiée depuis l'installation. ».
 
@@ -29,7 +29,7 @@ interface Settings {
 }
 
 const SETTINGS_URL = '/api/v1/app-settings';
-const DEFAULT_MINUTES = 420;
+const DEFAULT_MINUTES = 480;
 const ADMIN_NAME = 'Ada E2E-ADMIN'; // ADMIN_FIRST_NAME / ADMIN_LAST_NAME de scripts/e2e-stack.mjs
 
 function credentials(role: Role): Cypress.Chainable<Credentials> {
@@ -63,7 +63,7 @@ function writeSettings(token: string, standardDayMinutes: number, version: numbe
   });
 }
 
-/** Rétablit 420 (idempotent : une valeur identique est sans effet, RG-06-06). */
+/** Rétablit 480 (idempotent : une valeur identique est sans effet, RG-06-06). */
 function restoreDefault(): void {
   tokenFor('ADMIN').then((token) =>
     readSettings(token).then((current) => {
@@ -96,6 +96,12 @@ function openSettingsAsAdmin(): void {
 }
 
 /** Saisit les minutes dans le p-inputnumber (vider, taper, quitter le champ pour valider la valeur). */
+function typeHours(value: string): void {
+  cy.getCy('champ-heures').clear();
+  cy.getCy('champ-heures').type(value);
+  cy.getCy('champ-heures').blur();
+}
+
 function typeMinutes(value: string): void {
   cy.getCy('champ-minutes').clear();
   cy.getCy('champ-minutes').type(value);
@@ -111,11 +117,11 @@ describe('SFD-06 : paramètres (journée standard)', () => {
     restoreDefault();
   });
 
-  it('CA-06-01 : une installation neuve renvoie 420 minutes à un utilisateur connecté (USER, MANAGER, ADMIN)', () => {
+  it('CA-06-01 : une installation neuve renvoie 480 minutes à un utilisateur connecté (USER, MANAGER, ADMIN)', () => {
     (['USER', 'MANAGER', 'ADMIN'] as Role[]).forEach((role) => {
       tokenFor(role).then((token) =>
         readSettings(token).then((settings) => {
-          expect(settings.standardDayMinutes, `journée standard lue par ${role}`).to.eq(420);
+          expect(settings.standardDayMinutes, `journée standard lue par ${role}`).to.eq(480);
         }),
       );
     });
@@ -127,7 +133,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
         cy.visit('/admin/parametres');
         cy.wait('@load');
         cy.getCy('form-parametres').should('be.visible');
-        cy.getCy('champ-heures').should('have.value', '7 h');
+        cy.getCy('champ-heures').should('have.value', '8 h');
         cy.getCy('champ-minutes').should('have.value', '0 min');
         if (!settings.lastModifiedAt) {
           expect(settings.lastModifiedBy ?? null).to.eq(null);
@@ -148,6 +154,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
     // Valeur identique à celle du back : bouton inactif (RG-06-06).
     cy.getCy('btn-enregistrer').find('button').should('be.disabled');
 
+    typeHours('7');
     typeMinutes('30');
     cy.getCy('champ-heures').should('have.value', '7 h');
     cy.getCy('champ-minutes').should('have.value', '30 min');
@@ -185,6 +192,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
   it('CA-06-05 : 7 h 10 met le champ en erreur et bloque l\'enregistrement, aucune requête PUT', () => {
     openSettingsAsAdmin();
     cy.intercept('PUT', SETTINGS_URL).as('save');
+    typeHours('7');
     typeMinutes('10');
     cy.getCy('champ-minutes').should('have.value', '10 min');
     clickSave();
@@ -193,7 +201,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
     cy.getCy('form-parametres').should('be.visible');
     cy.get('@save.all').should('have.length', 0);
     // Rien n'a été écrit côté back.
-    tokenFor('ADMIN').then((token) => readSettings(token).its('standardDayMinutes').should('eq', 420));
+    tokenFor('ADMIN').then((token) => readSettings(token).its('standardDayMinutes').should('eq', 480));
   });
 
   it('CA-06-06 : 30 minutes envoyées par l\'API donnent 400 avec le champ en erreur', () => {
@@ -204,7 +212,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
           const fields = (response.body as unknown as { errors: { field: string }[] }).errors.map((e) => e.field);
           expect(fields).to.include('standardDayMinutes');
         });
-        readSettings(token).its('standardDayMinutes').should('eq', 420);
+        readSettings(token).its('standardDayMinutes').should('eq', 480);
       }),
     );
   });
@@ -214,7 +222,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
       tokenFor(role).then((token) =>
         readSettings(token).then((current) => {
           writeSettings(token, 450, current.version).its('status').should('eq', 403);
-          readSettings(token).its('standardDayMinutes').should('eq', 420); // rien modifié, la lecture reste permise
+          readSettings(token).its('standardDayMinutes').should('eq', 480); // rien modifié, la lecture reste permise
         }),
       );
       cy.login(role);
@@ -258,13 +266,13 @@ describe('SFD-06 : paramètres (journée standard)', () => {
     cy.intercept('PUT', SETTINGS_URL).as('save');
     // Modification concurrente par l'API, après le chargement de l'écran (version désormais périmée côté écran).
     tokenFor('ADMIN').then((token) =>
-      readSettings(token).then((current) => writeSettings(token, 480, current.version).its('status').should('eq', 200)),
+      readSettings(token).then((current) => writeSettings(token, 540, current.version).its('status').should('eq', 200)),
     );
     typeMinutes('30');
     clickSave();
     cy.wait('@save').its('response.statusCode').should('eq', 409);
     cy.getCy('message-conflit').should('be.visible').and('contain', 'Un autre administrateur');
-    cy.getCy('champ-heures').should('have.value', '8 h');
+    cy.getCy('champ-heures').should('have.value', '9 h');
     cy.getCy('champ-minutes').should('have.value', '0 min');
   });
 });

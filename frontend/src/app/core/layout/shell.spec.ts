@@ -63,7 +63,7 @@ describe('coquille applicative (E2) et routes', () => {
     listMyManagedTeams.mockReset();
     listMyManagedTeams.mockReturnValue(of([]));
     getAppSettings.mockReset();
-    getAppSettings.mockReturnValue(of({ standardDayMinutes: 420, version: 0, lastModifiedAt: null }));
+    getAppSettings.mockReturnValue(of({ standardDayMinutes: 480, version: 0, lastModifiedAt: null }));
     updateAppSettings.mockReset();
     listUsers.mockReturnValue(of({ content: [], page: 0, size: 20, totalElements: 0 }));
   });

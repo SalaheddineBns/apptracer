@@ -48,11 +48,11 @@ describe('TimeEntriesStore', () => {
   });
 
   it('CA-01-09 : charge la semaine demandée et garde le total renvoyé par le back', () => {
-    api.listMyTimeEntries.mockReturnValue(of(week('2026-10-05', [entry(1, 90), entry(2, 420)], 510)));
+    api.listMyTimeEntries.mockReturnValue(of(week('2026-10-05', [entry(1, 90), entry(2, 480)], 570)));
     const store = setup();
     store.load('2026-10-05');
     expect(api.listMyTimeEntries.mock.calls[0][0]).toBe('2026-10-05');
-    expect(store.week()?.totalMinutes).toBe(510);
+    expect(store.week()?.totalMinutes).toBe(570);
     expect(store.week()?.entries.map((e) => e.id)).toEqual([1, 2]);
     expect(store.loading()).toBe(false);
     expect(store.error()).toBeNull();
@@ -126,15 +126,15 @@ describe('TimeEntriesStore', () => {
 
   it('RG-01-11 : après suppression, la saisie sort du journal et du total', () => {
     api.listMyTimeEntries
-      .mockReturnValueOnce(of(week('2026-10-05', [entry(1, 90), entry(2, 420)], 510)))
-      .mockReturnValueOnce(of(week('2026-10-05', [entry(2, 420)], 420)));
+      .mockReturnValueOnce(of(week('2026-10-05', [entry(1, 90), entry(2, 480)], 570)))
+      .mockReturnValueOnce(of(week('2026-10-05', [entry(2, 480)], 480)));
     api.deleteTimeEntry.mockReturnValue(of(null));
     const store = setup();
     store.load('2026-10-05');
     store.remove(1).subscribe();
     expect(api.deleteTimeEntry).toHaveBeenCalledWith(1);
     expect(store.week()?.entries.map((e) => e.id)).toEqual([2]);
-    expect(store.week()?.totalMinutes).toBe(420);
+    expect(store.week()?.totalMinutes).toBe(480);
   });
 
   it('une suppression en attente n’envoie qu’une requête', () => {

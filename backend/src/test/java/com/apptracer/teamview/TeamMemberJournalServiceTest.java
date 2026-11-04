@@ -69,7 +69,7 @@ class TeamMemberJournalServiceTest {
   private static TimeEntry hour(Long userId, LocalDate d, int minutes) {
     TimeEntry e = new TimeEntry(userId, TYPE);
     e.setPeriod(Granularity.HOUR, d, d, LocalTime.of(9, 0), LocalTime.of(10, 0));
-    e.setDuration(minutes, 420);
+    e.setDuration(minutes, 480);
     return e;
   }
 
@@ -100,13 +100,13 @@ class TeamMemberJournalServiceTest {
   void entriesAndTotalAreThoseOfTheMemberJournal() {
     User anne = account(2L, true);
     when(members.findManagedMember(2L, 1L)).thenReturn(Optional.of(link(anne, alpha)));
-    List<TimeEntry> entries = List.of(hour(2L, WEEK, 90), hour(2L, WEEK.plusDays(1), 420));
+    List<TimeEntry> entries = List.of(hour(2L, WEEK, 90), hour(2L, WEEK.plusDays(1), 480));
     when(reader.read(2L, WEEK)).thenReturn(entries);
 
     MemberJournal journal = service.listTeamMemberTimeEntries(1L, 2L, WEEK);
 
     assertThat(journal.week().entries()).isEqualTo(entries);
-    assertThat(journal.week().totalMinutes()).isEqualTo(510);
+    assertThat(journal.week().totalMinutes()).isEqualTo(570);
     assertThat(journal.week().weekStart()).isEqualTo(WEEK);
     assertThat(journal.week().weekEnd()).isEqualTo(WEEK.plusDays(6));
     assertThat(journal.team()).isSameAs(alpha);

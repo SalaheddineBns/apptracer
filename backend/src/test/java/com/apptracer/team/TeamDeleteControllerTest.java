@@ -102,7 +102,7 @@ class TeamDeleteControllerTest {
         INSERT INTO time_entries (user_id, granularity, start_date, end_date, activity_type_id,
           duration_minutes, standard_day_minutes, created_at, created_by, updated_at, updated_by)
         VALUES (?, 'DAY', DATE '2026-10-12', DATE '2026-10-12',
-          (SELECT id FROM activity_types WHERE code = 'AUTRE'), 420, 420,
+          (SELECT id FROM activity_types WHERE code = 'AUTRE'), 480, 480,
           now(), ?, now(), ?)
         """,
         owner.getId(),

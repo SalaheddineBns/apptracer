@@ -144,18 +144,18 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     expect(getTeamWeekSummary).toHaveBeenLastCalledWith(1, '2026-10-05', 'body', false, expect.anything());
   });
 
-  it('CA-04-01 : deux membres ayant saisi 90 min et 7 h sont affichés avec leurs totaux 1,5 h et 7 h', async () => {
+  it('CA-04-01 : deux membres ayant saisi 90 min et 8 h sont affichés avec leurs totaux 1,5 h et 8 h', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
     getTeamWeekSummary.mockReturnValue(
-      of(summary(alpha, [member(10, 'Durand', [90], 90), member(11, 'Martin', [0, 420], 420)])),
+      of(summary(alpha, [member(10, 'Durand', [90], 90), member(11, 'Martin', [0, 480], 480)])),
     );
     await open();
     expect(cy('ligne-membre-10')?.textContent).toContain('Prénom10 Durand');
     expect(cy('ligne-membre-11')?.textContent).toContain('Prénom11 Martin');
     expect(cy('total-membre-10')?.textContent?.trim()).toBe('1,5 h');
-    expect(cy('total-membre-11')?.textContent?.trim()).toBe('7 h');
+    expect(cy('total-membre-11')?.textContent?.trim()).toBe('8 h');
     expect(cy('duree-membre-10-2026-10-05')?.textContent?.trim()).toBe('1,5 h');
-    expect(cy('duree-membre-11-2026-10-06')?.textContent?.trim()).toBe('7 h');
+    expect(cy('duree-membre-11-2026-10-06')?.textContent?.trim()).toBe('8 h');
     expect(getTeamWeekSummary).toHaveBeenCalledWith(1, '2026-10-05', 'body', false, expect.anything());
   });
 
@@ -181,22 +181,22 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     expect(rows).toEqual(['ligne-membre-12', 'ligne-membre-10', 'ligne-membre-11']);
   });
 
-  it('CA-04-07 : le total d’un membre ayant une PLAGE à cheval est celui de l’API (14 h), pas une somme refaite côté écran', async () => {
+  it('CA-04-07 : le total d’un membre ayant une PLAGE à cheval est celui de l’API (16 h), pas une somme refaite côté écran', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
-    // Jeudi 08 et vendredi 09/10 : 7 h chacun ; samedi et dimanche non comptés (RG-04-05). L'API renvoie 840 min.
-    getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [0, 0, 0, 420, 420], 840)])));
+    // Jeudi 08 et vendredi 09/10 : 8 h chacun ; samedi et dimanche non comptés (RG-04-05). L'API renvoie 960 min.
+    getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [0, 0, 0, 480, 480], 960)])));
     await open();
-    expect(cy('total-membre-10')?.textContent?.trim()).toBe('14 h');
-    expect(cy('duree-membre-10-2026-10-08')?.textContent?.trim()).toBe('7 h');
-    expect(cy('duree-membre-10-2026-10-09')?.textContent?.trim()).toBe('7 h');
+    expect(cy('total-membre-10')?.textContent?.trim()).toBe('16 h');
+    expect(cy('duree-membre-10-2026-10-08')?.textContent?.trim()).toBe('8 h');
+    expect(cy('duree-membre-10-2026-10-09')?.textContent?.trim()).toBe('8 h');
     expect(cy('duree-membre-10-2026-10-10')?.textContent).toContain('0 h');
   });
 
   it('CA-04-08 : seul le total fourni par l’API est affiché, même s’il diffère de la somme des jours', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
-    getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [420, 420], 420)])));
+    getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [480, 480], 480)])));
     await open();
-    expect(cy('total-membre-10')?.textContent?.trim()).toBe('7 h');
+    expect(cy('total-membre-10')?.textContent?.trim()).toBe('8 h');
   });
 
   it('CA-04-12 : un membre dont le compte est désactivé reste affiché avec la mention « Inactif », pas un membre actif', async () => {
@@ -250,7 +250,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
       of(
         teamId === 1
           ? summary(alpha, [member(10, 'Durand', [90], 90)], '2026-10-12')
-          : summary(beta, [member(20, 'Leroy', [420], 420)], '2026-10-12'),
+          : summary(beta, [member(20, 'Leroy', [480], 480)], '2026-10-12'),
       ),
     );
     await open('/equipe?equipe=1&semaine=2026-10-12');
@@ -264,7 +264,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     expect(url()).toBe('/equipe?equipe=2&semaine=2026-10-12');
     expect(getTeamWeekSummary).toHaveBeenLastCalledWith(2, '2026-10-12', 'body', false, expect.anything());
     expect(cy('ligne-membre-10')).toBeNull();
-    expect(cy('total-membre-20')?.textContent?.trim()).toBe('7 h');
+    expect(cy('total-membre-20')?.textContent?.trim()).toBe('8 h');
   });
 
   it('RG-04-04 : « Semaine suivante » charge la semaine suivante de la même équipe et la met dans l’URL', async () => {

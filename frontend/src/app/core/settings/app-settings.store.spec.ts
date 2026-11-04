@@ -34,17 +34,17 @@ describe('AppSettingsStore', () => {
   });
 
   it('CA-06-01 : charge la journée standard et l’expose en minutes', () => {
-    api.getAppSettings.mockReturnValue(of(settings(420)));
+    api.getAppSettings.mockReturnValue(of(settings(480)));
     const store = setup();
     expect(store.standardDayMinutes()).toBeNull();
     store.load();
-    expect(store.standardDayMinutes()).toBe(420);
+    expect(store.standardDayMinutes()).toBe(480);
     expect(store.loaded()).toBe(true);
     expect(store.loading()).toBe(false);
   });
 
   it('RG-06-05 : lastModifiedBy null ou absent donne null', () => {
-    api.getAppSettings.mockReturnValue(of(settings(420, 0, { lastModifiedBy: null as never })));
+    api.getAppSettings.mockReturnValue(of(settings(480, 0, { lastModifiedBy: null as never })));
     const store = setup();
     store.load();
     expect(store.lastModifiedBy()).toBeNull();
@@ -81,7 +81,7 @@ describe('AppSettingsStore', () => {
     store.ensureLoaded();
     store.ensureLoaded();
     expect(api.getAppSettings).toHaveBeenCalledTimes(1);
-    pending.next(settings(420));
+    pending.next(settings(480));
     pending.complete();
     store.ensureLoaded();
     expect(api.getAppSettings).toHaveBeenCalledTimes(1);
@@ -92,7 +92,7 @@ describe('AppSettingsStore', () => {
   });
 
   it('CA-06-02 : la modification envoie la valeur et la version, puis porte la réponse du back', () => {
-    api.getAppSettings.mockReturnValue(of(settings(420, 3)));
+    api.getAppSettings.mockReturnValue(of(settings(480, 3)));
     api.updateAppSettings.mockReturnValue(
       of(
         settings(450, 4, {
@@ -119,7 +119,7 @@ describe('AppSettingsStore', () => {
         errors: [{ field: 'standardDayMinutes', message: 'Pas de 15 minutes' }],
       },
     });
-    api.getAppSettings.mockReturnValue(of(settings(420)));
+    api.getAppSettings.mockReturnValue(of(settings(480)));
     api.updateAppSettings.mockReturnValue(throwError(() => fieldError));
     const store = setup();
     store.load();
@@ -128,7 +128,7 @@ describe('AppSettingsStore', () => {
     expect(onError).toHaveBeenCalledWith(fieldError);
     expect(messages.add).not.toHaveBeenCalled();
     expect(api.getAppSettings).toHaveBeenCalledTimes(1);
-    expect(store.standardDayMinutes()).toBe(420);
+    expect(store.standardDayMinutes()).toBe(480);
     expect(store.saving()).toBe(false);
   });
 
@@ -138,7 +138,7 @@ describe('AppSettingsStore', () => {
       error: { detail: 'Modifié entre-temps' },
     });
     api.getAppSettings
-      .mockReturnValueOnce(of(settings(420, 0)))
+      .mockReturnValueOnce(of(settings(480, 0)))
       .mockReturnValueOnce(of(settings(480, 1)));
     api.updateAppSettings.mockReturnValue(throwError(() => conflict));
     const store = setup();
@@ -153,7 +153,7 @@ describe('AppSettingsStore', () => {
   });
 
   it('une autre erreur (500) est notifiée par un toast puis relayée', () => {
-    api.getAppSettings.mockReturnValue(of(settings(420)));
+    api.getAppSettings.mockReturnValue(of(settings(480)));
     api.updateAppSettings.mockReturnValue(
       throwError(() => new HttpErrorResponse({ status: 500, error: { detail: 'Panne serveur' } })),
     );
@@ -169,7 +169,7 @@ describe('AppSettingsStore', () => {
 
   it('requêtes rapprochées : une seule modification part tant que la réponse n’est pas arrivée', () => {
     const pending = new Subject<AppSettingsResponse>();
-    api.getAppSettings.mockReturnValue(of(settings(420)));
+    api.getAppSettings.mockReturnValue(of(settings(480)));
     api.updateAppSettings.mockReturnValue(pending);
     const store = setup();
     store.load();

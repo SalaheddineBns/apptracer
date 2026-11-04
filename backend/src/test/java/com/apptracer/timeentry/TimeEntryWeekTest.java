@@ -67,7 +67,7 @@ class TimeEntryWeekTest {
   void cleanUp() {
     jdbc.execute("DELETE FROM time_entries");
     jdbc.execute(
-        "UPDATE app_settings SET standard_day_minutes = 420, version = 0,"
+        "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL");
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN"
@@ -115,7 +115,7 @@ class TimeEntryWeekTest {
   }
 
   @Test
-  @DisplayName("CA-01-09 : des saisies de 90 min et 7 h donnent un total de 510 min (8,5 h)")
+  @DisplayName("CA-01-09 : des saisies de 90 min et 8 h donnent un total de 570 min (9,5 h)")
   void totalOfTheWeek() throws Exception {
     create(user, hour("2026-10-05", "09:00", "10:30"));
     create(user, day("2026-10-06"));
@@ -123,7 +123,7 @@ class TimeEntryWeekTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.weekStart").value("2026-10-05"))
         .andExpect(jsonPath("$.weekEnd").value("2026-10-11"))
-        .andExpect(jsonPath("$.totalMinutes").value(510))
+        .andExpect(jsonPath("$.totalMinutes").value(570))
         .andExpect(jsonPath("$.entries.length()").value(2));
   }
 
@@ -138,15 +138,15 @@ class TimeEntryWeekTest {
 
   @Test
   @DisplayName(
-      "RG-01-13 : une PLAGE du jeudi au mardi suivant figure dans les deux semaines, 840 min chacune")
+      "RG-01-13 : une PLAGE du jeudi au mardi suivant figure dans les deux semaines, 960 min chacune")
   void rangeAcrossTwoWeeks() throws Exception {
     create(user, range("2026-10-08", "2026-10-13"));
     week(user, "2026-10-05")
-        .andExpect(jsonPath("$.totalMinutes").value(840))
+        .andExpect(jsonPath("$.totalMinutes").value(960))
         .andExpect(jsonPath("$.entries.length()").value(1))
         .andExpect(jsonPath("$.entries[0].endDate").value("2026-10-13"));
     week(user, "2026-10-12")
-        .andExpect(jsonPath("$.totalMinutes").value(840))
+        .andExpect(jsonPath("$.totalMinutes").value(960))
         .andExpect(jsonPath("$.entries.length()").value(1));
     week(user, "2026-10-19").andExpect(jsonPath("$.entries").isEmpty());
     week(user, "2026-09-28").andExpect(jsonPath("$.entries").isEmpty());
@@ -154,7 +154,7 @@ class TimeEntryWeekTest {
 
   @Test
   @DisplayName(
-      "RG-01-13 : une PLAGE sur un week-end est listée mais compte 0 ; une JOURNEE un samedi compte 420")
+      "RG-01-13 : une PLAGE sur un week-end est listée mais compte 0 ; une JOURNEE un samedi compte 480")
   void weekendEntries() throws Exception {
     create(user, range("2026-10-10", "2026-10-11"));
     week(user, "2026-10-05")
@@ -162,7 +162,7 @@ class TimeEntryWeekTest {
         .andExpect(jsonPath("$.entries.length()").value(1));
     jdbc.execute("DELETE FROM time_entries");
     create(user, day("2026-10-10"));
-    week(user, "2026-10-05").andExpect(jsonPath("$.totalMinutes").value(420));
+    week(user, "2026-10-05").andExpect(jsonPath("$.totalMinutes").value(480));
   }
 
   @Test
@@ -233,7 +233,7 @@ class TimeEntryWeekTest {
   void totalUnchangedAfterSettingChange() throws Exception {
     create(user, range("2026-10-05", "2026-10-09"));
     jdbc.update("UPDATE app_settings SET standard_day_minutes = 450");
-    week(user, "2026-10-05").andExpect(jsonPath("$.totalMinutes").value(5 * 420));
+    week(user, "2026-10-05").andExpect(jsonPath("$.totalMinutes").value(5 * 480));
   }
 
   @Test

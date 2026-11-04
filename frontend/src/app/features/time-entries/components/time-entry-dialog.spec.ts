@@ -140,7 +140,7 @@ describe('TimeEntryDialog', () => {
       of([type(1, 'FORMATION'), type(2, 'REUNION'), type(3, 'TRAVAIL_PROJET', true)]),
     );
     listProjects.mockReturnValue(of([project(1, 'APOLLO'), project(2, 'GEMINI')]));
-    getAppSettings.mockReturnValue(of({ standardDayMinutes: 420, version: 0 }));
+    getAppSettings.mockReturnValue(of({ standardDayMinutes: 480, version: 0 }));
     TestBed.resetTestingModule();
     document.body.querySelectorAll('p-dialog, .p-dialog-mask').forEach((n) => n.remove());
   });
@@ -302,9 +302,9 @@ describe('TimeEntryDialog', () => {
       expect(fixture.componentInstance.visible()).toBe(false);
     });
 
-    it('CA-01-03 : une PLAGE du lundi 05/10/2026 au vendredi 16/10/2026 en FORMATION affiche 10 jours ouvrés, soit 70 h', async () => {
+    it('CA-01-03 : une PLAGE du lundi 05/10/2026 au vendredi 16/10/2026 en FORMATION affiche 10 jours ouvrés, soit 80 h', async () => {
       createTimeEntry.mockReturnValue(
-        of(savedEntry({ granularity: Granularity.Range, endDate: '2026-10-16', durationMinutes: 4200 })),
+        of(savedEntry({ granularity: Granularity.Range, endDate: '2026-10-16', durationMinutes: 4800 })),
       );
       await open();
       await fill({
@@ -313,7 +313,7 @@ describe('TimeEntryDialog', () => {
         endDate: date('2026-10-16'),
         activityTypeCode: 'FORMATION',
       });
-      expect(duration()).toBe('70 h 00 (10 jours ouvrés)');
+      expect(duration()).toBe('80 h 00 (10 jours ouvrés)');
       await submit();
       expect(createTimeEntry).toHaveBeenCalledWith({
         granularity: Granularity.Range,
@@ -326,7 +326,7 @@ describe('TimeEntryDialog', () => {
     it('RG-01-08 : une JOURNEE vaut une journée standard, même un samedi ; une PLAGE sans jour ouvré vaut 0', async () => {
       await open();
       await fill({ granularity: Granularity.Day, startDate: date('2026-10-10') });
-      expect(duration()).toBe('7 h 00');
+      expect(duration()).toBe('8 h 00');
       await fill({
         granularity: Granularity.Range,
         startDate: date('2026-10-10'),
@@ -338,7 +338,7 @@ describe('TimeEntryDialog', () => {
     it('CA-06-03 : la journée standard est relue à chaque ouverture, la durée d’une JOURNEE la suit (7 h 30)', async () => {
       await open();
       await fill({ granularity: Granularity.Day, startDate: date('2026-10-05') });
-      expect(duration()).toBe('7 h 00');
+      expect(duration()).toBe('8 h 00');
       fixture.componentRef.setInput('visible', false);
       await fixture.whenStable();
       getAppSettings.mockReturnValue(of({ standardDayMinutes: 450, version: 1 }));
@@ -568,7 +568,7 @@ describe('TimeEntryDialog', () => {
       },
       project: { code: 'APOLLO', name: 'Apollo', active: true },
       comment: 'Sprint 12',
-      durationMinutes: 420,
+      durationMinutes: 480,
       version: 4,
     });
 

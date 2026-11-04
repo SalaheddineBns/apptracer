@@ -40,7 +40,7 @@ const fullDay = (over: Partial<TimeEntryResponse> = {}): TimeEntryResponse =>
     endTime: null,
     activityType: { code: 'TRAVAIL_PROJET', label: 'Travail projet', color: TagColor.Info, active: true },
     project: { code: 'APOLLO', name: 'Apollo', active: true },
-    durationMinutes: 420,
+    durationMinutes: 480,
     ...over,
   });
 const week = (
@@ -84,7 +84,7 @@ describe('JournalPage', () => {
         { provide: ProjectsService, useValue: { listProjects: () => of([]) } },
         {
           provide: AppSettingsService,
-          useValue: { getAppSettings: () => of({ standardDayMinutes: 420, version: 0 }) },
+          useValue: { getAppSettings: () => of({ standardDayMinutes: 480, version: 0 }) },
         },
         { provide: ConfirmationService, useValue: { confirm } },
         { provide: MessageService, useValue: { add } },
@@ -152,7 +152,7 @@ describe('JournalPage', () => {
   it('SFD-01 E1 : la carte affiche la description de la saisie à la place de sa durée', async () => {
     const long = 'Point hebdo. '.repeat(40);
     listMyTimeEntries.mockReturnValue(
-      of(week([meeting({ comment: 'Point hebdo avec l’équipe' }), fullDay({ comment: long })], 510)),
+      of(week([meeting({ comment: 'Point hebdo avec l’équipe' }), fullDay({ comment: long })], 570)),
     );
     await open();
     const card = cy('saisie-1') as HTMLElement;
@@ -175,10 +175,10 @@ describe('JournalPage', () => {
     expect(card.querySelector('[data-cy="saisie-duree"]')).toBeNull();
   });
 
-  it('CA-01-09 : avec des saisies de 90 min et 7 h dans la semaine, le total affiché est 8,5 h', async () => {
-    listMyTimeEntries.mockReturnValue(of(week([meeting(), fullDay()], 510)));
+  it('CA-01-09 : avec des saisies de 90 min et 8 h dans la semaine, le total affiché est 9,5 h', async () => {
+    listMyTimeEntries.mockReturnValue(of(week([meeting(), fullDay()], 570)));
     await open();
-    expect(cy('total-semaine')?.textContent).toContain('8,5 h');
+    expect(cy('total-semaine')?.textContent).toContain('9,5 h');
   });
 
   it('CA-02-07 : une saisie dont le type a été désactivé reste affichée avec son libellé et sa couleur', async () => {
@@ -303,7 +303,7 @@ describe('JournalPage', () => {
               startTime: null,
               endTime: null,
               activityType: { code: 'FORMATION', label: 'Formation', color: TagColor.Success, active: true },
-              durationMinutes: 4200,
+              durationMinutes: 4800,
             }),
           ],
           2100,
@@ -313,23 +313,23 @@ describe('JournalPage', () => {
     await open();
     (cy('jour-2026-10-05')?.querySelector('[data-cy="btn-supprimer-saisie-1"] button') as HTMLElement).click();
     expect(confirm.mock.calls[0][0].message).toBe(
-      'Supprimer la saisie « Formation » du 05/10 au 16/10 (70 h 00) ?',
+      'Supprimer la saisie « Formation » du 05/10 au 16/10 (80 h 00) ?',
     );
   });
 
   it('RG-01-11 : la suppression confirmée retire la saisie du journal, met à jour le total et affiche un toast de 3 s', async () => {
-    listMyTimeEntries.mockReturnValueOnce(of(week([meeting(), fullDay()], 510)));
+    listMyTimeEntries.mockReturnValueOnce(of(week([meeting(), fullDay()], 570)));
     deleteTimeEntry.mockReturnValue(of(null));
     await open();
-    expect(cy('total-semaine')?.textContent).toContain('8,5 h');
+    expect(cy('total-semaine')?.textContent).toContain('9,5 h');
     await click('btn-supprimer-saisie-1');
-    listMyTimeEntries.mockReturnValue(of(week([fullDay()], 420)));
+    listMyTimeEntries.mockReturnValue(of(week([fullDay()], 480)));
     confirm.mock.calls[0][0].accept();
     await harness.fixture.whenStable();
     expect(deleteTimeEntry).toHaveBeenCalledWith(1);
     expect(cy('saisie-1')).toBeNull();
     expect(cy('saisie-2')).not.toBeNull();
-    expect(cy('total-semaine')?.textContent).toContain('7 h');
+    expect(cy('total-semaine')?.textContent).toContain('8 h');
     expect(add).toHaveBeenCalledWith(
       expect.objectContaining({ severity: 'success', summary: 'Saisie supprimée', life: 3000 }),
     );

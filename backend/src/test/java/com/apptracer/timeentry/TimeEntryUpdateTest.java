@@ -69,7 +69,7 @@ class TimeEntryUpdateTest {
   void cleanUp() {
     jdbc.execute("DELETE FROM time_entries");
     jdbc.execute(
-        "UPDATE app_settings SET standard_day_minutes = 420, version = 0,"
+        "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL");
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN"
@@ -201,14 +201,14 @@ class TimeEntryUpdateTest {
     update(user, id, day("2026-10-05", 0))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.granularity").value("DAY"))
-        .andExpect(jsonPath("$.durationMinutes").value(420))
+        .andExpect(jsonPath("$.durationMinutes").value(480))
         .andExpect(jsonPath("$.startTime").doesNotExist())
         .andExpect(jsonPath("$.endDate").doesNotExist());
     assertThat(row(id).get("start_time")).isNull();
     assertThat(row(id).get("end_time")).isNull();
     update(user, id, range("2026-10-05", "2026-10-16", 1))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.durationMinutes").value(4200))
+        .andExpect(jsonPath("$.durationMinutes").value(4800))
         .andExpect(jsonPath("$.endDate").value("2026-10-16"));
   }
 
@@ -269,10 +269,10 @@ class TimeEntryUpdateTest {
             user,
             "{\"granularity\":\"DAY\",\"startDate\":\"2026-10-05\","
                 + "\"activityTypeCode\":\"REUNION\"}");
-    assertThat(row(id).get("duration_minutes")).isEqualTo(420);
+    assertThat(row(id).get("duration_minutes")).isEqualTo(480);
     jdbc.update("UPDATE app_settings SET standard_day_minutes = 450");
-    // tant qu'elle n'est pas modifiée, la saisie garde 420
-    assertThat(row(id).get("standard_day_minutes")).isEqualTo(420);
+    // tant qu'elle n'est pas modifiée, la saisie garde 480
+    assertThat(row(id).get("standard_day_minutes")).isEqualTo(480);
     update(user, id, day("2026-10-05", 0))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.durationMinutes").value(450));

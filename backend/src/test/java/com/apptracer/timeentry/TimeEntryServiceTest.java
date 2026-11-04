@@ -63,7 +63,7 @@ class TimeEntryServiceTest {
     when(types.findByCode("REUNION")).thenReturn(Optional.of(meeting));
     when(types.findByCode("TRAVAIL_PROJET")).thenReturn(Optional.of(work));
     when(projects.findByCode("P1")).thenReturn(Optional.of(project));
-    when(settings.getStandardDayMinutes()).thenReturn(420);
+    when(settings.getStandardDayMinutes()).thenReturn(480);
     when(entries.saveAndFlush(any(TimeEntry.class))).thenAnswer(i -> i.getArgument(0));
   }
 
@@ -97,7 +97,7 @@ class TimeEntryServiceTest {
     TimeEntry e = service.create(USER, hour(LocalTime.of(9, 0), LocalTime.of(10, 30)));
     assertThat(e.getUserId()).isEqualTo(USER);
     assertThat(e.getDurationMinutes()).isEqualTo(90); // RG-01-08
-    assertThat(e.getStandardDayMinutes()).isEqualTo(420);
+    assertThat(e.getStandardDayMinutes()).isEqualTo(480);
     assertThat(e.getEndDate()).isEqualTo(D);
     assertThat(e.getProject()).isNull();
   }
@@ -126,14 +126,14 @@ class TimeEntryServiceTest {
     assertThat(e.getStartTime()).isNull();
     assertThat(e.getEndTime()).isNull();
     assertThat(e.getEndDate()).isEqualTo(LocalDate.of(2026, 10, 10));
-    assertThat(e.getDurationMinutes()).isEqualTo(420);
+    assertThat(e.getDurationMinutes()).isEqualTo(480);
   }
 
   @Test
-  @DisplayName("CA-01-03 : RG-01-03, PLAGE du 05/10 au 16/10/2026 = 4200 min")
+  @DisplayName("CA-01-03 : RG-01-03, PLAGE du 05/10 au 16/10/2026 = 4800 min")
   void rangeDuration() {
     TimeEntry e = service.create(USER, range(D, LocalDate.of(2026, 10, 16)));
-    assertThat(e.getDurationMinutes()).isEqualTo(4200);
+    assertThat(e.getDurationMinutes()).isEqualTo(4800);
   }
 
   @Test
@@ -307,7 +307,7 @@ class TimeEntryServiceTest {
   private TimeEntry existing(Long owner) {
     TimeEntry e = new TimeEntry(owner, meeting);
     e.setPeriod(Granularity.HOUR, D, D, LocalTime.of(9, 0), LocalTime.of(10, 0));
-    e.setDuration(60, 420);
+    e.setDuration(60, 480);
     return e;
   }
 
@@ -321,7 +321,7 @@ class TimeEntryServiceTest {
     assertThat(updated.getEndDate()).isEqualTo(D.plusDays(4));
     assertThat(updated.getStartTime()).isNull(); // champs sans objet remis à vide
     assertThat(updated.getEndTime()).isNull();
-    assertThat(updated.getDurationMinutes()).isEqualTo(5 * 420);
+    assertThat(updated.getDurationMinutes()).isEqualTo(5 * 480);
     TimeEntry back = service.update(USER, 5L, 0L, hour(LocalTime.of(14, 0), LocalTime.of(15, 0)));
     assertThat(back.getEndDate()).isEqualTo(D);
     assertThat(back.getStartTime()).isEqualTo(LocalTime.of(14, 0));
@@ -370,7 +370,7 @@ class TimeEntryServiceTest {
   void updateRefreezesStandardDay() {
     TimeEntry e = existing(USER);
     e.setPeriod(Granularity.DAY, D, D, null, null);
-    e.setDuration(420, 420);
+    e.setDuration(480, 480);
     when(entries.findActiveById(5L)).thenReturn(Optional.of(e));
     when(settings.getStandardDayMinutes()).thenReturn(450);
     TimeEntry updated = service.update(USER, 5L, 0L, day(D));
@@ -452,7 +452,7 @@ class TimeEntryServiceTest {
   void listWeekUsesGivenUser() {
     TimeEntry a = existing(USER); // 60 min le 05/10
     TimeEntry b = existing(USER);
-    b.setDuration(90 - 60 + 60, 420);
+    b.setDuration(90 - 60 + 60, 480);
     when(reader.read(USER, D)).thenReturn(List.of(a, b));
     var week = service.listWeek(USER, D);
     assertThat(week.weekEnd()).isEqualTo(D.plusDays(6));

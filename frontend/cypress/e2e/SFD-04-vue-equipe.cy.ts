@@ -4,7 +4,7 @@
 // Isolation : la base est partagée par tous les fichiers de test et rien n'y est supprimé physiquement. Chaque test crée donc par
 // l'API ses managers, ses membres, ses équipes (noms uniques) et leurs saisies, et n'utilise jamais `user.e2e` / `manager.e2e`
 // comme manager ou membre (RG-05-04, RG-05-10). Dates fixes et passées : semaine du lundi 05/10/2026 ; PLAGE du 08/10 au 13/10.
-// La journée standard (420 min) n'est jamais modifiée par ce fichier.
+// La journée standard (480 min) n'est jamais modifiée par ce fichier.
 
 // Module : évite les collisions de types globaux avec les autres fichiers de test.
 export {};
@@ -181,7 +181,7 @@ describe('SFD-04 : vue équipe', () => {
     cy.viewport(1280, 1000);
   });
 
-  it('CA-04-01 : un MANAGER d’une équipe de deux membres (90 min et 7 h) voit les deux membres avec 1,5 h et 7 h', () => {
+  it('CA-04-01 : un MANAGER d’une équipe de deux membres (90 min et 8 h) voit les deux membres avec 1,5 h et 8 h', () => {
     createAccount('MANAGER').then((manager) => {
       createAccount('USER', 'Anna', 'Abel').then((anna) => {
         createAccount('USER', 'Bob', 'Berg').then((bob) => {
@@ -198,9 +198,9 @@ describe('SFD-04 : vue équipe', () => {
               cy.get('[data-cy^="ligne-membre-"]').should('have.length', 2);
             });
             text(`total-membre-${anna.id}`).should('eq', '1,5 h');
-            text(`total-membre-${bob.id}`).should('eq', '7 h');
+            text(`total-membre-${bob.id}`).should('eq', '8 h');
             text(`duree-membre-${anna.id}-2026-10-05`).should('eq', '1,5 h');
-            text(`duree-membre-${bob.id}-2026-10-06`).should('eq', '7 h');
+            text(`duree-membre-${bob.id}-2026-10-06`).should('eq', '8 h');
             cy.getCy(`duree-membre-${anna.id}-2026-10-06`).should('contain', '–');
             cy.getCy(`lien-membre-${anna.id}`).should('have.text', 'Anna Abel').and('have.attr', 'href').and('contain', `equipe=${team.id}`);
             tokenOf(manager).then((token) =>
@@ -208,7 +208,7 @@ describe('SFD-04 : vue équipe', () => {
                 expect(response.status).to.eq(200);
                 expect(response.body.members.map((m) => [m.member.id, m.totalMinutes])).to.deep.eq([
                   [anna.id, 90],
-                  [bob.id, 420],
+                  [bob.id, 480],
                 ]);
               }),
             );
@@ -355,22 +355,22 @@ describe('SFD-04 : vue équipe', () => {
     cy.getCy('titre-equipe').should('not.exist');
   });
 
-  it('CA-04-07 : une PLAGE du jeudi 08/10 au mardi 13/10/2026 donne 14 h pour la semaine du 05/10 (jeudi et vendredi)', () => {
+  it('CA-04-07 : une PLAGE du jeudi 08/10 au mardi 13/10/2026 donne 16 h pour la semaine du 05/10 (jeudi et vendredi)', () => {
     createAccount('MANAGER').then((manager) => {
       createAccount('USER', 'Anna', 'Abel').then((member) => {
         createEntry(member, RANGE);
         createTeam(teamName('Produit'), manager, [member]).then(() => {
           openTeamView(manager);
-          text(`total-membre-${member.id}`).should('eq', '14 h');
-          text(`duree-membre-${member.id}-2026-10-08`).should('eq', '7 h');
-          text(`duree-membre-${member.id}-2026-10-09`).should('eq', '7 h');
+          text(`total-membre-${member.id}`).should('eq', '16 h');
+          text(`duree-membre-${member.id}-2026-10-08`).should('eq', '8 h');
+          text(`duree-membre-${member.id}-2026-10-09`).should('eq', '8 h');
           ['2026-10-05', '2026-10-06', '2026-10-07', '2026-10-10', '2026-10-11'].forEach((day) => {
             cy.getCy(`duree-membre-${member.id}-${day}`).should('contain', '–');
           });
           cy.get('@summary').its('response.body').then((body) => {
             const week = body as TeamWeek;
-            expect(week.members[0].totalMinutes).to.eq(840);
-            expect(dayMinutes(week, member.id, '2026-10-08')).to.eq(420);
+            expect(week.members[0].totalMinutes).to.eq(960);
+            expect(dayMinutes(week, member.id, '2026-10-08')).to.eq(480);
             expect(dayMinutes(week, member.id, '2026-10-10')).to.eq(0);
           });
           // Semaine suivante : lundi 12 et mardi 13 = 2 jours ouvrés
@@ -378,8 +378,8 @@ describe('SFD-04 : vue équipe', () => {
           cy.wait('@summary').its('response.statusCode').should('eq', 200);
           cy.location('search').should('contain', `semaine=${NEXT_WEEK}`);
           cy.getCy('libelle-semaine').should('contain', 'Semaine du 12/10/2026 au 18/10/2026');
-          text(`total-membre-${member.id}`).should('eq', '14 h');
-          text(`duree-membre-${member.id}-2026-10-12`).should('eq', '7 h');
+          text(`total-membre-${member.id}`).should('eq', '16 h');
+          text(`duree-membre-${member.id}-2026-10-12`).should('eq', '8 h');
           cy.getCy(`duree-membre-${member.id}-2026-10-14`).should('contain', '–');
         });
       });
@@ -459,8 +459,8 @@ describe('SFD-04 : vue équipe', () => {
                 cy.location('search').should('contain', `equipe=${bravo.id}`).and('contain', `semaine=${WEEK}`);
                 cy.getCy('libelle-semaine').should('contain', 'Semaine du 05/10/2026 au 11/10/2026');
                 cy.getCy(`ligne-membre-${anna.id}`).should('not.exist');
-                text(`total-membre-${bob.id}`).should('eq', '7 h');
-                text(`total-membre-${cleo.id}`).should('eq', '14 h');
+                text(`total-membre-${bob.id}`).should('eq', '8 h');
+                text(`total-membre-${cleo.id}`).should('eq', '16 h');
               });
             });
           });

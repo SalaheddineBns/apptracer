@@ -163,7 +163,7 @@ class TeamMemberJournalControllerTest {
         .andExpect(jsonPath("$.member.active").value(true))
         .andExpect(jsonPath("$.week.weekStart").value(WEEK))
         .andExpect(jsonPath("$.week.weekEnd").value("2026-10-11"))
-        .andExpect(jsonPath("$.week.totalMinutes").value(510))
+        .andExpect(jsonPath("$.week.totalMinutes").value(570))
         .andExpect(jsonPath("$.week.entries.length()").value(2))
         .andExpect(jsonPath("$.week.entries[0].comment").value("Point d'équipe"))
         .andExpect(jsonPath("$.week.entries[0].activityType.code").value("REUNION"))
@@ -274,7 +274,7 @@ class TeamMemberJournalControllerTest {
         "UPDATE teams SET manager_id = ? WHERE id = ?", otherManager.getId(), alpha.getId());
     journal(otherManager, anne.getId(), WEEK)
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.week.totalMinutes").value(420));
+        .andExpect(jsonPath("$.week.totalMinutes").value(480));
     journal(manager, anne.getId(), WEEK)
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("RG-04-02"));

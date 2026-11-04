@@ -158,7 +158,7 @@ class TeamWeekSummaryControllerTest {
   }
 
   @Test
-  @DisplayName("CA-04-01 : deux membres ayant saisi 90 min et 7 h affichent 1,5 h et 7 h")
+  @DisplayName("CA-04-01 : deux membres ayant saisi 90 min et 8 h affichent 1,5 h et 8 h")
   void membersShowTheirTotals() throws Exception {
     create(anne, hour("2026-10-05", "09:00", "10:30"));
     create(paul, day("2026-10-06"));
@@ -173,12 +173,12 @@ class TeamWeekSummaryControllerTest {
         .andExpect(jsonPath("$.members[0].member.id").value(anne.getId()))
         .andExpect(jsonPath("$.members[0].totalMinutes").value(90))
         .andExpect(jsonPath("$.members[1].member.id").value(paul.getId()))
-        .andExpect(jsonPath("$.members[1].totalMinutes").value(420))
+        .andExpect(jsonPath("$.members[1].totalMinutes").value(480))
         .andExpect(jsonPath("$.members[0].days.length()").value(7))
         .andExpect(jsonPath("$.members[0].days[0].date").value("2026-10-05"))
         .andExpect(jsonPath("$.members[0].days[0].minutes").value(90))
         .andExpect(jsonPath("$.members[0].days[6].date").value("2026-10-11"))
-        .andExpect(jsonPath("$.members[1].days[1].minutes").value(420));
+        .andExpect(jsonPath("$.members[1].days[1].minutes").value(480));
   }
 
   @Test
@@ -198,12 +198,12 @@ class TeamWeekSummaryControllerTest {
   void rangeOverlappingWeekCountsWeekdaysOfTheWeek() throws Exception {
     create(anne, range("2026-10-08", "2026-10-13"));
     summary(manager, alpha.getId(), WEEK)
-        .andExpect(jsonPath("$.members[0].totalMinutes").value(840))
-        .andExpect(jsonPath("$.members[0].days[3].minutes").value(420))
-        .andExpect(jsonPath("$.members[0].days[4].minutes").value(420))
+        .andExpect(jsonPath("$.members[0].totalMinutes").value(960))
+        .andExpect(jsonPath("$.members[0].days[3].minutes").value(480))
+        .andExpect(jsonPath("$.members[0].days[4].minutes").value(480))
         .andExpect(jsonPath("$.members[0].days[5].minutes").value(0));
     summary(manager, alpha.getId(), "2026-10-12")
-        .andExpect(jsonPath("$.members[0].totalMinutes").value(840));
+        .andExpect(jsonPath("$.members[0].totalMinutes").value(960));
   }
 
   @Test
@@ -244,7 +244,7 @@ class TeamWeekSummaryControllerTest {
         .andExpect(jsonPath("$.team.name").value("Beta"))
         .andExpect(jsonPath("$.members.length()").value(1))
         .andExpect(jsonPath("$.members[0].member.id").value(zoe.getId()))
-        .andExpect(jsonPath("$.members[0].totalMinutes").value(420));
+        .andExpect(jsonPath("$.members[0].totalMinutes").value(480));
     summary(manager, alpha.getId(), WEEK)
         .andExpect(jsonPath("$.members.length()").value(2))
         .andExpect(jsonPath("$.members[0].totalMinutes").value(90));
@@ -266,7 +266,7 @@ class TeamWeekSummaryControllerTest {
     create(anne, day("2026-01-05"));
     summary(manager, alpha.getId(), "2026-01-05")
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.members[0].totalMinutes").value(420));
+        .andExpect(jsonPath("$.members[0].totalMinutes").value(480));
   }
 
   @Test

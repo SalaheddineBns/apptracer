@@ -48,13 +48,13 @@ class AppSettingsServiceTest {
 
   @BeforeEach
   void setUp() throws Exception {
-    when(repository.findById(AppSettings.SINGLETON_ID)).thenReturn(Optional.of(settings(420)));
+    when(repository.findById(AppSettings.SINGLETON_ID)).thenReturn(Optional.of(settings(480)));
   }
 
   @Test
   @DisplayName("RG-00-02 : le service expose la journée standard en vigueur aux autres domaines")
   void exposesStandardDay() {
-    assertThat(service.getStandardDayMinutes()).isEqualTo(420);
+    assertThat(service.getStandardDayMinutes()).isEqualTo(480);
   }
 
   @Test
@@ -95,7 +95,7 @@ class AppSettingsServiceTest {
   void neverModifiedGivesNullsToAdmin() {
     AppSettingsView view = service.read(true);
 
-    assertThat(view.standardDayMinutes()).isEqualTo(420); // RG-06-01
+    assertThat(view.standardDayMinutes()).isEqualTo(480); // RG-06-01
     assertThat(view.lastModifiedAt()).isNull();
     assertThat(view.lastModifiedBy()).isNull();
     org.mockito.Mockito.verify(users, org.mockito.Mockito.never()).findById(anyLong());
@@ -142,7 +142,7 @@ class AppSettingsServiceTest {
   @Test
   @DisplayName("RG-06-06 : valeur identique sur une installation neuve, toujours aucune trace")
   void identicalValueOnFreshInstallation() {
-    AppSettingsView view = service.update(420, 0, 9L);
+    AppSettingsView view = service.update(480, 0, 9L);
 
     verify(repository, never()).saveAndFlush(any());
     assertThat(view.lastModifiedAt()).isNull();

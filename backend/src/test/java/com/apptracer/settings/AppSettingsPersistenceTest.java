@@ -32,7 +32,7 @@ class AppSettingsPersistenceTest {
   void cleanUp() {
     // remet la ligne dans l'état d'installation avant de supprimer les comptes (clé étrangère)
     jdbc.update(
-        "UPDATE app_settings SET standard_day_minutes = 420, version = 0,"
+        "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL WHERE id = 1");
     jdbc.update("DELETE FROM users WHERE email = 'settings-admin@example.com'");
   }
@@ -43,13 +43,13 @@ class AppSettingsPersistenceTest {
 
   @Test
   @DisplayName(
-      "CA-06-01 : une installation neuve a une seule ligne, journée standard de 420 minutes, jamais modifiée")
-  void freshInstallationHolds420() {
+      "CA-06-01 : une installation neuve a une seule ligne, journée standard de 480 minutes, jamais modifiée")
+  void freshInstallationHolds480() {
     List<AppSettings> all = settings.findAll();
     assertThat(all).hasSize(1); // RG-06-01
     AppSettings s = all.get(0);
     assertThat(s.getId()).isEqualTo(AppSettings.SINGLETON_ID);
-    assertThat(s.getStandardDayMinutes()).isEqualTo(420);
+    assertThat(s.getStandardDayMinutes()).isEqualTo(480);
     // RG-06-05 : pas de trace tant que jamais modifié
     assertThat(s.getUpdatedAt()).isNull();
     assertThat(s.getUpdatedBy()).isNull();
@@ -71,7 +71,7 @@ class AppSettingsPersistenceTest {
           .as("valeur %d", bad)
           .isInstanceOf(DataIntegrityViolationException.class);
     }
-    assertThat(settings.findAll().get(0).getStandardDayMinutes()).isEqualTo(420);
+    assertThat(settings.findAll().get(0).getStandardDayMinutes()).isEqualTo(480);
   }
 
   @Test
@@ -79,11 +79,11 @@ class AppSettingsPersistenceTest {
   void secondRowRejected() {
     assertThatThrownBy(
             () ->
-                jdbc.update("INSERT INTO app_settings (id, standard_day_minutes) VALUES (2, 420)"))
+                jdbc.update("INSERT INTO app_settings (id, standard_day_minutes) VALUES (2, 480)"))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThatThrownBy(
             () ->
-                jdbc.update("INSERT INTO app_settings (id, standard_day_minutes) VALUES (1, 420)"))
+                jdbc.update("INSERT INTO app_settings (id, standard_day_minutes) VALUES (1, 480)"))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThat(settings.count()).isEqualTo(1);
   }
