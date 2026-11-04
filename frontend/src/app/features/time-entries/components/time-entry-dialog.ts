@@ -127,11 +127,18 @@ export class TimeEntryDialog {
   private readonly openedAt = signal(quarterHourFloor(new Date()));
   /** Heure proposée par le sélecteur de début quand il est vide : toujours un multiple de 15 minutes. */
   protected readonly defaultStartTime = computed(() => this.openedAt());
-  /** Sélecteur de fin vide : il part de l'heure de début saisie (alignée), sinon de la même heure que le début. */
-  protected readonly defaultEndTime = computed(() => {
-    const start = this.value().startTime;
-    return start instanceof Date ? quarterHourFloor(start) : this.openedAt();
-  });
+  /**
+   * Sélecteur de fin vide : il part de l'heure de début saisie (alignée), sinon de la même heure que le début.
+   * PrimeNG réinitialise son panneau à chaque nouvelle `defaultDate` : la valeur ne doit changer que si l'heure
+   * proposée change, jamais à chaque saisie (sinon le panneau revient sans cesse à l'heure de début).
+   */
+  protected readonly defaultEndTime = computed(
+    () => {
+      const start = this.value().startTime;
+      return start instanceof Date ? quarterHourFloor(start) : this.openedAt();
+    },
+    { equal: (a, b) => a.getTime() === b.getTime() },
+  );
 
   /** RG-01-05, RG-02-03 : le projet n'est demandé que si le type choisi l'exige (CA-01-06). */
   protected readonly projectRequired = computed(() => {

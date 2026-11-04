@@ -511,6 +511,19 @@ describe('TimeEntryDialog', () => {
       expect(form().get('startTime')?.value).toBeNull();
     });
 
+    it('RG-01-01 : changer l’heure de fin ne remplace pas l’heure proposée (sinon le panneau revient au début)', async () => {
+      await open();
+      await fill({ startTime: time('14:15') });
+      const dialog = fixture.componentInstance as unknown as { defaultEndTime(): Date };
+      const proposed = dialog.defaultEndTime();
+      await fill({ endTime: time('15:15') });
+      await fill({ endTime: time('15:30'), comment: 'autre saisie' });
+      // Même objet : PrimeNG ne réinitialise son panneau que sur une nouvelle `defaultDate`.
+      expect(dialog.defaultEndTime()).toBe(proposed);
+      await fill({ startTime: time('10:00') });
+      expect(toTime(dialog.defaultEndTime())).toBe('10:00');
+    });
+
     it('RG-01-01 : une fois l’heure de début saisie, le sélecteur de fin part de cette heure', async () => {
       await open();
       await fill({ startTime: time('09:30') });
