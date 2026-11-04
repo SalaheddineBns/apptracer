@@ -77,11 +77,16 @@ public class TeamViewService {
     requireMonday(weekStart);
     // RG-04-05, RG-04-07 : même lecture que le journal du membre, y compris compte inactif
     List<TimeEntry> entries = reader.read(userId, weekStart);
-    int total = calculator.compute(entries, weekStart).totalMinutes();
+    var totals = calculator.compute(entries, weekStart);
     return new MemberJournal(
         link.getTeam(),
         link.getUser(),
-        new WeeklyTimeEntries(weekStart, weekStart.plusDays(6), total, entries));
+        new WeeklyTimeEntries(
+            weekStart,
+            weekStart.plusDays(6),
+            totals.totalMinutes(),
+            totals.minutesPerDay(),
+            entries));
   }
 
   // RG-04-04 : la semaine va du lundi au dimanche

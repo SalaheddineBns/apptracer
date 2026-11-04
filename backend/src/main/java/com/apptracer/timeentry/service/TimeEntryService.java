@@ -157,8 +157,9 @@ public class TimeEntryService {
           "La semaine doit commencer un lundi.", "weekStart", "Doit être un lundi.");
     }
     List<TimeEntry> week = weeklyReader.read(userId, weekStart);
-    int total = weeklyCalculator.compute(week, weekStart).totalMinutes();
-    return new WeeklyTimeEntries(weekStart, weekStart.plusDays(6), total, week);
+    var totals = weeklyCalculator.compute(week, weekStart);
+    return new WeeklyTimeEntries(
+        weekStart, weekStart.plusDays(6), totals.totalMinutes(), totals.minutesPerDay(), week);
   }
 
   /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */

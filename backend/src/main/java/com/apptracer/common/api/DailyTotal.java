@@ -1,4 +1,4 @@
-package com.apptracer.teamview.api;
+package com.apptracer.common.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;

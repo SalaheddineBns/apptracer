@@ -1,9 +1,11 @@
 package com.apptracer.timeentry.api;
 
+import com.apptracer.common.api.DailyTotal;
 import com.apptracer.timeentry.domain.Granularity;
 import com.apptracer.timeentry.domain.TimeEntry;
 import com.apptracer.timeentry.service.TimeEntryCommand;
 import com.apptracer.timeentry.service.WeeklyTimeEntries;
+import java.util.stream.IntStream;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -58,6 +60,11 @@ public class TimeEntryMapper {
         week.weekStart(),
         week.weekEnd(),
         week.totalMinutes(),
+        // RG-07-02, RG-07-03, RG-07-05 : durées par jour issues de WeeklyTotalCalculator
+        IntStream.range(0, 7)
+            .mapToObj(
+                i -> new DailyTotal(week.weekStart().plusDays(i), week.minutesPerDay().get(i)))
+            .toList(),
         week.entries().stream().map(this::toResponse).toList());
   }
 }

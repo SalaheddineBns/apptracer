@@ -274,4 +274,103 @@ class TimeEntryWeekTest {
         .andExpect(jsonPath("$.code").value("RG-03-09"));
     assertThat(entries.count()).isZero();
   }
+
+  private void standardDay(int minutes) {
+    jdbc.update("UPDATE app_settings SET standard_day_minutes = ?", minutes);
+  }
+
+  /** Vérifie les sept jours du lundi 05/10/2026 : 7 entrées, dates consécutives, minutes. */
+  private void expectDays(ResultActions r, int... minutes) throws Exception {
+    r.andExpect(jsonPath("$.days.length()").value(7));
+    for (int i = 0; i < 7; i++) {
+      r.andExpect(
+              jsonPath("$.days[" + i + "].date").value("2026-10-" + String.format("%02d", 5 + i)))
+          .andExpect(jsonPath("$.days[" + i + "].minutes").value(minutes[i]));
+    }
+  }
+
+  @Test
+  @DisplayName("CA-07-01 : deux saisies HEURE le lundi (90 + 120 min) donnent 210 min (3,5 h)")
+  void dailyTotalOfSeveralHourEntries() throws Exception {
+    create(user, hour("2026-10-05", "09:00", "10:30"));
+    create(user, hour("2026-10-05", "14:00", "16:00"));
+    expectDays(week(user, "2026-10-05").andExpect(status().isOk()), 210, 0, 0, 0, 0, 0, 0);
+  }
+
+  @Test
+  @DisplayName(
+      "CA-07-02 : une PLAGE jeudi-mardi compte 480 jeudi et vendredi, 0 samedi et dimanche")
+  void dailyTotalOfRangeAcrossWeekend() throws Exception {
+    standardDay(480);
+    create(user, range("2026-10-08", "2026-10-13"));
+    expectDays(week(user, "2026-10-05"), 0, 0, 0, 480, 480, 0, 0);
+  }
+
+  @Test
+  @DisplayName("CA-07-03 : une JOURNEE le samedi compte 480 min ce jour-là")
+  void dailyTotalOfDayOnSaturday() throws Exception {
+    standardDay(480);
+    create(user, day("2026-10-10"));
+    expectDays(week(user, "2026-10-05"), 0, 0, 0, 0, 0, 480, 0);
+  }
+
+  @Test
+  @DisplayName("CA-07-05 : 90 min le lundi et une JOURNEE le mardi, total de la semaine 570 min")
+  void dailyTotalsOfMixedWeek() throws Exception {
+    standardDay(480);
+    create(user, hour("2026-10-05", "09:00", "10:30"));
+    create(user, day("2026-10-06"));
+    expectDays(week(user, "2026-10-05"), 90, 480, 0, 0, 0, 0, 0);
+  }
+
+  @Test
+  @DisplayName(
+      "CA-07-06 : une journée standard modifiée après coup ne change pas le total du mardi")
+  void dailyTotalUnchangedAfterSettingChange() throws Exception {
+    standardDay(480);
+    create(user, day("2026-10-06"));
+    standardDay(450);
+    expectDays(week(user, "2026-10-05"), 0, 480, 0, 0, 0, 0, 0);
+  }
+
+  @Test
+  @DisplayName("CA-07-08 : une saisie de 09:00 à 09:15 donne 15 min (0,25 h) le lundi")
+  void dailyTotalOfQuarterHour() throws Exception {
+    create(user, hour("2026-10-05", "09:00", "09:15"));
+    expectDays(week(user, "2026-10-05"), 15, 0, 0, 0, 0, 0, 0);
+  }
+
+  @Test
+  @DisplayName("RG-07-03 : une saisie supprimée n'est pas comptée dans le jour")
+  void deletedEntryNotInDailyTotal() throws Exception {
+    long id = create(user, hour("2026-10-05", "09:00", "10:30"));
+    create(user, hour("2026-10-05", "14:00", "16:00"));
+    TimeEntry e = entries.findById(id).orElseThrow();
+    e.markDeleted(user.getId(), Instant.now());
+    entries.saveAndFlush(e);
+    expectDays(week(user, "2026-10-05"), 120, 0, 0, 0, 0, 0, 0);
+  }
+
+  @Test
+  @DisplayName("RG-07-04 : la somme des sept jours est égale au total de la semaine")
+  void daysSumEqualsTotal() throws Exception {
+    standardDay(480);
+    create(user, hour("2026-10-05", "09:00", "10:30"));
+    create(user, range("2026-10-08", "2026-10-13"));
+    create(user, day("2026-10-06"));
+    String json =
+        week(user, "2026-10-05")
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    com.fasterxml.jackson.databind.JsonNode root =
+        new com.fasterxml.jackson.databind.ObjectMapper().readTree(json);
+    int sum = 0;
+    for (com.fasterxml.jackson.databind.JsonNode d : root.get("days")) {
+      sum += d.get("minutes").asInt();
+    }
+    assertThat(root.get("totalMinutes").asInt()).isEqualTo(90 + 960 + 480);
+    assertThat(sum).isEqualTo(root.get("totalMinutes").asInt());
+  }
 }

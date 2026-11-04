@@ -1,6 +1,7 @@
 package com.apptracer.teamview.api;
 
 import com.apptracer.account.domain.User;
+import com.apptracer.common.api.DailyTotal;
 import com.apptracer.team.domain.Team;
 import com.apptracer.teamview.service.TeamViewService.MemberJournal;
 import com.apptracer.teamview.service.TeamViewService.MemberWeek;
