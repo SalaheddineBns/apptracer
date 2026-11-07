@@ -396,6 +396,21 @@ describe('JournalPage', () => {
       expect(label('2026-10-05')).toBe('Total du lundi : 3,5 h');
     });
 
+    it('SFD-07 E1 : le total suit le nom du jour dans l’en-tête, avec un nom abrégé réservé aux colonnes étroites', async () => {
+      listMyTimeEntries.mockReturnValue(of(weekWithDays([meeting()], { '2026-10-05': 90 })));
+      await open();
+      const header = cy('jour-2026-10-05')?.firstElementChild as HTMLElement;
+      const h2 = header.querySelector('h2') as HTMLElement;
+      const totalCell = cy('total-jour-2026-10-05')?.parentElement as HTMLElement;
+      // Le total est le voisin direct du titre du jour, avant la date (colonnes) et le « + ».
+      expect(h2.nextElementSibling).toBe(totalCell);
+      const shortName = h2.querySelector('[aria-hidden="true"]');
+      expect(shortName?.textContent).toBe('lun.');
+      // Le nom complet reste dans le titre pour les lecteurs d'écran.
+      expect(h2.textContent).toContain('lundi');
+      expect(h2.textContent).toContain('05/10');
+    });
+
     it('CA-07-02 : une PLAGE du jeudi au mardi affiche 8 h le jeudi et le vendredi, « – » le week-end', async () => {
       const range = meeting({
         granularity: Granularity.Range,

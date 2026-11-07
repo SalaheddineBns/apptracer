@@ -40,9 +40,13 @@
       >
         @for (day of skeletonDays; track day) {
           <div class="flex flex-col gap-2">
-            <div class="flex items-center justify-between gap-2 min-h-8 md:flex-col md:items-start md:justify-start md:gap-1">
-              <p-skeleton width="5rem" height="1.25rem" styleClass="md:h-10!" />
-              <p-skeleton width="2rem" height="2rem" styleClass="md:self-end" />
+            <!-- Même forme que l'en-tête réel : « jour · total », puis « date · + » à partir de md (56 px). -->
+            <div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 min-h-8">
+              <p-skeleton width="5rem" height="1.25rem" />
+              <p-skeleton width="2rem" height="2rem" styleClass="md:h-5! md:w-8!" />
+              <!-- Classes sur l'hôte : c'est lui l'élément de la grille. -->
+              <p-skeleton width="3rem" height="1rem" class="hidden md:block" />
+              <p-skeleton width="2rem" height="2rem" class="hidden md:block justify-self-end" />
             </div>
             <p-skeleton height="6rem" />
           </div>
