@@ -1,6 +1,7 @@
 package com.apptracer.account.domain;
 
 import com.apptracer.common.audit.AuditableEntity;
+import com.apptracer.referential.domain.JobTitle;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,6 +9,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -41,6 +44,12 @@ public class User extends AuditableEntity {
 
   @Column(nullable = false)
   private boolean active = true;
+
+  // RG-09-02 : au plus une fonction, facultative, jamais pour un ADMIN ; RG-09-01 : sans effet sur
+  // les droits
+  @ManyToOne
+  @JoinColumn(name = "job_title_id")
+  private JobTitle jobTitle;
 
   @Version
   @Column(nullable = false)
@@ -102,6 +111,14 @@ public class User extends AuditableEntity {
 
   public void setActive(boolean active) {
     this.active = active;
+  }
+
+  public JobTitle getJobTitle() {
+    return jobTitle;
+  }
+
+  public void setJobTitle(JobTitle jobTitle) {
+    this.jobTitle = jobTitle;
   }
 
   public long getVersion() {
