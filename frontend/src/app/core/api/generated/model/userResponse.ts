@@ -8,6 +8,7 @@
  * Do not edit the class manually.
  */
 import { Role } from './role';
+import { UserJobTitleResponse } from './userJobTitleResponse';
 
 
 export interface UserResponse { 
@@ -17,6 +18,7 @@ export interface UserResponse {
     lastName: string;
     role: Role;
     active: boolean;
+    jobTitle?: UserJobTitleResponse;
     version: number;
 }
 

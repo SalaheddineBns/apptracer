@@ -141,7 +141,7 @@
             }
           },
           "409" : {
-            "description" : "Règle RG-03-13 violée (retrait de son propre rôle ADMIN), RG-05-10 violée (rôle MANAGER retiré à un compte manager d'une équipe, erreur sur le champ role), ou compte modifié entre-temps (conflit de version)",
+            "description" : "Règle RG-03-13 violée (retrait de son propre rôle ADMIN), RG-05-10 violée (rôle MANAGER retiré à un compte manager d'une équipe, erreur sur le champ role), RG-09-02 (fonction pour un ADMIN) ou RG-09-06 (fonction inconnue ou inactive, non portée par le compte ; erreurs sur le champ jobTitleCode), ou compte modifié entre-temps (conflit de version)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -683,6 +683,150 @@
         }
       }
     },
+    "/api/v1/job-titles/{id}" : {
+      "get" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Lire une fonction",
+        "operationId" : "getJobTitle",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Fonction",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobTitleResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-09-07)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Fonction introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Modifier le libellé d'une fonction (le code est immuable)",
+        "operationId" : "updateJobTitle",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateJobTitleRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Fonction modifiée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobTitleResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-09-07)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Fonction introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Fonction modifiée entre-temps (conflit de version)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/auth/me/password" : {
       "put" : {
         "tags" : [ "Authentication" ],
@@ -1112,7 +1256,7 @@
             }
           },
           "409" : {
-            "description" : "E-mail déjà utilisé (RG-03-01)",
+            "description" : "E-mail déjà utilisé (RG-03-01), fonction pour un ADMIN (RG-09-02) ou fonction inconnue ou inactive (RG-09-06), erreur sur le champ jobTitleCode",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1690,6 +1834,221 @@
           },
           "404" : {
             "description" : "Projet introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/job-titles" : {
+      "get" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Lister les fonctions (actives, ou toutes pour un ADMIN)",
+        "operationId" : "listJobTitles",
+        "responses" : {
+          "200" : {
+            "description" : "Fonctions triées par libellé (RG-09-08)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/JobTitleResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Créer une fonction",
+        "operationId" : "createJobTitle",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/CreateJobTitleRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Fonction créée",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobTitleResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Requête invalide (RG-09-05 : format du code, libellé)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-09-07)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Code déjà utilisé (RG-09-05)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/job-titles/{id}/reactivation" : {
+      "post" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Réactiver une fonction",
+        "operationId" : "reactivateJobTitle",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Fonction réactivée (sans effet si elle l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobTitleResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-09-07)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Fonction introuvable",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/job-titles/{id}/deactivation" : {
+      "post" : {
+        "tags" : [ "JobTitles" ],
+        "summary" : "Désactiver une fonction",
+        "operationId" : "deactivateJobTitle",
+        "parameters" : [ {
+          "name" : "id",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Fonction désactivée (sans effet si elle l'était déjà)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/JobTitleResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Access token absent ou invalide (RG-03-09)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Rôle insuffisant (RG-09-07)",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Fonction introuvable",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -2360,6 +2719,9 @@
           "role" : {
             "$ref" : "#/components/schemas/Role"
           },
+          "jobTitleCode" : {
+            "type" : [ "string", "null" ]
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
@@ -2394,6 +2756,21 @@
           }
         }
       },
+      "UserJobTitleResponse" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "active", "code", "label" ]
+      },
       "UserResponse" : {
         "type" : "object",
         "properties" : {
@@ -2415,6 +2792,10 @@
           },
           "active" : {
             "type" : "boolean"
+          },
+          "jobTitle" : {
+            "type" : "null",
+            "$ref" : "#/components/schemas/UserJobTitleResponse"
           },
           "version" : {
             "type" : "integer",
@@ -2680,6 +3061,44 @@
         },
         "required" : [ "active", "code", "id", "name", "version" ]
       },
+      "UpdateJobTitleRequest" : {
+        "type" : "object",
+        "properties" : {
+          "label" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "label", "version" ]
+      },
+      "JobTitleResponse" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "code" : {
+            "type" : "string"
+          },
+          "label" : {
+            "type" : "string"
+          },
+          "active" : {
+            "type" : "boolean"
+          },
+          "version" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "active", "code", "id", "label", "version" ]
+      },
       "ChangePasswordRequest" : {
         "type" : "object",
         "properties" : {
@@ -2829,6 +3248,9 @@
           "initialPassword" : {
             "type" : "string",
             "minLength" : 1
+          },
+          "jobTitleCode" : {
+            "type" : [ "string", "null" ]
           }
         },
         "required" : [ "email", "firstName", "initialPassword", "lastName", "role" ]
@@ -2912,6 +3334,21 @@
           }
         },
         "required" : [ "code", "name" ]
+      },
+      "CreateJobTitleRequest" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "pattern" : "^[A-Za-z0-9_]{2,30}$"
+          },
+          "label" : {
+            "type" : "string",
+            "maxLength" : 100,
+            "minLength" : 0
+          }
+        },
+        "required" : [ "code", "label" ]
       },
       "RefreshSessionRequest" : {
         "type" : "object",

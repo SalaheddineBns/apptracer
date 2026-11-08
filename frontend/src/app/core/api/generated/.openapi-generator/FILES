@@ -6,6 +6,7 @@ api/activityTypes.service.ts
 api/api.ts
 api/appSettings.service.ts
 api/authentication.service.ts
+api/jobTitles.service.ts
 api/projects.service.ts
 api/teamView.service.ts
 api/teams.service.ts
@@ -21,6 +22,7 @@ model/appSettingsResponse.ts
 model/authTokensResponse.ts
 model/changePasswordRequest.ts
 model/createActivityTypeRequest.ts
+model/createJobTitleRequest.ts
 model/createProjectRequest.ts
 model/createTeamRequest.ts
 model/createTimeEntryRequest.ts
@@ -28,6 +30,7 @@ model/createUserRequest.ts
 model/currentUserResponse.ts
 model/dailyTotal.ts
 model/granularity.ts
+model/jobTitleResponse.ts
 model/loginRequest.ts
 model/logoutRequest.ts
 model/managedTeamResponse.ts
@@ -51,10 +54,12 @@ model/teamWeekSummaryResponse.ts
 model/timeEntryResponse.ts
 model/updateActivityTypeRequest.ts
 model/updateAppSettingsRequest.ts
+model/updateJobTitleRequest.ts
 model/updateProjectRequest.ts
 model/updateTeamRequest.ts
 model/updateTimeEntryRequest.ts
 model/updateUserRequest.ts
+model/userJobTitleResponse.ts
 model/userResponse.ts
 model/weeklyTimeEntriesResponse.ts
 param.ts

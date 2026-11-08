@@ -16,6 +16,7 @@ export interface CreateUserRequest {
     lastName: string;
     role: Role;
     initialPassword: string;
+    jobTitleCode?: string | null;
 }
 
 

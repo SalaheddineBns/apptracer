@@ -14,6 +14,7 @@ export interface UpdateUserRequest {
     firstName: string;
     lastName: string;
     role: Role;
+    jobTitleCode?: string | null;
     version: number;
 }
 
