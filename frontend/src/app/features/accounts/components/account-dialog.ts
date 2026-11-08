@@ -17,6 +17,7 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { Role, UserResponse } from '../../../core/api/generated';
 import { AuthStore } from '../../../core/auth/auth.store';
@@ -44,6 +45,7 @@ export interface AccountSaved {
     DialogModule,
     ButtonModule,
     InputTextModule,
+    MessageModule,
     SelectModule,
     FieldError,
     PasswordField,
@@ -100,14 +102,20 @@ export class AccountDialog {
    * Les libellés sont des données, jamais traduits (RG-09-10).
    */
   protected readonly jobTitleOptions = computed(() => {
-    const options = this.jobTitles.activeItems().map((item) => ({ label: item.label, value: item.code }));
+    const options = this.jobTitles.activeItems().map((item) => ({ label: item.label, value: item.code, sortKey: item.label }));
     const current = this.account()?.jobTitle;
     if (current && !options.some((option) => option.value === current.code)) {
       const label = current.active ? current.label : this.i18n.t('accounts.dialog.jobTitleInactiveOption', { label: current.label });
-      options.push({ label, value: current.code });
+      options.push({ label, value: current.code, sortKey: current.label });
     }
-    return options;
+    // RG-09-08 : ordre alphabétique des libellés, la fonction inactive portée par le compte comprise.
+    return options.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   });
+  protected readonly jobTitlesError = computed(() => this.jobTitles.error());
+
+  protected reloadJobTitles(): void {
+    this.jobTitles.load();
+  }
 
   protected readonly firstNameMessages: FieldMessages = {
     required: 'accounts.dialog.errors.firstNameRequired',
@@ -139,11 +147,15 @@ export class AccountDialog {
       window.removeEventListener('keydown', blockEscapeWhileSubmitting, true),
     );
 
-    // RG-09-03 : choisir le rôle Administrateur masque et vide la fonction.
+    // RG-09-02, RG-09-03 : pour le rôle Administrateur, le champ est désactivé sans perdre sa valeur (un retour à
+    // Utilisateur ou Manager avant d'enregistrer la retrouve) ; la fonction n'est pas envoyée pour un ADMIN.
     this.form.controls.role.valueChanges.pipe(takeUntilDestroyed()).subscribe((role) => {
       this.selectedRole.set(role);
+      const jobTitle = this.form.controls.jobTitleCode;
       if (role === Role.Admin) {
-        this.form.controls.jobTitleCode.setValue(null);
+        jobTitle.disable({ emitEvent: false });
+      } else if (!this.submitting()) {
+        jobTitle.enable({ emitEvent: false });
       }
     });
 

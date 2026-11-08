@@ -311,40 +311,48 @@ describe('AccountDialog', () => {
       expect(await openSelect()).not.toContain('option-fonction-QA');
     });
 
-    it('CA-09-06 : le champ fonction n’est pas proposé pour le rôle Administrateur', async () => {
+    it('CA-09-06 : le champ fonction n’est pas proposé pour le rôle Administrateur (désactivé, avec une aide)', async () => {
       await open(null, titles);
-      expect(el('champ-fonction')).not.toBeNull();
+      expect(codeControl().enabled).toBe(true);
+      expect(el('aide-fonction-admin')).toBeNull();
       roleControl().setValue(Role.Admin);
       await fixture.whenStable();
-      expect(el('champ-fonction')).toBeNull();
+      expect(el('champ-fonction')).not.toBeNull();
+      expect(codeControl().disabled).toBe(true);
+      expect(el('aide-fonction-admin')).not.toBeNull();
       roleControl().setValue(Role.Manager);
       await fixture.whenStable();
-      expect(el('champ-fonction')).not.toBeNull();
+      expect(codeControl().enabled).toBe(true);
+      expect(el('aide-fonction-admin')).toBeNull();
     });
 
-    it('CA-09-06 : un compte ADMIN existant s’ouvre sans champ fonction', async () => {
+    it('CA-09-06 : un compte ADMIN existant s’ouvre avec le champ fonction vide et désactivé', async () => {
       await open(existing({ role: Role.Admin }), titles);
-      expect(el('champ-fonction')).toBeNull();
+      expect(codeControl().value).toBeNull();
+      expect(codeControl().disabled).toBe(true);
+      expect(el('aide-fonction-admin')).not.toBeNull();
     });
 
-    it('CA-09-08 : le passage au rôle Administrateur vide la fonction, qui n’est pas envoyée', async () => {
+    it('CA-09-08 : au passage au rôle Administrateur, la fonction n’est pas envoyée (elle est retirée)', async () => {
       updateUser.mockReturnValue(of(existing({ role: Role.Admin })));
       await open(existing({ jobTitle: { code: 'DEVELOPER', label: 'Developer', active: true } }), titles);
       expect(codeControl().value).toBe('DEVELOPER');
       roleControl().setValue(Role.Admin);
       await fixture.whenStable();
-      expect(codeControl().value).toBeNull();
       await submit();
       expect(updateUser).toHaveBeenCalledWith(2, { firstName: 'Bob', lastName: 'Durand', role: Role.Admin, version: 3 });
       expect(updateUser.mock.calls[0][1]).not.toHaveProperty('jobTitleCode');
     });
 
-    it('RG-09-03 : revenir à USER ou MANAGER après Administrateur ne rétablit pas la fonction', async () => {
+    it('RG-09-03 : revenir à USER avant d’enregistrer ne retire rien, la fonction est conservée et envoyée', async () => {
+      updateUser.mockReturnValue(of(existing()));
       await open(existing({ jobTitle: { code: 'DEVELOPER', label: 'Developer', active: true } }), titles);
       roleControl().setValue(Role.Admin);
       roleControl().setValue(Role.User);
       await fixture.whenStable();
-      expect(codeControl().value).toBeNull();
+      expect(codeControl().enabled).toBe(true);
+      await submit();
+      expect(updateUser).toHaveBeenCalledWith(2, { firstName: 'Bob', lastName: 'Durand', role: Role.User, jobTitleCode: 'DEVELOPER', version: 3 });
     });
 
     it('RG-09-03 : le passage USER vers MANAGER conserve la fonction et l’envoie (un code absent la retirerait)', async () => {

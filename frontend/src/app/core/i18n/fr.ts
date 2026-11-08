@@ -212,7 +212,10 @@ export const fr = {
       emailImmutable: 'L’e-mail ne peut pas être modifié.',
       selfRole: 'Vous ne pouvez pas modifier votre propre rôle.',
       jobTitlePlaceholder: 'Aucune fonction',
-      jobTitleInactiveOption: '{label} (Inactive)',      initialPassword: 'Mot de passe initial',
+      jobTitleInactiveOption: '{label} (Inactive)',
+      jobTitleAdminHint: 'Pas de fonction pour un administrateur.',
+      noActiveJobTitle: 'Aucune fonction active.',
+      jobTitlesLoadError: 'Impossible de charger les fonctions.',      initialPassword: 'Mot de passe initial',
       initialPasswordSubject: 'le mot de passe initial',
       errors: {
         firstNameRequired: 'Le prénom est obligatoire.',

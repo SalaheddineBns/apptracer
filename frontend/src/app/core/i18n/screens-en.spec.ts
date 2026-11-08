@@ -322,7 +322,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       expect(table).toContain('Inactive');
       expect(text('indicateur-vous')).toBe('(you)');
       expect(table).toContain('Job title');
-      expect(text('fonction-compte-2')).toBe('QA Inactive');
+      expect(text('fonction-compte-2')).toBe('QA (Inactive)');
       expect(cy('btn-modifier-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Edit Bob Stone’s account');
       expect(cy('btn-reactiver-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Reactivate Bob Stone’s account');
       expectNoFrench();

@@ -34,13 +34,14 @@
     </div>
 
     <div class="flex flex-col gap-2">
-      <label for="account-role" class="text-sm font-medium text-color">{{ 'common.role' | t }} <span aria-hidden="true">*</span></label>
+      <label id="account-role-label" for="account-role" class="text-sm font-medium text-color">{{ 'common.role' | t }} <span aria-hidden="true">*</span></label>
       <p-select
         formControlName="role"
         [options]="roleOptions()"
         optionLabel="label"
         optionValue="value"
         inputId="account-role"
+        ariaLabelledBy="account-role-label"
         appendTo="body"
         fluid
         data-cy="champ-role"
@@ -51,28 +52,54 @@
       <app-field-error [control]="form.controls.role" [messages]="roleMessages" cy="erreur-champ-role" />
     </div>
 
-    @if (jobTitleVisible()) {
-      <div class="flex flex-col gap-2">
-        <label for="account-job-title" class="text-sm font-medium text-color">{{ 'accounts.jobTitle' | t }}</label>
-        <p-select
-          formControlName="jobTitleCode"
-          [options]="jobTitleOptions()"
-          optionLabel="label"
-          optionValue="value"
-          inputId="account-job-title"
-          [placeholder]="'accounts.dialog.jobTitlePlaceholder' | t"
-          [showClear]="true"
-          appendTo="body"
-          fluid
-          data-cy="champ-fonction"
-        >
-          <ng-template #item let-option>
-            <span [attr.data-cy]="'option-fonction-' + option.value">{{ option.label }}</span>
-          </ng-template>
-        </p-select>
-        <app-field-error [control]="form.controls.jobTitleCode" cy="erreur-champ-fonction" />
-      </div>
-    }
+    <!--
+      RG-09-02, RG-09-03 : pour le rôle Administrateur, le champ reste à sa place (pas de saut de mise en page), désactivé,
+      avec une aide ; sa valeur n'est pas envoyée et la fonction est retirée à l'enregistrement.
+    -->
+    <div class="flex flex-col gap-2">
+      <label id="account-job-title-label" for="account-job-title" class="text-sm font-medium text-color">{{
+        'accounts.jobTitle' | t
+      }}</label>
+      <p-select
+        formControlName="jobTitleCode"
+        [options]="jobTitleOptions()"
+        optionLabel="label"
+        optionValue="value"
+        inputId="account-job-title"
+        ariaLabelledBy="account-job-title-label"
+        [placeholder]="'accounts.dialog.jobTitlePlaceholder' | t"
+        [emptyMessage]="'accounts.dialog.noActiveJobTitle' | t"
+        [showClear]="true"
+        [panelStyle]="{ maxWidth: 'min(95vw, 30rem)' }"
+        appendTo="body"
+        fluid
+        data-cy="champ-fonction"
+      >
+        <ng-template #item let-option>
+          <span class="whitespace-normal wrap-anywhere" [attr.data-cy]="'option-fonction-' + option.value">{{
+            option.label
+          }}</span>
+        </ng-template>
+      </p-select>
+      @if (!jobTitleVisible()) {
+        <small class="text-xs text-muted-color" data-cy="aide-fonction-admin">{{ 'accounts.dialog.jobTitleAdminHint' | t }}</small>
+      } @else if (jobTitlesError()) {
+        <p-message severity="error" size="small" data-cy="erreur-chargement-fonctions">
+          <span class="flex flex-wrap items-center gap-2">
+            {{ 'accounts.dialog.jobTitlesLoadError' | t }}
+            <p-button
+              type="button"
+              [label]="'common.retry' | t"
+              [text]="true"
+              size="small"
+              (onClick)="reloadJobTitles()"
+              data-cy="btn-recharger-fonctions"
+            />
+          </span>
+        </p-message>
+      }
+      <app-field-error [control]="form.controls.jobTitleCode" cy="erreur-champ-fonction" />
+    </div>
 
     @if (!isEdit()) {
       <app-password-field

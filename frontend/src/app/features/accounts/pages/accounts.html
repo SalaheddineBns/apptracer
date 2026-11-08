@@ -55,9 +55,11 @@
               <!-- RG-09-06 : vide si aucune fonction, mention « Inactive » pour une fonction désactivée (libellé non traduit, RG-09-10). -->
               <td [attr.data-cy]="'fonction-compte-' + user.id">
                 @if (user.jobTitle; as jobTitle) {
-                  {{ jobTitle.label }}
-                  @if (!jobTitle.active) {
-                    <span class="text-xs text-muted-color">{{ 'jobTitles.status.inactive' | t }}</span>
+                  @if (jobTitle.active) {
+                    {{ jobTitle.label }}
+                  } @else {
+                    <!-- « QA (Inactive) », comme dans le dialogue : distinct du statut du compte, lu d'un seul tenant. -->
+                    {{ 'accounts.dialog.jobTitleInactiveOption' | t: { label: jobTitle.label } }}
                   }
                 }
               </td>

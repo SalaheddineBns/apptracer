@@ -214,6 +214,9 @@ export const en: Dictionary = {
       selfRole: 'You cannot change your own role.',
       jobTitlePlaceholder: 'No job title',
       jobTitleInactiveOption: '{label} (Inactive)',
+      jobTitleAdminHint: 'Administrators have no job title.',
+      noActiveJobTitle: 'No active job title.',
+      jobTitlesLoadError: 'Unable to load job titles.',
       initialPassword: 'Initial password',
       initialPasswordSubject: 'the initial password',
       errors: {
