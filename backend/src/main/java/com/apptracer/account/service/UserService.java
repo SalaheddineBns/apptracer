@@ -6,6 +6,8 @@ import com.apptracer.account.repository.UserRepository;
 import com.apptracer.common.error.BusinessException;
 import com.apptracer.common.error.InvalidRequestException;
 import com.apptracer.common.error.ResourceNotFoundException;
+import com.apptracer.referential.domain.JobTitle;
+import com.apptracer.referential.repository.JobTitleRepository;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -29,16 +31,19 @@ public class UserService {
   private final PasswordEncoder passwordEncoder;
   private final SessionRevoker sessionRevoker;
   private final AccountTeamLinks teamLinks;
+  private final JobTitleRepository jobTitles;
 
   public UserService(
       UserRepository users,
       PasswordEncoder passwordEncoder,
       SessionRevoker sessionRevoker,
-      AccountTeamLinks teamLinks) {
+      AccountTeamLinks teamLinks,
+      JobTitleRepository jobTitles) {
     this.users = users;
     this.passwordEncoder = passwordEncoder;
     this.sessionRevoker = sessionRevoker;
     this.teamLinks = teamLinks;
+    this.jobTitles = jobTitles;
   }
 
   /**
@@ -47,7 +52,12 @@ public class UserService {
    */
   @Transactional
   public User create(
-      String email, String firstName, String lastName, Role role, String initialPassword) {
+      String email,
+      String firstName,
+      String lastName,
+      Role role,
+      String initialPassword,
+      String jobTitleCode) {
     String normalizedEmail = email.strip();
     // RG-03-01 : e-mail unique, insensible à la casse (l'index unique couvre les créations
     // concurrentes ; sa violation est traduite en 409 RG-03-01 par le handler global)
@@ -64,6 +74,8 @@ public class UserService {
             lastName.strip(),
             passwordEncoder.encode(initialPassword),
             role);
+    // RG-09-02, RG-09-04 : fonction facultative, attribuée par l'ADMIN, jamais pour un ADMIN
+    user.setJobTitle(resolveJobTitle(role, jobTitleCode, null));
     // RG-00-04 : created_by / updated_by renseignés par l'audit JPA (ADMIN connecté)
     return users.save(user);
   }
@@ -94,18 +106,65 @@ public class UserService {
         .orElseThrow(() -> new ResourceNotFoundException("error.account.not-found"));
   }
 
+  /**
+   * RG-09-02, RG-09-06 : fonction à attribuer pour le rôle visé. {@code null} sans code. Refus
+   * (409, champ {@code jobTitleCode}) pour un ADMIN, et pour une fonction inconnue ou inactive sauf
+   * si le compte la porte déjà ({@code current}).
+   */
+  private JobTitle resolveJobTitle(Role role, String code, JobTitle current) {
+    if (code == null) {
+      return null;
+    }
+    // RG-09-02 : un compte ADMIN n'a pas de fonction
+    if (role == Role.ADMIN) {
+      throw BusinessException.onField(
+          "RG-09-02",
+          "error.account.job-title-admin",
+          "jobTitleCode",
+          "field.account.job-title-admin");
+    }
+    JobTitle title =
+        jobTitles
+            .findByCode(code)
+            .orElseThrow(
+                () ->
+                    BusinessException.onField(
+                        "RG-09-06",
+                        "error.job-title.unknown-or-inactive",
+                        "jobTitleCode",
+                        "field.job-title.unknown-or-inactive"));
+    // RG-09-06 : une fonction inactive n'est plus attribuable, mais celle que le compte porte déjà
+    // peut être laissée
+    boolean alreadyCarried = current != null && current.getId().equals(title.getId());
+    if (!title.isActive() && !alreadyCarried) {
+      throw BusinessException.onField(
+          "RG-09-06",
+          "error.job-title.unknown-or-inactive",
+          "jobTitleCode",
+          "field.job-title.unknown-or-inactive");
+    }
+    return title;
+  }
+
   /** RG-05-10 : noms des équipes gérées, entre guillemets, séparés par des virgules. */
   private static String quotedNames(List<String> teamNames) {
     return teamNames.stream().map(n -> "« " + n + " »").collect(Collectors.joining(", "));
   }
 
   /**
-   * RG-03-11 : seuls le prénom, le nom et le rôle sont modifiables (ni e-mail, ni mot de passe).
-   * {@code actorId} est l'ADMIN connecté, lu dans le token.
+   * RG-03-11 : seuls le prénom, le nom, le rôle et la fonction (RG-09-04) sont modifiables (ni
+   * e-mail, ni mot de passe). Sans {@code jobTitleCode}, le compte n'a plus de fonction. {@code
+   * actorId} est l'ADMIN connecté, lu dans le token.
    */
   @Transactional
   public User update(
-      Long actorId, Long id, String firstName, String lastName, Role role, long version) {
+      Long actorId,
+      Long id,
+      String firstName,
+      String lastName,
+      Role role,
+      String jobTitleCode,
+      long version) {
     // Verrou exclusif : sérialise avec la gestion des équipes (architecture §2.11)
     User user = getForUpdate(id);
     // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
@@ -136,6 +195,10 @@ public class UserService {
     user.setFirstName(firstName.strip());
     user.setLastName(lastName.strip());
     user.setRole(role); // RG-03-10 : exactement un rôle
+    // RG-09-04 : seul l'ADMIN attribue, change ou retire la fonction ; RG-09-03 : changer le rôle
+    // entre USER et MANAGER ne la touche pas, et le passage à ADMIN la retire (un code reçu pour un
+    // ADMIN est refusé, RG-09-02) ; RG-09-11 : tracé par l'audit JPA du compte
+    user.setJobTitle(resolveJobTitle(role, jobTitleCode, user.getJobTitle()));
     // RG-00-04 : updated_at / updated_by renseignés par l'audit JPA
     User saved = users.saveAndFlush(user);
     if (role == Role.ADMIN && previousRole != Role.ADMIN) {

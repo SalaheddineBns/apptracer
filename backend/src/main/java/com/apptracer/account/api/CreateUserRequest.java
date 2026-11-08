@@ -17,7 +17,9 @@ public record CreateUserRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, enumAsRef = true) @NotNull Role role,
     // RG-03-02 : 12 caractères, une lettre, un chiffre ; RG-03-12 : défini par l'ADMIN
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @ValidPassword
-        String initialPassword) {
+        String initialPassword,
+    // RG-09-02, RG-09-04 : fonction facultative (code), pour un USER ou un MANAGER
+    @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true) String jobTitleCode) {
 
   /** Le mot de passe ne doit jamais apparaître dans un log. */
   @Override

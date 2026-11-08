@@ -32,8 +32,10 @@ class UserManagementServiceTest {
   private final UserRepository users = mock(UserRepository.class);
   private final SessionRevoker revoker = mock(SessionRevoker.class);
   private final AccountTeamLinks teamLinks = mock(AccountTeamLinks.class);
+  private final com.apptracer.referential.repository.JobTitleRepository jobTitles =
+      mock(com.apptracer.referential.repository.JobTitleRepository.class);
   private final UserService service =
-      new UserService(users, new BCryptPasswordEncoder(4), revoker, teamLinks);
+      new UserService(users, new BCryptPasswordEncoder(4), revoker, teamLinks, jobTitles);
 
   @BeforeEach
   void setUp() {
@@ -56,7 +58,7 @@ class UserManagementServiceTest {
   void updatesOnlyAllowedFields() throws Exception {
     User u = existing(USER_ID, Role.USER, true);
 
-    User result = service.update(ADMIN_ID, USER_ID, " Jeanne ", "Martin", Role.MANAGER, 0);
+    User result = service.update(ADMIN_ID, USER_ID, " Jeanne ", "Martin", Role.MANAGER, null, 0);
 
     assertThat(result.getFirstName()).isEqualTo("Jeanne");
     assertThat(result.getLastName()).isEqualTo("Martin");
@@ -81,7 +83,7 @@ class UserManagementServiceTest {
   @DisplayName("RG-03-13 : un ADMIN ne peut pas retirer son propre rôle ADMIN")
   void adminCannotRemoveOwnAdminRole() throws Exception {
     existing(ADMIN_ID, Role.ADMIN, true);
-    assertThatThrownBy(() -> service.update(ADMIN_ID, ADMIN_ID, "A", "B", Role.USER, 0))
+    assertThatThrownBy(() -> service.update(ADMIN_ID, ADMIN_ID, "A", "B", Role.USER, null, 0))
         .isInstanceOfSatisfying(
             BusinessException.class,
             e -> {
@@ -95,7 +97,7 @@ class UserManagementServiceTest {
   @DisplayName("RG-03-13 : un ADMIN peut modifier son prénom et son nom en gardant son rôle")
   void adminCanEditOwnNameKeepingRole() throws Exception {
     existing(ADMIN_ID, Role.ADMIN, true);
-    User result = service.update(ADMIN_ID, ADMIN_ID, "Nouveau", "Nom", Role.ADMIN, 0);
+    User result = service.update(ADMIN_ID, ADMIN_ID, "Nouveau", "Nom", Role.ADMIN, null, 0);
     assertThat(result.getFirstName()).isEqualTo("Nouveau");
     verify(revoker, never()).revokeAllOnRoleChange(any());
   }
@@ -113,7 +115,7 @@ class UserManagementServiceTest {
   @DisplayName("RG-03-14 : changer le rôle révoque tous les refresh tokens")
   void roleChangeRevokesSessions() throws Exception {
     existing(USER_ID, Role.USER, true);
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, null, 0);
     verify(revoker).revokeAllOnRoleChange(USER_ID);
   }
 
@@ -121,7 +123,7 @@ class UserManagementServiceTest {
   @DisplayName("RG-03-14 : une modification sans changement de rôle ne révoque rien")
   void noRoleChangeNoRevocation() throws Exception {
     existing(USER_ID, Role.USER, true);
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, null, 0);
     verify(revoker, never()).revokeAllOnRoleChange(any());
     verify(revoker, never()).revokeAllOnDeactivation(any());
   }
@@ -146,7 +148,7 @@ class UserManagementServiceTest {
   @DisplayName("Modification concurrente : une version périmée lève un conflit de version")
   void staleVersionIsRejected() throws Exception {
     existing(USER_ID, Role.USER, true);
-    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 5))
+    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, null, 5))
         .isInstanceOf(ObjectOptimisticLockingFailureException.class);
     verify(users, never()).saveAndFlush(any());
   }
@@ -203,7 +205,7 @@ class UserManagementServiceTest {
     User u = existing(USER_ID, Role.MANAGER, true);
     when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit"));
 
-    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 0))
+    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, null, 0))
         .isInstanceOfSatisfying(
             BusinessException.class,
             e -> {
@@ -221,7 +223,7 @@ class UserManagementServiceTest {
     existing(USER_ID, Role.MANAGER, true);
     when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of("Produit"));
 
-    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0))
+    assertThatThrownBy(() -> service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, null, 0))
         .isInstanceOfSatisfying(
             BusinessException.class, e -> assertThat(e.getRgCode()).isEqualTo("RG-05-10"));
   }
@@ -231,7 +233,7 @@ class UserManagementServiceTest {
   void managerOfTeamCanBeRenamedKeepingRole() throws Exception {
     existing(USER_ID, Role.MANAGER, true);
 
-    service.update(ADMIN_ID, USER_ID, "Nouveau", "Nom", Role.MANAGER, 0);
+    service.update(ADMIN_ID, USER_ID, "Nouveau", "Nom", Role.MANAGER, null, 0);
 
     verify(teamLinks, never()).managedTeamNames(any());
   }
@@ -241,7 +243,7 @@ class UserManagementServiceTest {
   void nonManagerIsNotChecked() throws Exception {
     existing(USER_ID, Role.USER, true);
 
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, null, 0);
 
     verify(teamLinks, never()).managedTeamNames(any());
   }
@@ -251,7 +253,7 @@ class UserManagementServiceTest {
   void becomingAdminRemovesTeamMembership() throws Exception {
     existing(USER_ID, Role.USER, true);
 
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, null, 0);
 
     verify(teamLinks).removeFromTeam(ADMIN_ID, USER_ID);
     verify(revoker).revokeAllOnRoleChange(USER_ID);
@@ -263,7 +265,7 @@ class UserManagementServiceTest {
     existing(USER_ID, Role.MANAGER, true);
     when(teamLinks.managedTeamNames(USER_ID)).thenReturn(List.of());
 
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.ADMIN, null, 0);
 
     verify(teamLinks).removeFromTeam(ADMIN_ID, USER_ID);
   }
@@ -273,10 +275,10 @@ class UserManagementServiceTest {
       "RG-05-12 : un autre changement de rôle ou un ADMIN inchangé ne touche pas aux équipes")
   void otherRoleChangesKeepMembership() throws Exception {
     existing(USER_ID, Role.USER, true);
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, 0);
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, null, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.MANAGER, null, 0);
     existing(3L, Role.ADMIN, true);
-    service.update(ADMIN_ID, 3L, "A", "B", Role.ADMIN, 0);
+    service.update(ADMIN_ID, 3L, "A", "B", Role.ADMIN, null, 0);
 
     verify(teamLinks, never()).removeFromTeam(any(), any());
   }
@@ -296,7 +298,7 @@ class UserManagementServiceTest {
   void accountIsLockedForUpdate() throws Exception {
     existing(USER_ID, Role.USER, true);
 
-    service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, 0);
+    service.update(ADMIN_ID, USER_ID, "A", "B", Role.USER, null, 0);
     service.deactivate(ADMIN_ID, USER_ID);
 
     verify(users, org.mockito.Mockito.times(2)).findByIdForUpdate(USER_ID);

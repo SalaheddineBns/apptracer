@@ -85,7 +85,9 @@ public class UserController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "409",
-      description = "E-mail déjà utilisé (RG-03-01)",
+      description =
+          "E-mail déjà utilisé (RG-03-01), fonction pour un ADMIN (RG-09-02) ou fonction inconnue"
+              + " ou inactive (RG-09-06), erreur sur le champ jobTitleCode",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public ResponseEntity<UserResponse> createUser(@Valid @RequestBody CreateUserRequest request) {
     User user =
@@ -94,7 +96,8 @@ public class UserController {
             request.firstName(),
             request.lastName(),
             request.role(),
-            request.initialPassword());
+            request.initialPassword(),
+            request.jobTitleCode());
     URI location =
         ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").build(user.getId());
     return ResponseEntity.created(location).body(mapper.toResponse(user));
@@ -146,7 +149,9 @@ public class UserController {
       responseCode = "409",
       description =
           "Règle RG-03-13 violée (retrait de son propre rôle ADMIN), RG-05-10 violée (rôle MANAGER"
-              + " retiré à un compte manager d'une équipe, erreur sur le champ role), ou compte"
+              + " retiré à un compte manager d'une équipe, erreur sur le champ role), RG-09-02 (fonction pour"
+              + " un ADMIN) ou RG-09-06 (fonction inconnue ou inactive, non portée par le compte ; erreurs"
+              + " sur le champ jobTitleCode), ou compte"
               + " modifié entre-temps (conflit de version)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public UserResponse updateUser(
@@ -158,6 +163,7 @@ public class UserController {
             request.firstName(),
             request.lastName(),
             request.role(),
+            request.jobTitleCode(),
             request.version()));
   }
 

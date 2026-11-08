@@ -32,12 +32,13 @@ class UserServiceTest {
           users,
           encoder,
           mock(com.apptracer.account.service.SessionRevoker.class),
-          mock(com.apptracer.account.service.AccountTeamLinks.class));
+          mock(com.apptracer.account.service.AccountTeamLinks.class),
+          mock(com.apptracer.referential.repository.JobTitleRepository.class));
 
   private User create() {
     when(users.save(any(User.class))).thenAnswer(i -> i.getArgument(0));
     return service.create(
-        "  Jean@Example.com ", " Jean ", "Dupont", Role.MANAGER, "Motdepasse12345");
+        "  Jean@Example.com ", " Jean ", "Dupont", Role.MANAGER, "Motdepasse12345", null);
   }
 
   @Test
@@ -47,7 +48,8 @@ class UserServiceTest {
 
     assertThatThrownBy(
             () ->
-                service.create("JEAN@example.com", "Jean", "Dupont", Role.USER, "Motdepasse12345"))
+                service.create(
+                    "JEAN@example.com", "Jean", "Dupont", Role.USER, "Motdepasse12345", null))
         .isInstanceOfSatisfying(
             BusinessException.class,
             e -> {
