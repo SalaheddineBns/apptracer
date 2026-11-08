@@ -48,7 +48,7 @@ describe('SFD-08 E1 : sélecteur de langue dans le menu utilisateur', () => {
     });
     await TestBed.inject(AuthStore).init();
     harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/journal?semaine=2026-10-05');
+    await harness.navigateByUrl('/journal?week=2026-10-05');
     await harness.fixture.whenStable();
   }
 

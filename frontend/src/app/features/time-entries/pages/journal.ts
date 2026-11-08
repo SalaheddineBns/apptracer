@@ -23,7 +23,7 @@ import { formatDuration } from '../../../shared/pipes/duration';
 import { TimeEntryDialog, TimeEntrySaved } from '../components/time-entry-dialog';
 import { TimeEntriesStore } from '../data/time-entries.store';
 
-/** SFD-01 E1 Mon journal (USER et MANAGER, RG-01-14) : la semaine affichée est dans l'URL (`?semaine=YYYY-MM-DD`). */
+/** SFD-01 E1 Mon journal (USER et MANAGER, RG-01-14) : la semaine affichée est dans l'URL (`?week=YYYY-MM-DD`). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -50,7 +50,7 @@ export class JournalPage {
   });
   /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
-    const requested = this.params().get('semaine');
+    const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
   protected readonly skeletonDays = [0, 1, 2, 3, 4, 5, 6];
@@ -118,6 +118,6 @@ export class JournalPage {
   }
 
   protected goToWeek(weekStart: string): void {
-    void this.router.navigate([], { relativeTo: this.route, queryParams: { semaine: weekStart } });
+    void this.router.navigate([], { relativeTo: this.route, queryParams: { week: weekStart } });
   }
 }

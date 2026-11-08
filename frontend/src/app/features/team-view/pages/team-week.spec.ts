@@ -40,10 +40,10 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
   let harness: RouterTestingHarness;
   let root: HTMLElement;
 
-  async function open(url = '/equipe?semaine=2026-10-05'): Promise<void> {
+  async function open(url = '/team?week=2026-10-05'): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
-        provideRouter([{ path: 'equipe', component: TeamWeekPage }]),
+        provideRouter([{ path: 'team', component: TeamWeekPage }]),
         { provide: TeamViewService, useValue: { listMyManagedTeams, getTeamWeekSummary } },
       ],
     });
@@ -216,7 +216,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     await open();
     const link = cy('lien-membre-10') as HTMLAnchorElement;
     expect(link.tagName).toBe('A');
-    expect(link.getAttribute('href')).toBe('/equipe/membres/10?equipe=1&semaine=2026-10-05');
+    expect(link.getAttribute('href')).toBe('/team/members/10?team=1&week=2026-10-05');
     expect(link.tabIndex).toBeGreaterThanOrEqual(0);
   });
 
@@ -238,7 +238,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
   it('RG-04-08 : avec plusieurs équipes, la première de la liste (ordre alphabétique de l’API) est affichée par défaut', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha, beta]));
     getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [90], 90)])));
-    await open('/equipe');
+    await open('/team');
     expect(cy('select-equipe')).not.toBeNull();
     expect(cy('select-equipe')?.textContent).toContain('Alpha');
     expect(getTeamWeekSummary.mock.calls[0][0]).toBe(1);
@@ -253,7 +253,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
           : summary(beta, [member(20, 'Leroy', [480], 480)], '2026-10-12'),
       ),
     );
-    await open('/equipe?equipe=1&semaine=2026-10-12');
+    await open('/team?team=1&week=2026-10-12');
     expect(cy('ligne-membre-10')).not.toBeNull();
 
     (cy('select-equipe') as HTMLElement).click();
@@ -261,7 +261,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     body('option-equipe-2')?.click();
     await harness.fixture.whenStable();
 
-    expect(url()).toBe('/equipe?equipe=2&semaine=2026-10-12');
+    expect(url()).toBe('/team?team=2&week=2026-10-12');
     expect(getTeamWeekSummary).toHaveBeenLastCalledWith(2, '2026-10-12', 'body', false, expect.anything());
     expect(cy('ligne-membre-10')).toBeNull();
     expect(cy('total-membre-20')?.textContent?.trim()).toBe('8 h');
@@ -270,9 +270,9 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
   it('RG-04-04 : « Semaine suivante » charge la semaine suivante de la même équipe et la met dans l’URL', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha, beta]));
     getTeamWeekSummary.mockReturnValue(of(summary(beta, [])));
-    await open('/equipe?equipe=2&semaine=2026-10-05');
+    await open('/team?team=2&week=2026-10-05');
     await click('btn-semaine-suivante');
-    expect(url()).toBe('/equipe?equipe=2&semaine=2026-10-12');
+    expect(url()).toBe('/team?team=2&week=2026-10-12');
     expect(getTeamWeekSummary).toHaveBeenLastCalledWith(2, '2026-10-12', 'body', false, expect.anything());
     expect(cy('libelle-semaine')?.textContent).toContain('12/10/2026');
   });
@@ -280,7 +280,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
   it('une date quelconque de l’URL est ramenée au lundi de sa semaine', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
     getTeamWeekSummary.mockReturnValue(of(summary(alpha, [])));
-    await open('/equipe?semaine=2026-10-08');
+    await open('/team?week=2026-10-08');
     expect(getTeamWeekSummary.mock.calls[0][1]).toBe('2026-10-05');
   });
 
@@ -291,7 +291,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
         ? throwError(() => new HttpErrorResponse({ status: 403, error: { detail: 'Accès refusé', code: 'RG-04-02' } }))
         : of(summary(alpha, [member(10, 'Durand', [90], 90)])),
     );
-    await open('/equipe?equipe=99&semaine=2026-10-05');
+    await open('/team?team=99&week=2026-10-05');
     expect(cy('message-equipe-interdite')?.textContent).toContain('ne fait pas partie');
     expect(cy('btn-reessayer')).toBeNull();
     expect(cy('table-equipe-semaine')).toBeNull();
@@ -300,7 +300,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
     (cy('btn-afficher-mes-equipes')?.querySelector('button') as HTMLElement).focus();
     await click('btn-afficher-mes-equipes');
     expect(document.activeElement).toBe(cy('titre-equipe'));
-    expect(url()).toBe('/equipe?semaine=2026-10-05');
+    expect(url()).toBe('/team?week=2026-10-05');
     expect(cy('message-equipe-interdite')).toBeNull();
     expect(cy('ligne-membre-10')).not.toBeNull();
     expect(cy('navigation-semaine')).not.toBeNull();

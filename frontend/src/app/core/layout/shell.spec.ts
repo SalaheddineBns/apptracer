@@ -71,7 +71,7 @@ describe('coquille applicative (E2) et routes', () => {
   it.each([
     [Role.User, '/journal', true, false],
     [Role.Manager, '/journal', true, false],
-    [Role.Admin, '/admin/comptes', false, true],
+    [Role.Admin, '/admin/accounts', false, true],
   ])('RG-03-10 : %s arrive sur %s, navigation journal=%s comptes=%s', async (role, home, journal, accounts) => {
     await start(role);
     await harness.navigateByUrl('/');
@@ -82,11 +82,11 @@ describe('coquille applicative (E2) et routes', () => {
     expect(!!cy('nav-comptes')).toBe(accounts);
   });
 
-  it('CA-03-09 : le menu « Comptes » n’est pas affiché pour un USER, et /admin/comptes le renvoie vers son accueil', async () => {
+  it('CA-03-09 : le menu « Comptes » n’est pas affiché pour un USER, et /admin/accounts le renvoie vers son accueil', async () => {
     await start(Role.User);
     await harness.navigateByUrl('/journal');
     expect(cy('nav-comptes')).toBeNull();
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     expect(url()).toBe('/journal');
     expect(listUsers).not.toHaveBeenCalled();
   });
@@ -94,42 +94,42 @@ describe('coquille applicative (E2) et routes', () => {
   it.each([
     [Role.User, '/journal', false],
     [Role.Manager, '/journal', false],
-    [Role.Admin, '/admin/comptes', true],
+    [Role.Admin, '/admin/accounts', true],
   ])('CA-02-09 : %s, entrée « Types d’activité » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
     await start(role);
     await harness.navigateByUrl(home);
     expect(!!cy('nav-types-activite')).toBe(shown);
-    await harness.navigateByUrl('/admin/types-activite');
+    await harness.navigateByUrl('/admin/activity-types');
     await harness.fixture.whenStable();
-    expect(url()).toBe(shown ? '/admin/types-activite' : home);
+    expect(url()).toBe(shown ? '/admin/activity-types' : home);
     expect(listActivityTypes).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
   it.each([
     [Role.User, '/journal', false],
     [Role.Manager, '/journal', false],
-    [Role.Admin, '/admin/comptes', true],
+    [Role.Admin, '/admin/accounts', true],
   ])('CA-02-09 : %s, entrée « Projets » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
     await start(role);
     await harness.navigateByUrl(home);
     expect(!!cy('nav-projets')).toBe(shown);
-    await harness.navigateByUrl('/admin/projets');
+    await harness.navigateByUrl('/admin/projects');
     await harness.fixture.whenStable();
-    expect(url()).toBe(shown ? '/admin/projets' : home);
+    expect(url()).toBe(shown ? '/admin/projects' : home);
     expect(listProjects).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
   it.each([
     [Role.User, '/journal', false],
     [Role.Manager, '/journal', false],
-    [Role.Admin, '/admin/comptes', true],
+    [Role.Admin, '/admin/accounts', true],
   ])('CA-06-07 : %s, entrée « Paramètres » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
     await start(role);
     await harness.navigateByUrl(home);
     expect(!!cy('nav-parametres')).toBe(shown);
-    await harness.navigateByUrl('/admin/parametres');
+    await harness.navigateByUrl('/admin/settings');
     await harness.fixture.whenStable();
-    expect(url()).toBe(shown ? '/admin/parametres' : home);
+    expect(url()).toBe(shown ? '/admin/settings' : home);
     expect(getAppSettings).toHaveBeenCalledTimes(shown ? 1 : 0);
     expect(updateAppSettings).not.toHaveBeenCalled();
   });
@@ -137,28 +137,28 @@ describe('coquille applicative (E2) et routes', () => {
   it.each([
     [Role.User, '/journal', false],
     [Role.Manager, '/journal', false],
-    [Role.Admin, '/admin/comptes', true],
+    [Role.Admin, '/admin/accounts', true],
   ])('CA-05-11 : %s, entrée « Équipes » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
     await start(role);
     await harness.navigateByUrl(home);
     expect(!!cy('nav-equipes')).toBe(shown);
-    await harness.navigateByUrl('/admin/equipes');
+    await harness.navigateByUrl('/admin/teams');
     await harness.fixture.whenStable();
-    expect(url()).toBe(shown ? '/admin/equipes' : home);
+    expect(url()).toBe(shown ? '/admin/teams' : home);
     expect(listTeams).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
   it.each([
     [Role.User, '/journal', false],
     [Role.Manager, '/journal', true],
-    [Role.Admin, '/admin/comptes', false],
+    [Role.Admin, '/admin/accounts', false],
   ])('CA-04-05, CA-04-06 : %s, entrée « Mon équipe » affichée=%s, et la route renvoie les non-MANAGER vers leur accueil sans appel API', async (role, home, shown) => {
     await start(role);
     await harness.navigateByUrl(home);
     expect(!!cy('nav-mon-equipe')).toBe(shown);
-    await harness.navigateByUrl('/equipe');
+    await harness.navigateByUrl('/team');
     await harness.fixture.whenStable();
-    expect(url()).toBe(shown ? '/equipe' : home);
+    expect(url()).toBe(shown ? '/team' : home);
     expect(listMyManagedTeams).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
@@ -171,14 +171,14 @@ describe('coquille applicative (E2) et routes', () => {
 
   it('les entrées ADMIN sont dans l’ordre de l’architecture : Comptes, Équipes, Types d’activité, Projets, Paramètres', async () => {
     await start(Role.Admin);
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     const order = Array.from(document.body.querySelectorAll('nav [data-cy^="nav-"]')).map((a) => a.getAttribute('data-cy'));
     expect(order).toEqual(['nav-comptes', 'nav-equipes', 'nav-types-activite', 'nav-projets', 'nav-parametres']);
   });
 
   it('Échap annule toute confirmation sans appeler accept, la croix est nommée « Fermer » et le focus revient au déclencheur', async () => {
     await start(Role.Admin);
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     const opener = cy('nav-comptes') as HTMLElement;
     opener.focus();
     expect(document.activeElement).toBe(opener);
@@ -198,7 +198,7 @@ describe('coquille applicative (E2) et routes', () => {
 
   it('F2 : le message de la confirmation s’affiche comme du texte, jamais interprété comme du HTML', async () => {
     await start(Role.Admin);
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     const message = '<u>Souligné</u> <img src=x> <b>gras</b>';
     TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message, acceptLabel: 'OK', rejectLabel: 'Annuler' });
     await harness.fixture.whenStable();
@@ -209,7 +209,7 @@ describe('coquille applicative (E2) et routes', () => {
 
   it('confirmation : 32rem (95vw au plus) et focus d’ouverture sur « Annuler », pas sur l’action destructrice', async () => {
     await start(Role.Admin);
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     TestBed.inject(ConfirmationService).confirm({ header: 'Titre', message: 'Message', acceptLabel: 'Désactiver', rejectLabel: 'Annuler' });
     await harness.fixture.whenStable();
     const dialog = document.body.querySelector('.p-dialog') as HTMLElement;
@@ -220,7 +220,7 @@ describe('coquille applicative (E2) et routes', () => {
 
   it('confirmation confirmée : le focus va au bouton qui remplace celui d’origine (« Désactiver » devient « Réactiver »)', async () => {
     await start(Role.Admin);
-    await harness.navigateByUrl('/admin/comptes');
+    await harness.navigateByUrl('/admin/accounts');
     const row = document.createElement('table');
     row.innerHTML = '<tbody><tr data-cy="ligne-test"><td><button type="button">Modifier</button><button type="button" id="origine">Désactiver</button></td></tr></tbody>';
     document.body.appendChild(row);
@@ -267,10 +267,36 @@ describe('coquille applicative (E2) et routes', () => {
     expect(url()).toMatch(/^\/login/);
   });
 
-  it('routes : une URL inconnue renvoie un ADMIN vers /admin/comptes', async () => {
+  it.each([
+    [Role.Manager, '/equipe', '/journal'],
+    [Role.Manager, '/equipe/membres/10?semaine=2026-10-05', '/journal'],
+    [Role.User, '/compte/mot-de-passe', '/journal'],
+    [Role.Admin, '/admin/comptes', '/admin/accounts'],
+    [Role.Admin, '/admin/types-activite', '/admin/accounts'],
+  ])('RG-08-09 : l’ancienne adresse française %s %s tombe sur la route « ** » (accueil du rôle)', async (role, oldUrl, home) => {
+    await start(role);
+    await harness.navigateByUrl(oldUrl);
+    await harness.fixture.whenStable();
+    expect(url()).toBe(home);
+    expect(listMyManagedTeams).not.toHaveBeenCalled();
+    expect(listActivityTypes).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [Role.User, '/account/password'],
+    [Role.Manager, '/team'],
+    [Role.Admin, '/admin/settings'],
+  ])('RG-08-09 : l’adresse anglaise %s %s est servie telle quelle', async (role, address) => {
+    await start(role);
+    await harness.navigateByUrl(address);
+    await harness.fixture.whenStable();
+    expect(url()).toBe(address);
+  });
+
+  it('routes : une URL inconnue renvoie un ADMIN vers /admin/accounts', async () => {
     await start(Role.Admin);
     await harness.navigateByUrl('/n-importe-quoi');
-    expect(url()).toBe('/admin/comptes');
+    expect(url()).toBe('/admin/accounts');
     expect(el()).toBeTruthy();
   });
 });

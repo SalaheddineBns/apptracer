@@ -34,7 +34,7 @@ describe('authentification (socle front)', () => {
         provideRouter([
           { path: 'login', component: Dummy, canActivate: [guestGuard] },
           { path: 'journal', component: Dummy, canActivate: [authGuard, roleGuard(Role.User)] },
-          { path: 'admin/comptes', component: Dummy, canActivate: [authGuard, roleGuard(Role.Admin)] },
+          { path: 'admin/accounts', component: Dummy, canActivate: [authGuard, roleGuard(Role.Admin)] },
         ]),
         { provide: MessageService, useValue: { add: toast } },
       ],
@@ -119,7 +119,7 @@ describe('authentification (socle front)', () => {
     expect(auth.hasRole(Role.User)).toBe(false);
     expect(auth.hasRole(Role.Manager)).toBe(false);
     await router.navigateByUrl('/journal');
-    expect(router.url).toBe('/admin/comptes');
+    expect(router.url).toBe('/admin/accounts');
   });
 
   it('guestGuard : un utilisateur connecté qui ouvre /login est renvoyé vers son accueil', async () => {

@@ -71,7 +71,7 @@ export class Shell {
   protected readonly menuItems = computed<MenuItem[]>(() => {
     const current = this.i18n.lang();
     return [
-      { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },
+      { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/account/password']) },
       {
         label: this.i18n.t('language.label'),
         dataCy: 'menu-langue',

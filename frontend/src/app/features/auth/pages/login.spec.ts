@@ -35,7 +35,7 @@ describe('LoginPage', () => {
           { path: 'login', component: LoginPage },
           { path: 'journal', component: Dummy },
           { path: 'journal/semaine', component: Dummy },
-          { path: 'admin/comptes', component: Dummy },
+          { path: 'admin/accounts', component: Dummy },
         ]),
         { provide: AuthenticationService, useValue: { login } },
       ],
@@ -107,7 +107,7 @@ describe('LoginPage', () => {
     await open('/login?returnUrl=https%3A%2F%2Fevil.example%2Fx');
     await fill('a@b.fr', 'x');
     await submit();
-    expect(TestBed.inject(Router).url).toBe('/admin/comptes');
+    expect(TestBed.inject(Router).url).toBe('/admin/accounts');
   });
 
   it.each([

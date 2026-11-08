@@ -24,43 +24,43 @@ export const routes: Routes = [
       },
       {
         // RG-04-01 : vue équipe réservée au MANAGER (ni USER ni ADMIN).
-        path: 'equipe',
+        path: 'team',
         canActivate: [roleGuard(Role.Manager)],
         loadComponent: () => import('./features/team-view/pages/team-week').then((m) => m.TeamWeekPage),
       },
       {
-        path: 'equipe/membres/:userId',
+        path: 'team/members/:userId',
         canActivate: [roleGuard(Role.Manager)],
         loadComponent: () => import('./features/team-view/pages/member-journal').then((m) => m.MemberJournalPage),
       },
       {
-        path: 'admin/comptes',
+        path: 'admin/accounts',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/accounts/pages/accounts').then((m) => m.AccountsPage),
       },
       {
         // RG-05-08 : gestion des équipes réservée à l'ADMIN.
-        path: 'admin/equipes',
+        path: 'admin/teams',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/teams/pages/teams').then((m) => m.TeamsPage),
       },
       {
-        path: 'admin/types-activite',
+        path: 'admin/activity-types',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/referentials/pages/activity-types').then((m) => m.ActivityTypesPage),
       },
       {
-        path: 'admin/projets',
+        path: 'admin/projects',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/referentials/pages/projects').then((m) => m.ProjectsPage),
       },
       {
-        path: 'admin/parametres',
+        path: 'admin/settings',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/settings/pages/settings').then((m) => m.SettingsPage),
       },
       {
-        path: 'compte/mot-de-passe',
+        path: 'account/password',
         loadComponent: () => import('./features/auth/pages/change-password').then((m) => m.ChangePasswordPage),
       },
     ],

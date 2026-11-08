@@ -13,5 +13,5 @@ export function roleSatisfies(actual: Role, required: Role): boolean {
 
 /** Page d'accueil du rôle (architecture §7.2, H1). */
 export function homeUrlFor(role: Role): string {
-  return role === Role.Admin ? '/admin/comptes' : '/journal';
+  return role === Role.Admin ? '/admin/accounts' : '/journal';
 }

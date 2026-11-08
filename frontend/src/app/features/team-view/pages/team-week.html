@@ -91,8 +91,8 @@
                 <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">
                   <span class="flex flex-wrap items-center gap-2">
                     <a
-                      [routerLink]="['/equipe/membres', row.member.id]"
-                      [queryParams]="{ equipe: teamId(), semaine: weekStart() }"
+                      [routerLink]="['/team/members', row.member.id]"
+                      [queryParams]="{ team: teamId(), week: weekStart() }"
                       class="text-primary font-medium hover:underline"
                       [attr.data-cy]="'lien-membre-' + row.member.id"
                       >{{ memberName(row.member) }}</a

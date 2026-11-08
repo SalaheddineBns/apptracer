@@ -14,7 +14,7 @@ import { TeamViewStore } from '../data/team-view.store';
 
 /**
  * SFD-04 E2 Journal d'un membre (MANAGER), en lecture seule (RG-04-03) : le membre est dans le chemin, la semaine dans l'URL
- * (`/equipe/membres/:userId?semaine=YYYY-MM-DD`). RG-04-05 : le total vient de l'API, jamais recalculé ici.
+ * (`/team/members/:userId?week=YYYY-MM-DD`). RG-04-05 : le total vient de l'API, jamais recalculé ici.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -33,7 +33,7 @@ export class MemberJournalPage {
   private readonly path = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
   /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
-    const requested = this.params().get('semaine');
+    const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
   /** Compte du chemin ; null s'il n'est pas un identifiant (aucun appel, même message que pour un compte hors périmètre). */
@@ -50,10 +50,10 @@ export class MemberJournalPage {
   /** Retour vers E1 en conservant la semaine et, une fois connue, l'équipe du membre (RG-04-04). */
   protected readonly backParams = computed(() => {
     // L'équipe renvoyée par l'API prime ; sinon celle d'origine, portée par l'URL du lien de membre.
-    const requested = Number(this.params().get('equipe'));
+    const requested = Number(this.params().get('team'));
     const fromUrl = Number.isInteger(requested) && requested > 0 ? requested : null;
     const team = this.store.memberJournal()?.team?.id ?? fromUrl;
-    return team !== null ? { equipe: team, semaine: this.weekStart() } : { semaine: this.weekStart() };
+    return team !== null ? { team, week: this.weekStart() } : { week: this.weekStart() };
   });
 
   constructor() {
@@ -69,12 +69,12 @@ export class MemberJournalPage {
   protected goToWeek(weekStart: string): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { semaine: weekStart },
+      queryParams: { week: weekStart },
       queryParamsHandling: 'merge',
     });
   }
 
   protected backToTeam(): void {
-    void this.router.navigate(['/equipe'], { queryParams: this.backParams() });
+    void this.router.navigate(['/team'], { queryParams: this.backParams() });
   }
 }

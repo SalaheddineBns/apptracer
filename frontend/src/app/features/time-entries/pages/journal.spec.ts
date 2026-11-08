@@ -75,7 +75,7 @@ describe('JournalPage', () => {
   let harness: RouterTestingHarness;
   let root: HTMLElement;
 
-  async function open(url = '/journal?semaine=2026-10-05'): Promise<void> {
+  async function open(url = '/journal?week=2026-10-05'): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'journal', component: JournalPage }]),
@@ -210,7 +210,7 @@ describe('JournalPage', () => {
 
   it('CA-01-01 : après l’enregistrement, un toast de 3 s nomme la saisie et le journal se place sur sa semaine', async () => {
     listMyTimeEntries.mockReturnValue(of(week([], 0)));
-    await open('/journal?semaine=2026-10-12');
+    await open('/journal?week=2026-10-12');
     const page = harness.routeDebugElement?.componentInstance as {
       onSaved(event: { mode: 'create' | 'update'; entry: TimeEntryResponse }): void;
     };
@@ -224,7 +224,7 @@ describe('JournalPage', () => {
         life: 3000,
       }),
     );
-    expect(TestBed.inject(Router).url).toBe('/journal?semaine=2026-10-05');
+    expect(TestBed.inject(Router).url).toBe('/journal?week=2026-10-05');
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-10-05');
   });
 
@@ -355,10 +355,10 @@ describe('JournalPage', () => {
 
   it('une date de l’URL qui n’est pas un lundi est ramenée au lundi de sa semaine, une valeur illisible à la semaine courante', async () => {
     listMyTimeEntries.mockReturnValue(new Subject());
-    await open('/journal?semaine=2026-10-08');
+    await open('/journal?week=2026-10-08');
     expect(listMyTimeEntries.mock.calls[0][0]).toBe('2026-10-05');
     expect(cy('libelle-semaine')?.textContent).toContain('Semaine du 05/10/2026 au 11/10/2026');
-    await harness.navigateByUrl('/journal?semaine=demain');
+    await harness.navigateByUrl('/journal?week=demain');
     await harness.fixture.whenStable();
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe(mondayOf(todayInParis()));
   });
@@ -368,12 +368,12 @@ describe('JournalPage', () => {
     await open();
     listMyTimeEntries.mockReturnValue(of(week([], 0, '2026-10-12')));
     await click('btn-semaine-suivante');
-    expect(TestBed.inject(Router).url).toBe('/journal?semaine=2026-10-12');
+    expect(TestBed.inject(Router).url).toBe('/journal?week=2026-10-12');
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-10-12');
     expect(cy('libelle-semaine')?.textContent).toContain('Semaine du 12/10/2026 au 18/10/2026');
     await click('btn-semaine-precedente');
     await click('btn-semaine-precedente');
-    expect(TestBed.inject(Router).url).toBe('/journal?semaine=2026-09-28');
+    expect(TestBed.inject(Router).url).toBe('/journal?week=2026-09-28');
     expect(listMyTimeEntries.mock.calls.at(-1)?.[0]).toBe('2026-09-28');
   });
 

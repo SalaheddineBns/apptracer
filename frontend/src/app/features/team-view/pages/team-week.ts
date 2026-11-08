@@ -18,7 +18,7 @@ import { DecimalHoursPipe } from '../../../shared/pipes/duration';
 import { TeamViewStore } from '../data/team-view.store';
 
 /**
- * SFD-04 E1 Mon équipe (MANAGER) : l'équipe et la semaine affichées sont dans l'URL (`?equipe=<id>&semaine=YYYY-MM-DD`).
+ * SFD-04 E1 Mon équipe (MANAGER) : l'équipe et la semaine affichées sont dans l'URL (`?team=<id>&week=YYYY-MM-DD`).
  * RG-04-05 : durées par jour et totaux viennent de l'API, jamais recalculés ici.
  */
 @Component({
@@ -53,12 +53,12 @@ export class TeamWeekPage {
   });
   /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
-    const requested = this.params().get('semaine');
+    const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
   /** Équipe affichée : celle de l'URL, sinon la première par ordre alphabétique, déjà en tête de la réponse (RG-04-08). */
   protected readonly teamId = computed<number | null>(() => {
-    const requested = Number(this.params().get('equipe'));
+    const requested = Number(this.params().get('team'));
     if (Number.isInteger(requested) && requested > 0) {
       return requested;
     }
@@ -84,7 +84,7 @@ export class TeamWeekPage {
   protected goToWeek(weekStart: string): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { semaine: weekStart },
+      queryParams: { week: weekStart },
       queryParamsHandling: 'merge',
     });
   }
@@ -93,7 +93,7 @@ export class TeamWeekPage {
   protected selectTeam(teamId: number): void {
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { equipe: teamId, semaine: this.weekStart() },
+      queryParams: { team: teamId, week: this.weekStart() },
     });
   }
 
@@ -101,7 +101,7 @@ export class TeamWeekPage {
   protected async showMyTeams(): Promise<void> {
     await this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { equipe: null, semaine: this.weekStart() },
+      queryParams: { team: null, week: this.weekStart() },
       queryParamsHandling: 'merge',
     });
     // Le bouton cliqué disparaît avec le message de refus : le focus passe au titre de la page.

@@ -42,12 +42,12 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
   let harness: RouterTestingHarness;
   let root: HTMLElement;
 
-  async function open(url = '/equipe/membres/10?semaine=2026-10-05'): Promise<void> {
+  async function open(url = '/team/members/10?week=2026-10-05'): Promise<void> {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([
-          { path: 'equipe', component: TeamWeekPage },
-          { path: 'equipe/membres/:userId', component: MemberJournalPage },
+          { path: 'team', component: TeamWeekPage },
+          { path: 'team/members/:userId', component: MemberJournalPage },
         ]),
         {
           provide: TeamViewService,
@@ -164,7 +164,7 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     listTeamMemberTimeEntries.mockReturnValue(of(journal([], 0)));
     await open();
     await click('btn-semaine-precedente');
-    expect(url()).toBe('/equipe/membres/10?semaine=2026-09-28');
+    expect(url()).toBe('/team/members/10?week=2026-09-28');
     expect(listTeamMemberTimeEntries).toHaveBeenLastCalledWith(10, '2026-09-28', 'body', false, expect.anything());
     expect(cy('libelle-semaine')?.textContent).toContain('28/09/2026');
   });
@@ -175,10 +175,10 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     getTeamWeekSummary.mockReturnValue(
       of({ team: { id: 7, name: 'Alpha' }, weekStart: '2026-10-12', weekEnd: '2026-10-18', members: [] }),
     );
-    await open('/equipe/membres/10?semaine=2026-10-12');
+    await open('/team/members/10?week=2026-10-12');
     await click('btn-retour-equipe');
     await harness.fixture.whenStable();
-    expect(url()).toBe('/equipe?equipe=7&semaine=2026-10-12');
+    expect(url()).toBe('/team?team=7&week=2026-10-12');
     expect(getTeamWeekSummary).toHaveBeenCalledWith(7, '2026-10-12', 'body', false, expect.anything());
   });
 
@@ -188,10 +188,10 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     getTeamWeekSummary.mockReturnValue(
       of({ team: { id: 7, name: 'Alpha' }, weekStart: '2026-10-12', weekEnd: '2026-10-18', members: [] }),
     );
-    await open('/equipe/membres/10?equipe=7&semaine=2026-10-12');
+    await open('/team/members/10?team=7&week=2026-10-12');
     await click('btn-retour-equipe');
     await harness.fixture.whenStable();
-    expect(url()).toBe('/equipe?equipe=7&semaine=2026-10-12');
+    expect(url()).toBe('/team?team=7&week=2026-10-12');
   });
 
   it('RG-04-02 : un compte hors périmètre (403, membre retiré) mène à un message clair, sans « Réessayer », et le retour reste possible', async () => {
@@ -206,7 +206,7 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
   });
 
   it('un identifiant de membre invalide affiche le même message, sans appel API', async () => {
-    await open('/equipe/membres/abc?semaine=2026-10-05');
+    await open('/team/members/abc?week=2026-10-05');
     expect(cy('message-membre-interdit')).not.toBeNull();
     expect(listTeamMemberTimeEntries).not.toHaveBeenCalled();
   });
