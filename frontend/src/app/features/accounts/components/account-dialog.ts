@@ -11,6 +11,7 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -27,6 +28,7 @@ import { FieldError, FieldMessages } from '../../../shared/components/field-erro
 import { PasswordField } from '../../../shared/components/password-field';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { PASSWORD_MESSAGES, passwordPolicyValidator } from '../../../shared/forms/password-rules';
+import { JobTitlesStore } from '../../job-titles/data/job-titles.store';
 import { AccountsStore } from '../data/accounts.store';
 
 export interface AccountSaved {
@@ -52,6 +54,7 @@ export interface AccountSaved {
 })
 export class AccountDialog {
   private readonly store = inject(AccountsStore);
+  private readonly jobTitles = inject(JobTitlesStore);
   private readonly auth = inject(AuthStore);
   private readonly messages = inject(MessageService);
   private readonly i18n = inject(I18n);
@@ -81,8 +84,29 @@ export class AccountDialog {
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
     role: [Role.User, [Validators.required]],
+    // RG-09-02 : fonction facultative (code), réservée aux rôles USER et MANAGER ; champ nommé comme `errors[].field`.
+    jobTitleCode: [null as string | null],
     // RG-03-02 / RG-03-12 : mot de passe initial, création uniquement (champ nommé comme `errors[].field`).
     initialPassword: ['', [Validators.required, passwordPolicyValidator]],
+  });
+
+  /** Rôle choisi (suit le formulaire, y compris le rôle verrouillé de son propre compte). */
+  private readonly selectedRole = signal<Role>(Role.User);
+  /** RG-09-02 : un compte ADMIN n'a pas de fonction, la liste n'est proposée que pour USER et MANAGER. */
+  protected readonly jobTitleVisible = computed(() => this.selectedRole() !== Role.Admin);
+
+  /**
+   * RG-09-06 : les fonctions actives, plus la fonction inactive déjà portée par le compte (signalée « Inactive »).
+   * Les libellés sont des données, jamais traduits (RG-09-10).
+   */
+  protected readonly jobTitleOptions = computed(() => {
+    const options = this.jobTitles.activeItems().map((item) => ({ label: item.label, value: item.code }));
+    const current = this.account()?.jobTitle;
+    if (current && !options.some((option) => option.value === current.code)) {
+      const label = current.active ? current.label : this.i18n.t('accounts.dialog.jobTitleInactiveOption', { label: current.label });
+      options.push({ label, value: current.code });
+    }
+    return options;
   });
 
   protected readonly firstNameMessages: FieldMessages = {
@@ -115,6 +139,14 @@ export class AccountDialog {
       window.removeEventListener('keydown', blockEscapeWhileSubmitting, true),
     );
 
+    // RG-09-03 : choisir le rôle Administrateur masque et vide la fonction.
+    this.form.controls.role.valueChanges.pipe(takeUntilDestroyed()).subscribe((role) => {
+      this.selectedRole.set(role);
+      if (role === Role.Admin) {
+        this.form.controls.jobTitleCode.setValue(null);
+      }
+    });
+
     effect(() => {
       if (this.visible()) {
         untracked(() => this.prepare());
@@ -135,8 +167,10 @@ export class AccountDialog {
       lastName: account?.lastName ?? '',
       email: account?.email ?? '',
       role: account?.role ?? Role.User,
+      jobTitleCode: account?.role === Role.Admin ? null : (account?.jobTitle?.code ?? null),
       initialPassword: '',
     });
+    this.selectedRole.set(account?.role ?? Role.User);
     // Modification : e-mail non modifiable, pas de mot de passe ; sur son propre compte, rôle verrouillé (RG-03-13).
     this.setEnabled(this.form.controls.email, !account);
     this.setEnabled(this.form.controls.initialPassword, !account);
@@ -194,11 +228,15 @@ export class AccountDialog {
     this.submitting.set(true);
     const account = this.account();
     const value = this.form.getRawValue();
+    // RG-09-03 : pas de fonction pour un ADMIN (non envoyée). RG-09-04 : à la modification, un code absent retire la fonction ;
+    // le code de la fonction conservée est donc toujours envoyé, y compris lors d'un passage USER <-> MANAGER.
+    const jobTitle = value.role !== Role.Admin && value.jobTitleCode ? { jobTitleCode: value.jobTitleCode } : {};
     const request$ = account
       ? this.store.update(account.id, {
           firstName: value.firstName,
           lastName: value.lastName,
           role: value.role,
+          ...jobTitle,
           version: account.version,
         })
       : this.store.create({
@@ -206,6 +244,7 @@ export class AccountDialog {
           lastName: value.lastName,
           email: value.email,
           role: value.role,
+          ...jobTitle,
           initialPassword: value.initialPassword,
         });
     request$.subscribe({

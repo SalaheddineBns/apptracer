@@ -3,7 +3,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
-import { Role, UserResponse, UsersService } from '../../../core/api/generated';
+import { JobTitlesService, Role, UserResponse, UsersService } from '../../../core/api/generated';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { AccountsStore } from '../data/accounts.store';
 import { AccountsPage } from './accounts';
@@ -22,6 +22,7 @@ const pageOf = (content: UserResponse[]) => of({ content, page: 0, size: 20, tot
 
 describe('AccountsPage', () => {
   const listUsers = vi.fn();
+  const listJobTitles = vi.fn();
   const deactivateUser = vi.fn();
   const reactivateUser = vi.fn();
   const confirm = vi.fn();
@@ -34,6 +35,7 @@ describe('AccountsPage', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: UsersService, useValue: { listUsers, deactivateUser, reactivateUser } },
+        { provide: JobTitlesService, useValue: { listJobTitles } },
         { provide: AuthStore, useValue: { user: signal({ id: 1, email: 'a@x.fr', firstName: 'Ada', lastName: 'Admin', role: Role.Admin }) } },
         { provide: ConfirmationService, useValue: { confirm } },
         { provide: MessageService, useValue: { add } },
@@ -55,10 +57,37 @@ describe('AccountsPage', () => {
   beforeEach(() => {
     // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
-    for (const fn of [listUsers, deactivateUser, reactivateUser, confirm, add]) {
+    for (const fn of [listUsers, listJobTitles, deactivateUser, reactivateUser, confirm, add]) {
       fn.mockReset();
     }
+    listJobTitles.mockReturnValue(of([]));
     TestBed.resetTestingModule();
+  });
+
+  it('CA-09-04 : la colonne Fonction affiche le libellé tel quel (donnée), et reste vide sans fonction', async () => {
+    listUsers.mockReturnValue(
+      pageOf([account(2, { jobTitle: { code: 'DEVELOPER', label: 'Developer', active: true } }), account(3)]),
+    );
+    await open();
+    expect(root.querySelector('thead')?.textContent).toContain('Fonction');
+    expect(cy('fonction-compte-2')?.textContent?.trim()).toBe('Developer');
+    expect(cy('fonction-compte-3')?.textContent?.trim()).toBe('');
+  });
+
+  it('CA-09-07 : une fonction désactivée reste affichée avec la mention « Inactive »', async () => {
+    listUsers.mockReturnValue(
+      pageOf([account(2, { jobTitle: { code: 'QA', label: 'QA', active: false } }), account(3, { jobTitle: { code: 'DEVELOPER', label: 'Developer', active: true } })]),
+    );
+    await open();
+    expect(cy('fonction-compte-2')?.textContent).toContain('QA');
+    expect(cy('fonction-compte-2')?.textContent).toContain('Inactive');
+    expect(cy('fonction-compte-3')?.textContent).not.toContain('Inactive');
+  });
+
+  it('RG-09-06 : l’écran charge les fonctions pour le dialogue (une requête)', async () => {
+    listUsers.mockReturnValue(pageOf([account(2)]));
+    await open();
+    expect(listJobTitles).toHaveBeenCalledTimes(1);
   });
 
   it('affiche l’état de chargement tant que la liste n’est pas arrivée', async () => {

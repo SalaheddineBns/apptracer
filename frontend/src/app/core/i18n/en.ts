@@ -188,6 +188,7 @@ export const en: Dictionary = {
     empty: 'No accounts to display.',
     name: 'Name',
     you: '(you)',
+    jobTitle: 'Job title',
     editAria: 'Edit {name}’s account',
     deactivateAria: 'Deactivate {name}’s account',
     reactivateAria: 'Reactivate {name}’s account',
@@ -211,6 +212,8 @@ export const en: Dictionary = {
       lastName: 'Last name',
       emailImmutable: 'The email cannot be changed.',
       selfRole: 'You cannot change your own role.',
+      jobTitlePlaceholder: 'No job title',
+      jobTitleInactiveOption: '{label} (Inactive)',
       initialPassword: 'Initial password',
       initialPasswordSubject: 'the initial password',
       errors: {

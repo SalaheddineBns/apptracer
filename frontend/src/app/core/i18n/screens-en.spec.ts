@@ -110,7 +110,16 @@ const ENTRIES: TimeEntryResponse[] = [
 
 const USERS = [
   { id: 1, email: 'ada@x.com', firstName: 'Ada', lastName: 'Martin', role: Role.Admin, active: true, version: 0 },
-  { id: 2, email: 'bob@x.com', firstName: 'Bob', lastName: 'Stone', role: Role.User, active: false, version: 0 },
+  {
+    id: 2,
+    email: 'bob@x.com',
+    firstName: 'Bob',
+    lastName: 'Stone',
+    role: Role.User,
+    active: false,
+    version: 0,
+    jobTitle: { code: 'QA', label: 'QA', active: false },
+  },
 ];
 
 describe('SFD-08 : les écrans passés en anglais ne contiennent plus de français (CA-08-08)', () => {
@@ -281,6 +290,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       expect(text('nav-equipes')).toBe('Teams');
       expect(text('nav-types-activite')).toBe('Activity types');
       expect(text('nav-projets')).toBe('Projects');
+      expect(text('nav-fonctions')).toBe('Job titles');
       expect(text('nav-parametres')).toBe('Settings');
       expect(text('menu-se-deconnecter')).toBe('Sign out');
       expectNoFrench();
@@ -311,6 +321,8 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       expect(table).toContain('Active');
       expect(table).toContain('Inactive');
       expect(text('indicateur-vous')).toBe('(you)');
+      expect(table).toContain('Job title');
+      expect(text('fonction-compte-2')).toBe('QA Inactive');
       expect(cy('btn-modifier-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Edit Bob Stone’s account');
       expect(cy('btn-reactiver-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Reactivate Bob Stone’s account');
       expectNoFrench();
@@ -326,6 +338,8 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       await click('btn-annuler-dialogue');
       await click('btn-modifier-2');
       expect(text('dialogue-compte')).toContain('The email cannot be changed.');
+      expect(text('dialogue-compte')).toContain('Job title');
+      expect(text('champ-fonction')).toBe('QA (Inactive)');
       expectNoFrench();
     });
 

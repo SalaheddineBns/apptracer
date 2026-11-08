@@ -51,6 +51,29 @@
       <app-field-error [control]="form.controls.role" [messages]="roleMessages" cy="erreur-champ-role" />
     </div>
 
+    @if (jobTitleVisible()) {
+      <div class="flex flex-col gap-2">
+        <label for="account-job-title" class="text-sm font-medium text-color">{{ 'accounts.jobTitle' | t }}</label>
+        <p-select
+          formControlName="jobTitleCode"
+          [options]="jobTitleOptions()"
+          optionLabel="label"
+          optionValue="value"
+          inputId="account-job-title"
+          [placeholder]="'accounts.dialog.jobTitlePlaceholder' | t"
+          [showClear]="true"
+          appendTo="body"
+          fluid
+          data-cy="champ-fonction"
+        >
+          <ng-template #item let-option>
+            <span [attr.data-cy]="'option-fonction-' + option.value">{{ option.label }}</span>
+          </ng-template>
+        </p-select>
+        <app-field-error [control]="form.controls.jobTitleCode" cy="erreur-champ-fonction" />
+      </div>
+    }
+
     @if (!isEdit()) {
       <app-password-field
         [control]="form.controls.initialPassword"

@@ -13,7 +13,8 @@ import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
 import { FocusRestorer } from '../../../shared/focus-restorer';
-import { AccountDialog, AccountSaved } from '../components/account-dialog';
+import { JobTitlesStore } from '../../job-titles/data/job-titles.store';
+import { AccountDialog,AccountSaved } from '../components/account-dialog';
 import { AccountsStore, isAccountSortField } from '../data/accounts.store';
 
 const ROLE_SEVERITIES: Record<Role, 'secondary' | 'info' | 'contrast'> = {
@@ -46,6 +47,8 @@ export class AccountsPage {
 
   constructor() {
     this.store.load();
+    // RG-09-06 : les fonctions (avec les inactives, pour l'ADMIN) alimentent la liste déroulante du dialogue.
+    inject(JobTitlesStore).load();
   }
 
   protected openCreate(): void {

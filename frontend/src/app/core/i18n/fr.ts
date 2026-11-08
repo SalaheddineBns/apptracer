@@ -187,6 +187,7 @@ export const fr = {
     empty: 'Aucun compte à afficher.',
     name: 'Nom',
     you: '(vous)',
+    jobTitle: 'Fonction',
     editAria: 'Modifier le compte de {name}',
     deactivateAria: 'Désactiver le compte de {name}',
     reactivateAria: 'Réactiver le compte de {name}',
@@ -210,7 +211,8 @@ export const fr = {
       lastName: 'Nom',
       emailImmutable: 'L’e-mail ne peut pas être modifié.',
       selfRole: 'Vous ne pouvez pas modifier votre propre rôle.',
-      initialPassword: 'Mot de passe initial',
+      jobTitlePlaceholder: 'Aucune fonction',
+      jobTitleInactiveOption: '{label} (Inactive)',      initialPassword: 'Mot de passe initial',
       initialPasswordSubject: 'le mot de passe initial',
       errors: {
         firstNameRequired: 'Le prénom est obligatoire.',

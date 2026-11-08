@@ -37,6 +37,7 @@
               <th pFrozenColumn pSortableColumn="lastName" scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'accounts.name' | t }} <p-sort-icon field="lastName" /></th>
               <th pSortableColumn="email" scope="col">{{ 'common.email' | t }} <p-sort-icon field="email" /></th>
               <th pSortableColumn="role" scope="col">{{ 'common.role' | t }} <p-sort-icon field="role" /></th>
+              <th scope="col">{{ 'accounts.jobTitle' | t }}</th>
               <th pSortableColumn="active" scope="col">{{ 'common.status' | t }} <p-sort-icon field="active" /></th>
               <th scope="col">{{ 'common.actions' | t }}</th>
             </tr>
@@ -51,6 +52,15 @@
               </td>
               <td>{{ user.email }}</td>
               <td><p-tag [value]="roleLabel(user.role)" [severity]="roleSeverity(user.role)" /></td>
+              <!-- RG-09-06 : vide si aucune fonction, mention « Inactive » pour une fonction désactivée (libellé non traduit, RG-09-10). -->
+              <td [attr.data-cy]="'fonction-compte-' + user.id">
+                @if (user.jobTitle; as jobTitle) {
+                  {{ jobTitle.label }}
+                  @if (!jobTitle.active) {
+                    <span class="text-xs text-muted-color">{{ 'jobTitles.status.inactive' | t }}</span>
+                  }
+                }
+              </td>
               <td>
                 <p-tag
                   [value]="(user.active ? 'common.active' : 'common.inactive') | t"
