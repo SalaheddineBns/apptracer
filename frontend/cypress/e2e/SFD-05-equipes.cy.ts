@@ -127,7 +127,7 @@ function loginAs(account: Credentials): void {
 function openTeams(): void {
   cy.login('ADMIN');
   cy.intercept('GET', TEAMS_URL).as('list');
-  cy.visit('/admin/equipes');
+  cy.visit('/admin/teams');
   cy.wait('@list').its('response.statusCode').should('eq', 200);
   cy.getCy('btn-nouvelle-equipe').should('be.visible'); // la liste peut être vide : pas de table
 }
@@ -389,7 +389,7 @@ describe('SFD-05 : équipes', () => {
         cy.login('ADMIN');
         cy.intercept('GET', `${USERS_URL}?*`).as('users');
         cy.intercept('POST', `${USERS_URL}/${manager.id}/deactivation`).as('deactivate');
-        cy.visit('/admin/comptes');
+        cy.visit('/admin/accounts');
         cy.wait('@users');
         cy.getCy(`statut-compte-${manager.id}`).should('contain', 'Actif');
         press(`btn-desactiver-${manager.id}`);
@@ -412,7 +412,7 @@ describe('SFD-05 : équipes', () => {
         cy.login('ADMIN');
         cy.intercept('GET', `${USERS_URL}?*`).as('users');
         cy.intercept('PUT', `${USERS_URL}/${manager.id}`).as('update');
-        cy.visit('/admin/comptes');
+        cy.visit('/admin/accounts');
         cy.wait('@users');
         press(`btn-modifier-${manager.id}`);
         cy.getCy('form-compte').should('be.visible');
@@ -530,7 +530,7 @@ describe('SFD-05 : équipes', () => {
             cy.getCy('titre-journal').should('be.visible');
             cy.getCy('nav-mon-journal').should('be.visible');
             cy.getCy('nav-equipes').should('not.exist');
-            cy.visit('/admin/equipes');
+            cy.visit('/admin/teams');
             cy.location('pathname').should('eq', '/journal'); // roleGuard : retour à l'accueil du rôle
             cy.getCy('table-equipes').should('not.exist');
           });

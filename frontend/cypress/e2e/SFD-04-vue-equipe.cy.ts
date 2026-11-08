@@ -153,19 +153,19 @@ function watchTeamView(): void {
 }
 
 /** Ouvre « Mon équipe » (E1) en tant que MANAGER sur la semaine donnée et attend les équipes puis le tableau. */
-function openTeamView(manager: Credentials, query = `semaine=${WEEK}`): void {
+function openTeamView(manager: Credentials, query = `week=${WEEK}`): void {
   loginAs(manager);
   watchTeamView();
-  cy.visit(`/equipe?${query}`);
+  cy.visit(`/team?${query}`);
   cy.wait('@teams').its('response.statusCode').should('eq', 200);
   cy.wait('@summary').its('response.statusCode').should('eq', 200);
   cy.getCy('table-equipe-semaine').should('be.visible');
 }
 
-function openMemberJournal(manager: Credentials, member: { id: number }, query = `semaine=${WEEK}`): void {
+function openMemberJournal(manager: Credentials, member: { id: number }, query = `week=${WEEK}`): void {
   loginAs(manager);
   watchTeamView();
-  cy.visit(`/equipe/membres/${member.id}?${query}`);
+  cy.visit(`/team/members/${member.id}?${query}`);
 }
 
 function text(selector: string): Cypress.Chainable<string> {
@@ -202,7 +202,7 @@ describe('SFD-04 : vue équipe', () => {
             text(`duree-membre-${anna.id}-2026-10-05`).should('eq', '1,5 h');
             text(`duree-membre-${bob.id}-2026-10-06`).should('eq', '8 h');
             cy.getCy(`duree-membre-${anna.id}-2026-10-06`).should('contain', '–');
-            cy.getCy(`lien-membre-${anna.id}`).should('have.text', 'Anna Abel').and('have.attr', 'href').and('contain', `equipe=${team.id}`);
+            cy.getCy(`lien-membre-${anna.id}`).should('have.text', 'Anna Abel').and('have.attr', 'href').and('contain', `team=${team.id}`);
             tokenOf(manager).then((token) =>
               call<TeamWeek>('GET', `${VIEW_URL}/teams/${team.id}/week?weekStart=${WEEK}`, token).then((response) => {
                 expect(response.status).to.eq(200);
@@ -226,9 +226,9 @@ describe('SFD-04 : vue équipe', () => {
             openTeamView(manager);
             cy.getCy(`lien-membre-${member.id}`).click();
             cy.wait('@memberEntries').its('response.statusCode').should('eq', 200);
-            cy.location('pathname').should('eq', `/equipe/membres/${member.id}`);
-            cy.location('search').should('contain', `semaine=${WEEK}`);
-            cy.getCy('titre-journal-membre').should('contain', 'Journal de Anna Abel');
+            cy.location('pathname').should('eq', `/team/members/${member.id}`);
+            cy.location('search').should('contain', `week=${WEEK}`);
+            cy.getCy('titre-journal-membre').should('contain', 'Journal : Anna Abel');
             cy.getCy('journal-semaine').should('be.visible');
             cy.getCy('jour-2026-10-05').within(() => {
               cy.getCy(`saisie-${entry.id}`).should('be.visible');
@@ -242,8 +242,8 @@ describe('SFD-04 : vue équipe', () => {
             cy.get('[data-cy^="btn-ajouter-saisie-"]').should('not.exist');
             // Retour vers E1 en conservant la semaine et l'équipe
             cy.getCy('btn-retour-equipe').find('button').click();
-            cy.location('pathname').should('eq', '/equipe');
-            cy.location('search').should('contain', `semaine=${WEEK}`).and('contain', `equipe=${team.id}`);
+            cy.location('pathname').should('eq', '/team');
+            cy.location('search').should('contain', `week=${WEEK}`).and('contain', `team=${team.id}`);
             cy.getCy('table-equipe-semaine').should('be.visible');
           });
         });
@@ -277,7 +277,7 @@ describe('SFD-04 : vue équipe', () => {
                 cy.getCy('navigation-semaine').should('not.exist');
                 // Écran : équipe B demandée dans l'URL
                 watchTeamView();
-                cy.visit(`/equipe?equipe=${teamB.id}&semaine=${WEEK}`);
+                cy.visit(`/team?team=${teamB.id}&week=${WEEK}`);
                 cy.wait('@summary').its('response.statusCode').should('eq', 403);
                 cy.getCy('message-equipe-interdite').should('contain', 'ne fait pas partie de celles dont vous êtes manager');
                 cy.getCy('table-equipe-semaine').should('not.exist');
@@ -323,7 +323,7 @@ describe('SFD-04 : vue équipe', () => {
     });
   });
 
-  it('CA-04-05 : un USER reçoit 403 sur l’API de la vue équipe, le menu « Mon équipe » est absent et /equipe le renvoie à son journal', () => {
+  it('CA-04-05 : un USER reçoit 403 sur l’API de la vue équipe, le menu « Mon équipe » est absent et /team le renvoie à son journal', () => {
     createAccount('USER').then((user) => {
       tokenOf(user).then((token) => {
         call('GET', `${VIEW_URL}/teams`, token).its('status').should('eq', 403);
@@ -334,7 +334,7 @@ describe('SFD-04 : vue équipe', () => {
       cy.visit('/journal');
       cy.getCy('nav-mon-journal').should('be.visible');
       cy.getCy('nav-mon-equipe').should('not.exist');
-      cy.visit('/equipe');
+      cy.visit('/team');
       cy.location('pathname').should('eq', '/journal');
       cy.getCy('titre-equipe').should('not.exist');
     });
@@ -347,11 +347,11 @@ describe('SFD-04 : vue équipe', () => {
       call('GET', `${VIEW_URL}/members/1/time-entries?weekStart=${WEEK}`, token).its('status').should('eq', 403);
     });
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     cy.getCy('nav-comptes').should('be.visible');
     cy.getCy('nav-mon-equipe').should('not.exist');
-    cy.visit('/equipe');
-    cy.location('pathname').should('eq', '/admin/comptes');
+    cy.visit('/team');
+    cy.location('pathname').should('eq', '/admin/accounts');
     cy.getCy('titre-equipe').should('not.exist');
   });
 
@@ -376,7 +376,7 @@ describe('SFD-04 : vue équipe', () => {
           // Semaine suivante : lundi 12 et mardi 13 = 2 jours ouvrés
           cy.getCy('btn-semaine-suivante').find('button').click();
           cy.wait('@summary').its('response.statusCode').should('eq', 200);
-          cy.location('search').should('contain', `semaine=${NEXT_WEEK}`);
+          cy.location('search').should('contain', `week=${NEXT_WEEK}`);
           cy.getCy('libelle-semaine').should('contain', 'Semaine du 12/10/2026 au 18/10/2026');
           text(`total-membre-${member.id}`).should('eq', '16 h');
           text(`duree-membre-${member.id}-2026-10-12`).should('eq', '8 h');
@@ -423,7 +423,7 @@ describe('SFD-04 : vue équipe', () => {
         expect(response?.statusCode).to.eq(200);
         expect(response?.body).to.deep.eq([]);
       });
-      cy.location('pathname').should('eq', '/equipe');
+      cy.location('pathname').should('eq', '/team');
       cy.getCy('message-aucune-equipe').should('contain', 'Aucune équipe ne vous est rattachée.');
       cy.getCy('select-equipe').should('not.exist');
       cy.getCy('table-equipe-semaine').should('not.exist');
@@ -456,7 +456,7 @@ describe('SFD-04 : vue équipe', () => {
                   expect(request.url).to.contain(`weekStart=${WEEK}`);
                   expect(response?.statusCode).to.eq(200);
                 });
-                cy.location('search').should('contain', `equipe=${bravo.id}`).and('contain', `semaine=${WEEK}`);
+                cy.location('search').should('contain', `team=${bravo.id}`).and('contain', `week=${WEEK}`);
                 cy.getCy('libelle-semaine').should('contain', 'Semaine du 05/10/2026 au 11/10/2026');
                 cy.getCy(`ligne-membre-${anna.id}`).should('not.exist');
                 text(`total-membre-${bob.id}`).should('eq', '8 h');
@@ -498,7 +498,7 @@ describe('SFD-04 : vue équipe', () => {
             });
             // Écran : le journal de l'ancien membre est refusé
             watchTeamView();
-            cy.visit(`/equipe/membres/${leaver.id}?semaine=${WEEK}&equipe=${team.id}`);
+            cy.visit(`/team/members/${leaver.id}?week=${WEEK}&team=${team.id}`);
             cy.wait('@memberEntries').its('response.statusCode').should('eq', 403);
             cy.getCy('message-membre-interdit').should('be.visible');
             cy.getCy('journal-semaine').should('not.exist');
@@ -530,7 +530,7 @@ describe('SFD-04 : vue équipe', () => {
               });
               cy.getCy(`lien-membre-${inactive.id}`).click();
               cy.wait('@memberEntries').its('response.statusCode').should('eq', 200);
-              cy.getCy('titre-journal-membre').should('contain', 'Journal de Anna Abel');
+              cy.getCy('titre-journal-membre').should('contain', 'Journal : Anna Abel');
               cy.getCy(`tag-inactif-${inactive.id}`).should('have.text', 'Inactif');
               cy.getCy(`saisie-${entry.id}`).should('be.visible');
               text('total-semaine').should('eq', '1,5 h');
@@ -587,16 +587,16 @@ describe('SFD-04 : vue équipe', () => {
             // Après : écran de l'ancien manager (il n'a plus d'équipe, un lien vers l'ancienne est refusé, le journal du membre aussi)
             loginAs(oldManager);
             watchTeamView();
-            cy.visit(`/equipe?semaine=${WEEK}`);
+            cy.visit(`/team?week=${WEEK}`);
             cy.wait('@teams').its('response.body').should('deep.eq', []);
             cy.getCy('message-aucune-equipe').should('be.visible');
             cy.getCy(`ligne-membre-${member.id}`).should('not.exist');
-            cy.visit(`/equipe?equipe=${team.id}&semaine=${WEEK}`);
+            cy.visit(`/team?team=${team.id}&week=${WEEK}`);
             cy.wait('@summary').its('response.statusCode').should('eq', 403);
             // Sans équipe, l'écran affiche « aucune équipe » (et non le message de refus) : l'ancienne équipe n'est pas consultable
             cy.getCy('message-aucune-equipe').should('be.visible');
             cy.getCy('table-equipe-semaine').should('not.exist');
-            cy.visit(`/equipe/membres/${member.id}?semaine=${WEEK}`);
+            cy.visit(`/team/members/${member.id}?week=${WEEK}`);
             cy.wait('@memberEntries').its('response.statusCode').should('eq', 403);
             cy.getCy('message-membre-interdit').should('be.visible');
             // Après : écran du nouveau manager
@@ -632,7 +632,7 @@ describe('SFD-04 : vue équipe', () => {
               text(`total-membre-${zoe.id}`).should('eq', '1,5 h');
               text(`total-membre-${anna.id}`).should('eq', '0 h'); // sa saisie date de mars
               // Semaine ancienne (02/03/2026) : la saisie d'Anna, antérieure à son rattachement, est visible
-              cy.visit(`/equipe?equipe=${team.id}&semaine=2026-03-02`);
+              cy.visit(`/team?team=${team.id}&week=2026-03-02`);
               cy.wait('@summary').its('response.statusCode').should('eq', 200);
               text(`total-membre-${anna.id}`).should('eq', '1,5 h');
               cy.getCy(`duree-membre-${anna.id}-2026-03-02`).should('contain', '1,5 h');
@@ -651,7 +651,7 @@ describe('SFD-04 : vue équipe', () => {
           openTeamView(manager);
           cy.getCy('btn-semaine-precedente').find('button').click();
           cy.wait('@summary').its('request.url').should('contain', 'weekStart=2026-09-28');
-          cy.location('search').should('contain', 'semaine=2026-09-28');
+          cy.location('search').should('contain', 'week=2026-09-28');
           cy.getCy('libelle-semaine').should('contain', 'Semaine du 28/09/2026 au 04/10/2026');
           cy.getCy(`duree-membre-${member.id}-2026-09-28`).should('contain', '–');
           cy.getCy('btn-semaine-suivante').find('button').click();

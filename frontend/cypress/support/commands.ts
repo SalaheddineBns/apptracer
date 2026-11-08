@@ -27,4 +27,22 @@ Cypress.Commands.add('login', (role: TestRole) => {
   });
 });
 
+// Langue de l'interface (RG-08-01) : sans choix explicite, les tests s'exécutent en français (clé `lang`
+// de localStorage, posée avant le chargement de l'application). Le navigateur de Cypress est en anglais ;
+// le fichier SFD-08 désactive ce défaut avec `setDefaultLanguage(null)` pour tester le choix de langue lui-même.
+const defaults = globalThis as unknown as { __e2eDefaultLang?: string | null };
+defaults.__e2eDefaultLang = 'fr';
+
+/** Fixe la langue posée par défaut avant chaque chargement de page (`null` : ne rien poser). */
+export function setDefaultLanguage(lang: 'fr' | 'en' | null): void {
+  defaults.__e2eDefaultLang = lang;
+}
+
+Cypress.on('window:before:load', (win) => {
+  const lang = defaults.__e2eDefaultLang;
+  if (lang && !win.localStorage.getItem('lang')) {
+    win.localStorage.setItem('lang', lang);
+  }
+});
+
 export {};

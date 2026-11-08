@@ -120,7 +120,7 @@ describe('SFD-02 : référentiels', () => {
     });
     // L'écran ADMIN affiche aussi les six types initiaux.
     cy.login('ADMIN');
-    cy.visit('/admin/types-activite');
+    cy.visit('/admin/activity-types');
     cy.getCy('table-types-activite').should('be.visible');
     listAs<ActivityType>('ADMIN', 'activity-types').then((types) => {
       Object.keys(INITIAL_TYPES).forEach((code) => {
@@ -140,7 +140,7 @@ describe('SFD-02 : référentiels', () => {
       });
     });
     cy.login('ADMIN');
-    cy.visit('/admin/types-activite');
+    cy.visit('/admin/activity-types');
     listAs<ActivityType>('ADMIN', 'activity-types').then((types) => {
       Object.entries(INITIAL_TYPES).forEach(([code, expected]) => {
         const id = types.find((t) => t.code === code)?.id;
@@ -156,7 +156,7 @@ describe('SFD-02 : référentiels', () => {
       createProject({ name: 'Projet existant' }).then((existingProject) => {
         cy.login('ADMIN');
 
-        cy.visit('/admin/types-activite');
+        cy.visit('/admin/activity-types');
         cy.getCy('btn-nouveau-type').click();
         cy.getCy('dialogue-type-activite').should('be.visible');
         cy.getCy('champ-code-type').type(existingType.code);
@@ -169,7 +169,7 @@ describe('SFD-02 : référentiels', () => {
         cy.getCy('erreur-champ-code-type').should('be.visible').and('contain', 'Ce code est déjà utilisé.');
         cy.getCy('dialogue-type-activite').should('be.visible'); // le dialogue reste ouvert
 
-        cy.visit('/admin/projets');
+        cy.visit('/admin/projects');
         cy.getCy('btn-nouveau-projet').click();
         cy.getCy('dialogue-projet').should('be.visible');
         cy.getCy('champ-code-projet').type(existingProject.code);
@@ -204,7 +204,7 @@ describe('SFD-02 : référentiels', () => {
     cy.intercept('POST', '/api/v1/projects').as('createProject');
     cy.login('ADMIN');
 
-    cy.visit('/admin/types-activite');
+    cy.visit('/admin/activity-types');
     cy.getCy('btn-nouveau-type').click();
     cy.getCy('dialogue-type-activite').should('be.visible');
     cy.getCy('champ-code-type').type('réunion client');
@@ -214,7 +214,7 @@ describe('SFD-02 : référentiels', () => {
     cy.getCy('dialogue-type-activite').should('be.visible');
     cy.get('@createType.all').should('have.length', 0);
 
-    cy.visit('/admin/projets');
+    cy.visit('/admin/projects');
     cy.getCy('btn-nouveau-projet').click();
     cy.getCy('dialogue-projet').should('be.visible');
     cy.getCy('champ-code-projet').type('réunion client');
@@ -243,7 +243,7 @@ describe('SFD-02 : référentiels', () => {
       createProject({ name: 'Projet à modifier' }).then((project) => {
         cy.login('ADMIN');
 
-        cy.visit('/admin/types-activite');
+        cy.visit('/admin/activity-types');
         cy.getCy(`btn-modifier-type-${type.id}`).find('button').click();
         cy.getCy('dialogue-type-activite').should('be.visible');
         cy.getCy('champ-code-type').should('have.value', type.code).and('be.disabled');
@@ -251,7 +251,7 @@ describe('SFD-02 : référentiels', () => {
         cy.getCy('btn-annuler-dialogue').find('button').click();
         cy.getCy('dialogue-type-activite').should('not.exist');
 
-        cy.visit('/admin/projets');
+        cy.visit('/admin/projects');
         cy.getCy(`btn-modifier-projet-${project.id}`).find('button').click();
         cy.getCy('dialogue-projet').should('be.visible');
         cy.getCy('champ-code-projet').should('have.value', project.code).and('be.disabled');
@@ -268,7 +268,7 @@ describe('SFD-02 : référentiels', () => {
       });
 
       cy.login('ADMIN');
-      cy.visit('/admin/projets');
+      cy.visit('/admin/projects');
       cy.getCy(`btn-desactiver-projet-${project.id}`).find('button').click();
       cy.getCy('btn-confirmer').should('be.visible'); // E5 : confirmation avant désactivation
       cy.getCy('btn-confirmer').click();
@@ -299,7 +299,7 @@ describe('SFD-02 : référentiels', () => {
       });
 
       cy.login('ADMIN');
-      cy.visit('/admin/projets');
+      cy.visit('/admin/projects');
       cy.getCy(`statut-projet-${project.id}`).should('contain', 'Inactif');
       cy.getCy(`btn-reactiver-projet-${project.id}`).find('button').click();
       cy.wait('@reactivate').its('response.statusCode').should('eq', 200);
@@ -358,7 +358,7 @@ describe('SFD-02 : référentiels', () => {
 
         // Contre-épreuve : l'ADMIN voit les deux menus.
         cy.login('ADMIN');
-        cy.visit('/admin/comptes');
+        cy.visit('/admin/accounts');
         cy.getCy('nav-types-activite').should('be.visible');
         cy.getCy('nav-projets').should('be.visible');
       });

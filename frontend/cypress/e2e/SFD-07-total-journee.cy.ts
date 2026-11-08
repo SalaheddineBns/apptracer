@@ -109,7 +109,7 @@ function setStandardDay(minutes: number): void {
 function openJournal(account: Credentials): void {
   loginAs(account);
   cy.intercept('GET', `${ENTRIES_URL}?*`).as('week');
-  cy.visit(`/journal?semaine=${WEEK}`);
+  cy.visit(`/journal?week=${WEEK}`);
   cy.wait('@week').its('response.statusCode').should('eq', 200);
   cy.getCy('titre-journal').should('be.visible');
 }

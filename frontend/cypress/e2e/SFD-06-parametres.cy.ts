@@ -90,7 +90,7 @@ function parisDateTime(iso: string): string {
 function openSettingsAsAdmin(): void {
   cy.intercept('GET', SETTINGS_URL).as('load');
   cy.login('ADMIN');
-  cy.visit('/admin/parametres');
+  cy.visit('/admin/settings');
   cy.wait('@load').its('response.statusCode').should('eq', 200);
   cy.getCy('form-parametres').should('be.visible');
 }
@@ -130,7 +130,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
       readSettings(token).then((settings) => {
         cy.intercept('GET', SETTINGS_URL).as('load');
         cy.login('ADMIN');
-        cy.visit('/admin/parametres');
+        cy.visit('/admin/settings');
         cy.wait('@load');
         cy.getCy('form-parametres').should('be.visible');
         cy.getCy('champ-heures').should('have.value', '8 h');
@@ -233,7 +233,7 @@ describe('SFD-06 : paramètres (journée standard)', () => {
     });
     // Contre-épreuve : l'ADMIN voit le menu.
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     cy.getCy('nav-parametres').should('be.visible');
   });
 

@@ -18,7 +18,7 @@ describe('Socle e2e', () => {
 
   it('ADMIN : se connecte par API et arrive sur la liste des comptes', () => {
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     cy.getCy('table-comptes').should('be.visible');
   });
 });

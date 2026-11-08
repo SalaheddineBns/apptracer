@@ -162,7 +162,7 @@ function setStandardDay(minutes: number): void {
 function openJournal(account: Credentials, week = WEEK): void {
   loginAs(account);
   cy.intercept('GET', `${ENTRIES_URL}?*`).as('week');
-  cy.visit(`/journal?semaine=${week}`);
+  cy.visit(`/journal?week=${week}`);
   cy.wait('@week').its('response.statusCode').should('eq', 200);
   cy.getCy('titre-journal').should('be.visible');
 }
@@ -633,12 +633,12 @@ describe('SFD-01 : saisie des activités', () => {
       cy.getCy('libelle-semaine').should('contain', 'Semaine du 05/10/2026 au 11/10/2026');
       cy.getCy('btn-semaine-precedente').find('button').click();
       cy.wait('@week');
-      cy.location('search').should('eq', '?semaine=2026-09-28');
+      cy.location('search').should('eq', '?week=2026-09-28');
       cy.getCy('libelle-semaine').should('contain', 'Semaine du 28/09/2026 au 04/10/2026');
       cy.getCy('etat-vide').should('be.visible');
       cy.getCy('btn-semaine-suivante').find('button').click();
       cy.wait('@week');
-      cy.location('search').should('eq', '?semaine=2026-10-05');
+      cy.location('search').should('eq', '?week=2026-10-05');
       cy.getCy('jour-2026-10-05').find('[data-cy="saisie-periode"]').should('contain', '09:00 – 10:30');
     });
   });

@@ -20,7 +20,7 @@ interface Tokens {
 }
 
 const ROLES: Role[] = ['USER', 'MANAGER', 'ADMIN'];
-const HOME: Record<Role, string> = { USER: '/journal', MANAGER: '/journal', ADMIN: '/admin/comptes' };
+const HOME: Record<Role, string> = { USER: '/journal', MANAGER: '/journal', ADMIN: '/admin/accounts' };
 const DEDICATED_PASSWORD = 'Dedie-Test-2026';
 const NEW_PASSWORD = 'Nouveau-Test-2026';
 const INVALID_JWT = 'invalide.jeton.expire';
@@ -211,20 +211,20 @@ describe('SFD-03 : authentification et comptes', () => {
   });
 
   it('CA-03-05 : une page protégée sans session redirige vers /login', () => {
-    ['/journal', '/admin/comptes', '/compte/mot-de-passe'].forEach((url) => {
+    ['/journal', '/admin/accounts', '/account/password'].forEach((url) => {
       cy.visit(url);
       cy.location('pathname').should('eq', '/login');
       cy.getCy('form-connexion').should('be.visible');
     });
     // Après connexion, retour à la page initialement demandée.
-    cy.visit('/compte/mot-de-passe');
+    cy.visit('/account/password');
     cy.location('pathname').should('eq', '/login');
     sharedCredentials('USER').then((credentials) => {
       cy.getCy('champ-email').type(credentials.email);
       cy.getCy('champ-mot-de-passe').type(credentials.password, { log: false });
       cy.getCy('btn-se-connecter').click();
     });
-    cy.location('pathname').should('eq', '/compte/mot-de-passe');
+    cy.location('pathname').should('eq', '/account/password');
   });
 
   // CA-03-06 : l'expiration réelle (JWT_ACCESS_TTL, 15 min par défaut) n'est pas attendue. On remplace
@@ -238,7 +238,7 @@ describe('SFD-03 : authentification et comptes', () => {
     cy.intercept('POST', '/api/v1/auth/refresh').as('refresh');
     ROLES.forEach((role) => {
       createAccount(role).then((account) => {
-        visitAs(account, '/compte/mot-de-passe').then((initial) => {
+        visitAs(account, '/account/password').then((initial) => {
           cy.getCy('form-mot-de-passe').should('be.visible');
           corruptAccessToken();
           submitPasswordChange(account.password, NEW_PASSWORD);
@@ -246,7 +246,7 @@ describe('SFD-03 : authentification et comptes', () => {
           cy.wait('@refresh').its('response.statusCode').should('eq', 200);
           cy.wait('@change').its('response.statusCode').should('eq', 204);
           cy.getCy('toast').should('contain', 'Mot de passe modifié');
-          cy.location('pathname').should('eq', '/compte/mot-de-passe');
+          cy.location('pathname').should('eq', '/account/password');
           cy.window().then((win) => {
             expect(win.localStorage.getItem('accessToken')).not.to.eq(INVALID_JWT);
             expect(win.localStorage.getItem('refreshToken')).not.to.eq(initial.refreshToken); // rotation (RG-03-07)
@@ -323,14 +323,14 @@ describe('SFD-03 : authentification et comptes', () => {
     });
     // Contre-épreuve : l'ADMIN voit le menu.
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     cy.getCy('nav-comptes').should('be.visible');
   });
 
   it('CA-03-10 : e-mail déjà utilisé (quelle que soit la casse), 409 avec le code RG-03-01', () => {
     cy.intercept('POST', '/api/v1/users').as('create');
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     sharedCredentials('USER').then((existing) => {
       openCreateDialog();
       cy.getCy('champ-prenom').type('Doublon');
@@ -350,7 +350,7 @@ describe('SFD-03 : authentification et comptes', () => {
   it('CA-03-11 : mot de passe initial de 8 caractères, champ en erreur et enregistrement bloqué', () => {
     cy.intercept('POST', '/api/v1/users').as('create');
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     openCreateDialog();
     cy.getCy('champ-prenom').type('Court');
     cy.getCy('champ-nom').type('MotDePasse');
@@ -378,7 +378,7 @@ describe('SFD-03 : authentification et comptes', () => {
 
   it('CA-03-12 : un ADMIN ne peut pas désactiver son propre compte (409, RG-03-13)', () => {
     cy.login('ADMIN');
-    cy.visit('/admin/comptes');
+    cy.visit('/admin/accounts');
     cy.getCy('indicateur-vous').should('be.visible');
     cy.getCy('table-comptes').find('[data-cy^="btn-desactiver-"]').should('exist'); // les autres comptes restent désactivables
 
@@ -408,7 +408,7 @@ describe('SFD-03 : authentification et comptes', () => {
     cy.intercept('POST', '/api/v1/auth/refresh').as('refresh');
     ROLES.forEach((role) => {
       createAccount(role).then((account) => {
-        visitAs(account, '/compte/mot-de-passe');
+        visitAs(account, '/account/password');
         cy.getCy('form-mot-de-passe').should('be.visible');
         deactivate(account.id);
         corruptAccessToken();
@@ -428,14 +428,14 @@ describe('SFD-03 : authentification et comptes', () => {
     cy.intercept('PUT', '/api/v1/auth/me/password').as('change');
     ROLES.forEach((role) => {
       createAccount(role).then((account) => {
-        visitAs(account, '/compte/mot-de-passe');
+        visitAs(account, '/account/password');
         submitPasswordChange('Mauvais-Ancien-2026', NEW_PASSWORD);
         cy.wait('@change').then(({ response }) => {
           expect(response?.statusCode).to.eq(409);
           expect(response?.body.code).to.eq('RG-03-15');
         });
         cy.getCy('erreur-champ-ancien-mot-de-passe').should('be.visible').and('contain', 'ancien mot de passe est incorrect');
-        cy.location('pathname').should('eq', '/compte/mot-de-passe');
+        cy.location('pathname').should('eq', '/account/password');
         // Mot de passe inchangé : l'ancien fonctionne toujours, le nouveau non.
         apiLogin(account).its('status').should('eq', 200);
         apiLogin({ email: account.email, password: NEW_PASSWORD }).its('status').should('eq', 401);
