@@ -11,6 +11,7 @@ import {
   AppSettingsService,
   AuthenticationService,
   Granularity,
+  JobTitlesService,
   ProjectsService,
   Role,
   TagColor,
@@ -158,6 +159,16 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
               of([
                 { id: 1, code: 'MEETING', label: 'Meeting', color: TagColor.Warn, projectRequired: false, active: true, version: 0 },
                 { id: 2, code: 'PROJECT_WORK', label: 'Project work', color: TagColor.Info, projectRequired: true, active: false, version: 0 },
+              ]),
+          },
+        },
+        {
+          provide: JobTitlesService,
+          useValue: {
+            listJobTitles: () =>
+              of([
+                { id: 1, code: 'DEVELOPER', label: 'Developer', active: true, version: 0 },
+                { id: 2, code: 'QA', label: 'QA', active: false, version: 0 },
               ]),
           },
         },
@@ -427,6 +438,34 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       await click('btn-nouveau-projet');
       await click('btn-enregistrer');
       expect(text('erreur-champ-nom-projet')).toBe('The name is required.');
+      expectNoFrench();
+    });
+  });
+
+  describe('SFD-09 : fonctions', () => {
+    it('CA-09-10 : l’écran s’intitule « Job titles », colonnes, statuts et libellés accessibles en anglais', async () => {
+      await start(Role.Admin, '/admin/job-titles');
+      expect(document.body.querySelector('h1')?.textContent).toContain('Job titles');
+      expect(cy('nav-fonctions')?.textContent).toContain('Job titles');
+      const table = text('table-fonctions');
+      expect(table).toContain('Developer');
+      expect(table).toContain('Inactive');
+      expect(cy('btn-modifier-fonction-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Edit job title Developer');
+      expect(cy('btn-reactiver-fonction-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Reactivate job title QA');
+      expectNoFrench();
+    });
+
+    it('CA-09-10 : dialogue fonction, aide, erreurs de champ et confirmation de désactivation en anglais', async () => {
+      await start(Role.Admin, '/admin/job-titles');
+      await click('btn-nouvelle-fonction');
+      await click('btn-enregistrer');
+      expect(text('dialogue-fonction')).toContain('Uppercase letters, digits and _, 2 to 30 characters (e.g. UX_DESIGNER).');
+      expect(text('erreur-champ-code-fonction')).toBe('The code is required.');
+      expect(text('erreur-champ-libelle-fonction')).toBe('The label is required.');
+      expectNoFrench();
+      await click('btn-annuler-dialogue');
+      await click('btn-desactiver-fonction-1');
+      expect(document.body.textContent).toContain('Deactivate the job title “Developer”?');
       expectNoFrench();
     });
   });

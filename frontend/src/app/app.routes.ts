@@ -55,6 +55,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/referentials/pages/projects').then((m) => m.ProjectsPage),
       },
       {
+        // RG-09-07 : gestion des fonctions réservée à l'ADMIN.
+        path: 'admin/job-titles',
+        canActivate: [roleGuard(Role.Admin)],
+        loadComponent: () => import('./features/job-titles/pages/job-titles').then((m) => m.JobTitlesPage),
+      },
+      {
         path: 'admin/settings',
         canActivate: [roleGuard(Role.Admin)],
         loadComponent: () => import('./features/settings/pages/settings').then((m) => m.SettingsPage),

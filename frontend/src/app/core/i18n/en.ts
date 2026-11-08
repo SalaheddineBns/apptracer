@@ -51,6 +51,7 @@ export const en: Dictionary = {
     teams: 'Teams',
     activityTypes: 'Activity types',
     projects: 'Projects',
+    jobTitles: 'Job titles',
     settings: 'Settings',
   },
   userMenu: {
@@ -272,8 +273,44 @@ export const en: Dictionary = {
   referentialCode: {
     activityTypeExample: 'CLIENT_MEETING',
     projectExample: 'CLIENT_PORTAL',
+    jobTitleExample: 'UX_DESIGNER',
     required: 'The code is required.',
     pattern: 'The code must be 2 to 30 characters: uppercase letters, digits and _ (e.g. {example}).',
+  },
+  jobTitles: {
+    title: 'Job titles',
+    new: 'New job title',
+    empty: 'No job titles to display.',
+    label: 'Label',
+    status: {
+      active: 'Active',
+      inactive: 'Inactive',
+    },
+    editAria: 'Edit job title {label}',
+    deactivateAria: 'Deactivate job title {label}',
+    reactivateAria: 'Reactivate job title {label}',
+    deactivate: {
+      header: 'Deactivate job title',
+      message:
+        'Deactivate the job title “{label}”? It will no longer be offered for an account. Accounts that already have it keep it, marked “Inactive”.',
+    },
+    toast: {
+      created: 'Job title created',
+      createdDetail: 'The job title “{label}” has been created.',
+      updated: 'Job title updated',
+      updatedDetail: 'The job title “{label}” has been updated.',
+      deactivatedDetail: 'The job title “{label}” has been deactivated.',
+      reactivatedDetail: 'The job title “{label}” has been reactivated.',
+    },
+    dialog: {
+      createTitle: 'New job title',
+      editTitle: 'Edit job title',
+      codeHint: 'Uppercase letters, digits and _, 2 to 30 characters (e.g. {example}).',
+      errors: {
+        labelRequired: 'The label is required.',
+        labelTooLong: 'The label must not exceed 100 characters.',
+      },
+    },
   },
   projects: {
     title: 'Projects',

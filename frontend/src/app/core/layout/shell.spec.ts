@@ -4,7 +4,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { of } from 'rxjs';
 import { routes } from '../../app.routes';
-import { ActivityTypesService, AppSettingsService, AuthenticationService, ProjectsService, Role, TeamsService, TeamViewService, UsersService } from '../api/generated';
+import { ActivityTypesService, AppSettingsService, AuthenticationService, JobTitlesService, ProjectsService, Role, TeamsService, TeamViewService, UsersService } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
 
 const user = (role: Role) => ({ id: 1, email: 'ada@x.fr', firstName: 'Ada', lastName: 'Martin', role });
@@ -15,6 +15,7 @@ describe('coquille applicative (E2) et routes', () => {
   const listUsers = vi.fn();
   const listActivityTypes = vi.fn();
   const listProjects = vi.fn();
+  const listJobTitles = vi.fn();
   const listTeams = vi.fn();
   const listMyManagedTeams = vi.fn();
   const getAppSettings = vi.fn();
@@ -37,6 +38,7 @@ describe('coquille applicative (E2) et routes', () => {
         { provide: UsersService, useValue: { listUsers } },
         { provide: ActivityTypesService, useValue: { listActivityTypes } },
         { provide: ProjectsService, useValue: { listProjects } },
+        { provide: JobTitlesService, useValue: { listJobTitles } },
         { provide: TeamsService, useValue: { listTeams } },
         { provide: TeamViewService, useValue: { listMyManagedTeams } },
         { provide: AppSettingsService, useValue: { getAppSettings, updateAppSettings } },
@@ -58,6 +60,8 @@ describe('coquille applicative (E2) et routes', () => {
     listActivityTypes.mockReturnValue(of([]));
     listProjects.mockReset();
     listProjects.mockReturnValue(of([]));
+    listJobTitles.mockReset();
+    listJobTitles.mockReturnValue(of([]));
     listTeams.mockReset();
     listTeams.mockReturnValue(of([]));
     listMyManagedTeams.mockReset();
@@ -103,6 +107,20 @@ describe('coquille applicative (E2) et routes', () => {
     await harness.fixture.whenStable();
     expect(url()).toBe(shown ? '/admin/activity-types' : home);
     expect(listActivityTypes).toHaveBeenCalledTimes(shown ? 1 : 0);
+  });
+
+  it.each([
+    [Role.User, '/journal', false],
+    [Role.Manager, '/journal', false],
+    [Role.Admin, '/admin/accounts', true],
+  ])('CA-09-09 : %s, entrée « Fonctions » affichée=%s, et la route renvoie les non-ADMIN vers leur accueil sans appel API', async (role, home, shown) => {
+    await start(role);
+    await harness.navigateByUrl(home);
+    expect(!!cy('nav-fonctions')).toBe(shown);
+    await harness.navigateByUrl('/admin/job-titles');
+    await harness.fixture.whenStable();
+    expect(url()).toBe(shown ? '/admin/job-titles' : home);
+    expect(listJobTitles.mock.calls.length > 0).toBe(shown);
   });
 
   it.each([
@@ -169,11 +187,11 @@ describe('coquille applicative (E2) et routes', () => {
     expect(order).toEqual(['nav-mon-journal', 'nav-mon-equipe']);
   });
 
-  it('les entrées ADMIN sont dans l’ordre de l’architecture : Comptes, Équipes, Types d’activité, Projets, Paramètres', async () => {
+  it('les entrées ADMIN sont dans l’ordre de l’architecture : Comptes, Équipes, Types d’activité, Projets, Fonctions, Paramètres', async () => {
     await start(Role.Admin);
     await harness.navigateByUrl('/admin/accounts');
     const order = Array.from(document.body.querySelectorAll('nav [data-cy^="nav-"]')).map((a) => a.getAttribute('data-cy'));
-    expect(order).toEqual(['nav-comptes', 'nav-equipes', 'nav-types-activite', 'nav-projets', 'nav-parametres']);
+    expect(order).toEqual(['nav-comptes', 'nav-equipes', 'nav-types-activite', 'nav-projets', 'nav-fonctions', 'nav-parametres']);
   });
 
   it('Échap annule toute confirmation sans appeler accept, la croix est nommée « Fermer » et le focus revient au déclencheur', async () => {

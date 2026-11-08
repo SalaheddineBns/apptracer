@@ -1,0 +1,88 @@
+<div class="flex flex-col gap-6">
+  <div class="flex items-center justify-between gap-4">
+    <h1 class="text-2xl font-semibold text-color">{{ 'jobTitles.title' | t }}</h1>
+    <p-button type="button" [label]="'jobTitles.new' | t" (onClick)="openCreate()" data-cy="btn-nouvelle-fonction" />
+  </div>
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
+    @if (store.error(); as message) {
+      <app-error-state [message]="message" (retry)="store.load()" />
+    } @else if (!store.loaded()) {
+      <app-loading-state [rows]="6" />
+    } @else if (store.items().length === 0) {
+      <app-empty-state [message]="'jobTitles.empty' | t">
+        <p-button type="button" [label]="'jobTitles.new' | t" (onClick)="openCreate()" data-cy="btn-nouvelle-fonction-vide" />
+      </app-empty-state>
+    } @else {
+      <p-table
+        [value]="store.items()"
+        [loading]="store.loading()"
+        [scrollable]="true"
+        dataKey="id"
+        class="text-sm"
+        data-cy="table-fonctions"
+      >
+        <ng-template #header>
+          <tr>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'common.code' | t }}</th>
+            <th scope="col">{{ 'jobTitles.label' | t }}</th>
+            <th scope="col">{{ 'common.status' | t }}</th>
+            <th scope="col">{{ 'common.actions' | t }}</th>
+          </tr>
+        </ng-template>
+        <ng-template #body let-jobTitle>
+          <tr [attr.data-cy]="'ligne-fonction-' + jobTitle.id">
+            <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ jobTitle.code }}</td>
+            <td>{{ jobTitle.label }}</td>
+            <td>
+              <p-tag
+                [value]="(jobTitle.active ? 'jobTitles.status.active' : 'jobTitles.status.inactive') | t"
+                [severity]="jobTitle.active ? 'success' : 'secondary'"
+                [attr.data-cy]="'statut-fonction-' + jobTitle.id"
+              />
+            </td>
+            <td class="sm:whitespace-nowrap">
+              <p-button
+                type="button"
+                [label]="'common.edit' | t"
+                [text]="true"
+                size="small"
+                severity="secondary"
+                [ariaLabel]="'jobTitles.editAria' | t: { label: jobTitle.label }"
+                (onClick)="openEdit(jobTitle)"
+                [attr.data-cy]="'btn-modifier-fonction-' + jobTitle.id"
+              />
+              @if (jobTitle.active) {
+                <p-button
+                  type="button"
+                  [label]="'common.deactivate' | t"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  [ariaLabel]="'jobTitles.deactivateAria' | t: { label: jobTitle.label }"
+                  [disabled]="store.pending.has(jobTitle.id)"
+                  (onClick)="confirmDeactivate(jobTitle)"
+                  [attr.data-cy]="'btn-desactiver-fonction-' + jobTitle.id"
+                />
+              } @else {
+                <p-button
+                  type="button"
+                  [label]="'common.reactivate' | t"
+                  [text]="true"
+                  size="small"
+                  severity="secondary"
+                  [ariaLabel]="'jobTitles.reactivateAria' | t: { label: jobTitle.label }"
+                  [disabled]="store.pending.has(jobTitle.id)"
+                  (onClick)="reactivate(jobTitle)"
+                  [attr.data-cy]="'btn-reactiver-fonction-' + jobTitle.id"
+                />
+              }
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    }
+  </section>
+</div>
+
+<app-job-title-dialog [(visible)]="dialogVisible" [jobTitle]="editing()" (saved)="onSaved($event)" (conflict)="store.load()" />

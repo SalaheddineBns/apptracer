@@ -50,6 +50,7 @@ export const fr = {
     teams: 'Équipes',
     activityTypes: "Types d'activité",
     projects: 'Projets',
+    jobTitles: 'Fonctions',
     settings: 'Paramètres',
   },
   userMenu: {
@@ -271,8 +272,44 @@ export const fr = {
   referentialCode: {
     activityTypeExample: 'REUNION_CLIENT',
     projectExample: 'PORTAIL_CLIENT',
+    jobTitleExample: 'UX_DESIGNER',
     required: 'Le code est obligatoire.',
     pattern: 'Le code doit contenir de 2 à 30 caractères : majuscules, chiffres et _ (ex. {example}).',
+  },
+  jobTitles: {
+    title: 'Fonctions',
+    new: 'Nouvelle fonction',
+    empty: 'Aucune fonction à afficher.',
+    label: 'Libellé',
+    status: {
+      active: 'Active',
+      inactive: 'Inactive',
+    },
+    editAria: 'Modifier la fonction {label}',
+    deactivateAria: 'Désactiver la fonction {label}',
+    reactivateAria: 'Réactiver la fonction {label}',
+    deactivate: {
+      header: 'Désactiver la fonction',
+      message:
+        "Désactiver la fonction « {label} » ? Elle ne sera plus proposée pour un compte. Les comptes qui la portent déjà la gardent, avec la mention « Inactive ».",
+    },
+    toast: {
+      created: 'Fonction créée',
+      createdDetail: 'La fonction « {label} » est créée.',
+      updated: 'Fonction mise à jour',
+      updatedDetail: 'La fonction « {label} » est modifiée.',
+      deactivatedDetail: 'La fonction « {label} » est désactivée.',
+      reactivatedDetail: 'La fonction « {label} » est réactivée.',
+    },
+    dialog: {
+      createTitle: 'Nouvelle fonction',
+      editTitle: 'Modifier la fonction',
+      codeHint: 'Majuscules, chiffres et _, de 2 à 30 caractères (ex. {example}).',
+      errors: {
+        labelRequired: 'Le libellé est obligatoire.',
+        labelTooLong: 'Le libellé ne doit pas dépasser 100 caractères.',
+      },
+    },
   },
   projects: {
     title: 'Projets',

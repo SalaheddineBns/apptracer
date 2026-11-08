@@ -66,6 +66,9 @@ export class Shell {
   // RG-02-08, CA-02-09 : « Projets » réservé à l'ADMIN.
   protected readonly showProjects = computed(() => this.auth.hasRole(Role.Admin));
 
+  // RG-09-07, CA-09-09 : « Fonctions » réservé à l'ADMIN.
+  protected readonly showJobTitles = computed(() => this.auth.hasRole(Role.Admin));
+
   // RG-06-03, CA-06-07 : « Paramètres » réservé à l'ADMIN.
   protected readonly showSettings = computed(() => this.auth.hasRole(Role.Admin));
 

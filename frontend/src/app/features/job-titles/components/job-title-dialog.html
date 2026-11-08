@@ -1,0 +1,36 @@
+<p-dialog
+  [header]="(isEdit() ? 'jobTitles.dialog.editTitle' : 'jobTitles.dialog.createTitle') | t"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!submitting()"
+  [closeAriaLabel]="'common.close' | t"
+  [style]="{ width: '32rem', maxWidth: '95vw' }"
+  (onShow)="focusFirstField(jobTitleForm)"
+  (onHide)="onHide()"
+>
+  <form #jobTitleForm class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="dialogue-fonction">
+    <div class="flex flex-col gap-2">
+      <label for="job-title-code" class="text-sm font-medium text-color">{{ 'common.code' | t }} <span aria-hidden="true">*</span></label>
+      <input pInputText id="job-title-code" formControlName="code" autocomplete="off" fluid required data-cy="champ-code-fonction" />
+      @if (isEdit()) {
+        <small class="text-xs text-muted-color">{{ 'common.codeImmutable' | t }}</small>
+      } @else {
+        <small class="text-xs text-muted-color">{{ 'jobTitles.dialog.codeHint' | t: { example: codeExample() } }}</small>
+      }
+      <app-field-error [control]="form.controls.code" [messages]="codeMessages()" cy="erreur-champ-code-fonction" />
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <label for="job-title-label" class="text-sm font-medium text-color">{{ 'jobTitles.label' | t }} <span aria-hidden="true">*</span></label>
+      <input pInputText id="job-title-label" formControlName="label" autocomplete="off" fluid required data-cy="champ-libelle-fonction" />
+      <app-field-error [control]="form.controls.label" [messages]="labelMessages" cy="erreur-champ-libelle-fonction" />
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <p-button type="button" [label]="'common.cancel' | t" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="submit" [label]="'common.save' | t" [loading]="submitting()" data-cy="btn-enregistrer" />
+    </div>
+  </form>
+</p-dialog>
