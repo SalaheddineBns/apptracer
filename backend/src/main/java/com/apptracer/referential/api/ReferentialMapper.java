@@ -1,6 +1,7 @@
 package com.apptracer.referential.api;
 
 import com.apptracer.referential.domain.ActivityType;
+import com.apptracer.referential.domain.JobTitle;
 import com.apptracer.referential.domain.Project;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,11 @@ public class ReferentialMapper {
         type.getColor(),
         type.isActive(),
         type.getVersion());
+  }
+
+  public JobTitleResponse toResponse(JobTitle title) {
+    return new JobTitleResponse(
+        title.getId(), title.getCode(), title.getLabel(), title.isActive(), title.getVersion());
   }
 
   public ProjectResponse toResponse(Project project) {

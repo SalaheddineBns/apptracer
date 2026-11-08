@@ -153,6 +153,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
           BusinessException.onField(
               "RG-02-01", "error.project.code-duplicate", "code", "field.code-duplicate"));
     }
+    if (violates(ex, "ux_job_titles_code_lower")) {
+      // RG-09-05
+      return handleBusiness(
+          BusinessException.onField(
+              "RG-09-05", "error.job-title.code-duplicate", "code", "field.code-duplicate"));
+    }
     if (violates(ex, "ex_time_entries_no_overlap")) {
       // RG-01-06 : deux requêtes simultanées ont passé le contrôle de service
       return handleBusiness(new BusinessException("RG-01-06", "error.time-entry.overlap.generic"));
