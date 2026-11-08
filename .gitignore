@@ -2,6 +2,8 @@
 frontend/cypress.env.json
 node_modules/
 target/
-.claude/settings.local.json
 .playwright-mcp/
-.claude/worktrees/
+docs/*
+!docs/api/
+.claude/
+CLAUDE.md
