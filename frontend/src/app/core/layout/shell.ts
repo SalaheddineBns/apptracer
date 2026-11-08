@@ -8,6 +8,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MenuModule } from 'primeng/menu';
 import { Role } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
+import { I18n } from '../i18n/i18n.service';
+import { LANGS } from '../i18n/lang';
 import { FocusAnchor, FocusRestorer } from '../../shared/focus-restorer';
 
 /** Coquille applicative (SFD-03 E2 En-tête) : enveloppe les pages protégées, `/login` reste en dehors. */
@@ -21,6 +23,7 @@ export class Shell {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly focus = inject(FocusRestorer);
+  private readonly i18n = inject(I18n);
   private anchor: FocusAnchor | null = null;
 
   constructor() {
@@ -64,10 +67,25 @@ export class Shell {
   // RG-06-03, CA-06-07 : « Paramètres » réservé à l'ADMIN.
   protected readonly showSettings = computed(() => this.auth.hasRole(Role.Admin));
 
-  protected readonly menuItems: MenuItem[] = [
-    { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },
-    { label: 'Se déconnecter', dataCy: 'menu-se-deconnecter', command: () => this.logout() },
-  ];
+  // SFD-08 E1 : choix de la langue, à côté de « Changer mon mot de passe » ; la langue en vigueur est cochée (`current`).
+  protected readonly menuItems = computed<MenuItem[]>(() => {
+    const current = this.i18n.lang();
+    return [
+      { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/compte/mot-de-passe']) },
+      {
+        label: this.i18n.t('language.label'),
+        dataCy: 'menu-langue',
+        items: LANGS.map((lang) => ({
+          label: this.i18n.t(`language.${lang}`),
+          dataCy: `choix-langue-${lang}`,
+          lang,
+          current: lang === current,
+          command: () => this.i18n.setLang(lang),
+        })),
+      },
+      { label: 'Se déconnecter', dataCy: 'menu-se-deconnecter', command: () => this.logout() },
+    ];
+  });
 
   /** RG-03-08 / CA-03-08 : révoque le refresh token puis redirige vers `/login` (géré par le store). */
   protected logout(): void {

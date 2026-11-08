@@ -5,6 +5,7 @@ import { Router, provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { of, throwError } from 'rxjs';
 import { AuthenticationService, Role } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { safeReturnUrl } from '../../../core/auth/return-url';
 import { LoginPage } from './login';
 
@@ -62,6 +63,25 @@ describe('LoginPage', () => {
   }
 
   beforeEach(() => login.mockReset());
+
+  it('RG-08-10, CA-08-02 : la page de connexion propose « Français » et « English », choisir « English » change la langue sans recharger ni vider la saisie', async () => {
+    await open();
+    await harness.fixture.whenStable();
+    expect(cy('selecteur-langue')).not.toBeNull();
+    expect(cy('choix-langue-fr')?.textContent).toContain('Français');
+    expect(cy('choix-langue-en')?.textContent).toContain('English');
+    expect(cy('selecteur-langue')?.querySelector('[aria-pressed="true"]')?.textContent).toContain('Français');
+
+    await fill('a@b.fr', 'secret');
+    cy('choix-langue-en')?.click();
+    await harness.fixture.whenStable();
+
+    expect(TestBed.inject(I18n).lang()).toBe('en');
+    expect(document.documentElement.lang).toBe('en');
+    expect(cy('selecteur-langue')?.querySelector('[aria-pressed="true"]')?.textContent).toContain('English');
+    expect((cy('champ-email') as HTMLInputElement).value).toBe('a@b.fr');
+    expect((cy('champ-mot-de-passe') as HTMLInputElement).value).toBe('secret');
+  });
 
   it('CA-03-01 : connexion réussie, arrivée sur « Mon journal » pour un USER', async () => {
     login.mockReturnValue(of(tokens(Role.User)));

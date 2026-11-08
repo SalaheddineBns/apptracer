@@ -7,6 +7,7 @@ import { MessageModule } from 'primeng/message';
 import { AuthStore } from '../../../core/auth/auth.store';
 import { safeReturnUrl } from '../../../core/auth/return-url';
 import { homeUrlFor } from '../../../core/auth/roles';
+import { LanguageSelector } from '../../../core/i18n/language-selector';
 import { toProblem } from '../../../core/errors/problem';
 import { FieldError } from '../../../shared/components/field-error';
 import { PasswordField } from '../../../shared/components/password-field';
@@ -14,7 +15,7 @@ import { PasswordField } from '../../../shared/components/password-field';
 /** SFD-03 E1 Connexion. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError, PasswordField],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError, PasswordField, LanguageSelector],
   selector: 'app-login',
   templateUrl: './login.html',
 })
