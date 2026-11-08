@@ -33,6 +33,9 @@ app:
       password: ${ADMIN_PASSWORD:}
       first-name: ${ADMIN_FIRST_NAME:}
       last-name: ${ADMIN_LAST_NAME:}
+  demo:
+    # Outil de développement : manager, dev et QA de démonstration créés au démarrage si défini
+    password: ${DEMO_PASSWORD:}
   security:
     jwt:
       # RG-03-06 : JWT_SECRET est obligatoire (au moins 32 octets), sans valeur par défaut

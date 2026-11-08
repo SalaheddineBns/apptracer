@@ -144,7 +144,11 @@ Configuration is read from environment variables, among them:
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `DB_HOST`, `DB_PORT` for the database;
 - `JWT_SECRET` (mandatory, 32 bytes or more), plus `JWT_ACCESS_TTL` and `JWT_REFRESH_TTL` for the tokens;
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` for the **initial ADMIN account**, created
-  at first start-up if no ADMIN exists. Use this account to create the other users.
+  at first start-up if no ADMIN exists. Use this account to create the other users;
+- `DEMO_PASSWORD` (development only, optional) to also create, at start-up, three **demo accounts** sharing that
+  password: `manager@apptracer.local` (MANAGER), `dev@apptracer.local` (USER, Developer) and `qa@apptracer.local`
+  (USER, QA), plus the team **Demo team** led by the manager with the developer and the QA as members. An account
+  whose e-mail already exists is left untouched, and the team is only created once. Never set it in production.
 
 The full list, with defaults, is in [`docs/architecture.md`](docs/architecture.md) §6.
 
