@@ -8,6 +8,7 @@ import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -44,6 +45,7 @@ export class TeamWeekPage {
   protected readonly store = inject(TeamViewStore);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
   private readonly title = viewChild.required<ElementRef<HTMLElement>>('title');
 
   private readonly params = toSignal(this.route.queryParamMap, {
@@ -62,9 +64,10 @@ export class TeamWeekPage {
     }
     return this.store.teams()[0]?.id ?? null;
   });
-  protected readonly days = computed(() =>
-    weekDays(this.weekStart()).map((iso) => ({ iso, name: formatWeekdayName(iso), label: formatDayMonth(iso) })),
-  );
+  protected readonly days = computed(() => {
+    const lang = this.i18n.lang();
+    return weekDays(this.weekStart()).map((iso) => ({ iso, name: formatWeekdayName(iso, lang), label: formatDayMonth(iso) }));
+  });
 
   constructor() {
     // Une seule requête d'équipes par ouverture de l'écran.

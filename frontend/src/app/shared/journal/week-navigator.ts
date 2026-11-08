@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, model } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { addDays, formatFrenchDate } from '../dates/week';
+import { addDays, formatDate } from '../dates/week';
 
 /** Navigation de semaine en semaine (SFD-01 E1, SFD-04 E1 et E2). `weekStart` est un lundi, `YYYY-MM-DD`. */
 @Component({
@@ -42,7 +42,7 @@ export class WeekNavigator {
 
   protected readonly label = computed(
     () =>
-      `Semaine du ${formatFrenchDate(this.weekStart())} au ${formatFrenchDate(addDays(this.weekStart(), 6))}`,
+      `Semaine du ${formatDate(this.weekStart())} au ${formatDate(addDays(this.weekStart(), 6))}`,
   );
 
   protected shift(days: number): void {

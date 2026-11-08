@@ -16,6 +16,8 @@ import { provideApiBasePath } from './core/api/api.config';
 import { authInterceptor } from './core/auth/auth.interceptor';
 import { AuthStore } from './core/auth/auth.store';
 import { errorInterceptor } from './core/errors/error.interceptor';
+import { I18n } from './core/i18n/i18n.service';
+import { languageInterceptor } from './core/i18n/language.interceptor';
 import { AppTracerPreset } from './core/theme/apptracer.preset';
 import { PRIMENG_FR } from './core/theme/primeng-fr';
 import { routes } from './app.routes';
@@ -27,7 +29,9 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     // Ordre = du plus externe au plus interne : l'intercepteur JWT renouvelle et rejoue avant que le 401 n'atteigne errorInterceptor.
-    provideHttpClient(withInterceptors([errorInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([errorInterceptor, languageInterceptor, authInterceptor])),
+    // RG-08-05 : la langue (document, titre, PrimeNG) est appliquée avant le premier affichage.
+    provideAppInitializer(() => void inject(I18n)),
     provideAppInitializer(() => inject(AuthStore).init()),
     provideApiBasePath(),
     MessageService,

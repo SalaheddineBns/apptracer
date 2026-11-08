@@ -1,3 +1,5 @@
+import { INTL_LOCALE, Lang } from '../../core/i18n/lang';
+
 /**
  * Dates de saisie : toujours des jours civils `YYYY-MM-DD`, sans heure ni fuseau (comme le `LocalDate` du back).
  * Les calculs passent par UTC pour qu'un changement d'heure ne décale jamais un jour.
@@ -12,7 +14,10 @@ const PARIS_TODAY = new Intl.DateTimeFormat('en-CA', {
   month: '2-digit',
   day: '2-digit',
 });
-const WEEKDAY = new Intl.DateTimeFormat('fr-FR', { timeZone: 'UTC', weekday: 'long' });
+const WEEKDAY: Record<Lang, Intl.DateTimeFormat> = {
+  fr: new Intl.DateTimeFormat(INTL_LOCALE.fr, { timeZone: 'UTC', weekday: 'long' }),
+  en: new Intl.DateTimeFormat(INTL_LOCALE.en, { timeZone: 'UTC', weekday: 'long' }),
+};
 
 function toUtc(iso: string): number | null {
   const match = ISO_DATE.exec(iso);
@@ -81,8 +86,8 @@ export function countWeekdays(start: string, end: string): number {
   return count;
 }
 
-/** « 05/10/2026 ». */
-export function formatFrenchDate(iso: string): string {
+/** « 05/10/2026 » : jour/mois/année dans les deux langues (RG-08-08). */
+export function formatDate(iso: string): string {
   const [year, month, day] = iso.split('-');
   return `${day}/${month}/${year}`;
 }
@@ -93,9 +98,9 @@ export function formatDayMonth(iso: string): string {
   return `${day}/${month}`;
 }
 
-/** « lundi ». */
-export function formatWeekdayName(iso: string): string {
-  return WEEKDAY.format(new Date(toUtc(iso) ?? 0));
+/** « lundi » / « Monday » (RG-08-08). */
+export function formatWeekdayName(iso: string, lang: Lang = 'fr'): string {
+  return WEEKDAY[lang].format(new Date(toUtc(iso) ?? 0));
 }
 
 /** Date locale d'un `p-datepicker` (minuit, fuseau du navigateur) vers jour civil. */

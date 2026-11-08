@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { TimeEntryResponse, WeeklyTimeEntriesResponse } from '../../core/api/generated';
 import { ButtonModule } from 'primeng/button';
+import { I18n } from '../../core/i18n/i18n.service';
 import { formatDayMonth, formatWeekdayName, todayInParis, weekDays } from '../dates/week';
 import { DecimalHoursPipe } from '../pipes/duration';
 import { TimeEntryCard } from './time-entry-card';
@@ -106,17 +107,20 @@ export class WeekJournal {
   /** SFD-01 E1 : « + » d'un jour, avec sa date (`YYYY-MM-DD`). */
   readonly add = output<string>();
 
+  private readonly i18n = inject(I18n);
+
   protected readonly days = computed(() => {
     const week = this.week();
+    const lang = this.i18n.lang();
     const today = this.today();
     const totals = new Map(week.days.map((total) => [total.date, total.minutes]));
     return weekDays(week.weekStart).map((iso) => ({
       iso,
       // RG-01-07 : pas de saisie à une date de début future, donc pas de « + » sur un jour à venir.
       addable: iso <= today,
-      name: formatWeekdayName(iso),
-      // « lun. » … « dim. » : les trois premières lettres suffisent à distinguer les jours en français.
-      shortName: `${formatWeekdayName(iso).slice(0, 3)}.`,
+      name: formatWeekdayName(iso, lang),
+      // « lun. » … « dim. » : les trois premières lettres suffisent à distinguer les jours (français et anglais).
+      shortName: `${formatWeekdayName(iso, lang).slice(0, 3)}.`,
       label: formatDayMonth(iso),
       minutes: totals.get(iso) ?? 0,
       // L'ordre de l'API (date puis heure de début) est conservé.

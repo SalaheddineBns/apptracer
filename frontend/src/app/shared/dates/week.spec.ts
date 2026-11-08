@@ -3,7 +3,7 @@ import {
   countWeekdays,
   daysBetween,
   formatDayMonth,
-  formatFrenchDate,
+  formatDate,
   formatWeekdayName,
   isIsoDate,
   isoToLocalDate,
@@ -69,7 +69,7 @@ describe('shared/dates/week', () => {
   });
 
   it('formats français', () => {
-    expect(formatFrenchDate('2026-10-05')).toBe('05/10/2026');
+    expect(formatDate('2026-10-05')).toBe('05/10/2026');
     expect(formatDayMonth('2026-10-05')).toBe('05/10');
     expect(formatWeekdayName('2026-10-05')).toBe('lundi');
     expect(formatWeekdayName('2026-10-11')).toBe('dimanche');

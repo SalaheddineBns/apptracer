@@ -1,0 +1,71 @@
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { PrimeNG } from 'primeng/config';
+import { PRIMENG_EN } from '../theme/primeng-en';
+import { PRIMENG_FR } from '../theme/primeng-fr';
+import { en } from './en';
+import { Dictionary, fr } from './fr';
+import { TranslationKey, TranslationParams } from './keys';
+import { DEFAULT_LANG, detectLang, isLang, Lang, LANG_STORAGE_KEY } from './lang';
+
+export const DICTIONARIES: Record<Lang, Dictionary> = { fr, en };
+const PRIMENG_TRANSLATIONS = { fr: PRIMENG_FR, en: PRIMENG_EN };
+
+function storedLang(): Lang | null {
+  try {
+    const value = localStorage.getItem(LANG_STORAGE_KEY);
+    return isLang(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function browserLang(): Lang {
+  if (typeof navigator === 'undefined') {
+    return DEFAULT_LANG;
+  }
+  return detectLang(navigator.languages?.[0] ?? navigator.language);
+}
+
+/**
+ * Langue de l'interface (SFD-08). Texte dans un gabarit : pipe `t`. Texte dans le code : `inject(I18n).t('cle')`.
+ * Tout ce qui lit `lang()` (computed, gabarit) est recalculé au changement, sans rechargement (RG-08-04).
+ */
+@Injectable({ providedIn: 'root' })
+export class I18n {
+  private readonly primeng = inject(PrimeNG);
+  private readonly current = signal<Lang>(storedLang() ?? browserLang());
+
+  /** RG-08-02, RG-08-03 : `localStorage`, sinon langue du navigateur. */
+  readonly lang = this.current.asReadonly();
+  readonly dictionary = computed(() => DICTIONARIES[this.current()]);
+
+  constructor() {
+    this.apply(this.current());
+  }
+
+  /** RG-08-03 : le choix est conservé dans le navigateur ; RG-08-04 : il s'applique immédiatement. */
+  setLang(lang: Lang): void {
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, lang);
+    } catch {
+      // Stockage indisponible : la langue vaut pour la session seulement.
+    }
+    this.current.set(lang);
+    this.apply(lang);
+  }
+
+  /** Traduit une clé dans la langue courante ; `{nom}` est remplacé par le paramètre du même nom. */
+  t(key: TranslationKey, params?: TranslationParams): string {
+    const text = key
+      .split('.')
+      .reduce<unknown>((node, part) => (node as Record<string, unknown>)[part], this.dictionary()) as string;
+    return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match)) : text;
+  }
+
+  /** RG-08-05 : langue déclarée de la page, titre de l'onglet, textes des composants PrimeNG. */
+  private apply(lang: Lang): void {
+    document.documentElement.lang = lang;
+    document.title = DICTIONARIES[lang].app.title;
+    this.primeng.setTranslation(PRIMENG_TRANSLATIONS[lang]);
+  }
+}
