@@ -12,7 +12,7 @@ import { TagModule } from 'primeng/tag';
 import { TeamResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
 import { ErrorState } from '../../../shared/components/error-state';
-import { FieldError } from '../../../shared/components/field-error';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { LoadingState } from '../../../shared/components/loading-state';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { TeamsStore } from '../data/teams.store';
@@ -65,13 +65,13 @@ export class TeamDialog {
     memberIds: [[] as number[]],
   });
 
-  protected readonly nameMessages = {
-    required: 'Le nom est obligatoire.',
-    minlength: 'Le nom doit comporter au moins 2 caractères.',
-    maxlength: 'Le nom ne doit pas dépasser 100 caractères.',
+  protected readonly nameMessages: FieldMessages = {
+    required: 'teams.dialog.errors.nameRequired',
+    minlength: 'teams.dialog.errors.nameTooShort',
+    maxlength: 'teams.dialog.errors.nameTooLong',
   };
-  protected readonly managerMessages = { required: 'Le manager est obligatoire.' };
-  protected readonly memberMessages = {};
+  protected readonly managerMessages: FieldMessages = { required: 'teams.dialog.errors.managerRequired' };
+  protected readonly memberMessages: FieldMessages = {};
 
   /** Manager choisi (miroir du contrôle, pour filtrer les membres proposés). */
   private readonly selectedManagerId = signal<number | null>(null);

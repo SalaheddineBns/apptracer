@@ -6,7 +6,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProjectResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
-import { FieldError } from '../../../shared/components/field-error';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
 import { ProjectsStore } from '../data/projects.store';
@@ -46,9 +46,9 @@ export class ProjectDialog {
 
   protected readonly codeExample = 'PORTAIL_CLIENT';
   protected readonly codeMessages = referentialCodeMessages(this.codeExample);
-  protected readonly nameMessages = {
-    required: 'Le nom est obligatoire.',
-    maxlength: 'Le nom ne doit pas dépasser 100 caractères.',
+  protected readonly nameMessages: FieldMessages = {
+    required: 'projects.dialog.errors.nameRequired',
+    maxlength: 'projects.dialog.errors.nameTooLong',
   };
 
   private originCy: string | null = null;

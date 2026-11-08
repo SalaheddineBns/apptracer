@@ -1,11 +1,11 @@
 <p-dialog
-  [header]="isEdit() ? 'Modifier la saisie' : 'Nouvelle saisie'"
+  [header]="(isEdit() ? 'timeEntry.dialog.editTitle' : 'timeEntry.dialog.createTitle') | t"
   [(visible)]="visible"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="!submitting()"
-  closeAriaLabel="Fermer"
+  [closeAriaLabel]="'common.close' | t"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
   (onHide)="onHide()"
 >
@@ -28,11 +28,11 @@
     >
       <div class="flex flex-col gap-2">
         <span id="time-entry-granularity-label" class="text-sm font-medium text-color"
-          >Période <span aria-hidden="true">*</span></span
+          >{{ 'timeEntry.dialog.period' | t }} <span aria-hidden="true">*</span></span
         >
         <p-selectbutton
           formControlName="granularity"
-          [options]="granularityOptions"
+          [options]="granularityOptions()"
           optionLabel="label"
           optionValue="value"
           [allowEmpty]="false"
@@ -44,14 +44,14 @@
       <div class="flex flex-wrap gap-4">
         <div class="flex flex-col gap-2 flex-1 min-w-40">
           <label for="time-entry-start-date" class="text-sm font-medium text-color"
-            >{{ granularity() === Granularity.Range ? 'Date de début' : 'Date' }}
+            >{{ (granularity() === Granularity.Range ? 'timeEntry.dialog.startDate' : 'timeEntry.dialog.date') | t }}
             <span aria-hidden="true">*</span></label
           >
           <p-datepicker
             formControlName="startDate"
             inputId="time-entry-start-date"
             dateFormat="dd/mm/yy"
-            placeholder="jj/mm/aaaa"
+            [placeholder]="'timeEntry.dialog.datePlaceholder' | t"
             [maxDate]="today()"
             [keepInvalid]="true"
             [showIcon]="true"
@@ -70,13 +70,13 @@
         @if (granularity() === Granularity.Range) {
           <div class="flex flex-col gap-2 flex-1 min-w-40">
             <label for="time-entry-end-date" class="text-sm font-medium text-color"
-              >Date de fin <span aria-hidden="true">*</span></label
+              >{{ 'timeEntry.dialog.endDate' | t }} <span aria-hidden="true">*</span></label
             >
             <p-datepicker
               formControlName="endDate"
               inputId="time-entry-end-date"
               dateFormat="dd/mm/yy"
-              placeholder="jj/mm/aaaa"
+              [placeholder]="'timeEntry.dialog.datePlaceholder' | t"
               [showIcon]="true"
             [showOnFocus]="false"
               appendTo="body"
@@ -96,7 +96,7 @@
         <div class="flex flex-wrap gap-4">
           <div class="flex flex-col gap-2 flex-1 min-w-40">
             <label for="time-entry-start-time" class="text-sm font-medium text-color"
-              >Heure de début <span aria-hidden="true">*</span></label
+              >{{ 'timeEntry.dialog.startTime' | t }} <span aria-hidden="true">*</span></label
             >
             <p-datepicker
               formControlName="startTime"
@@ -107,7 +107,7 @@
               [defaultDate]="defaultStartTime()"
               [showIcon]="true"
               [showOnFocus]="false"
-              placeholder="hh:mm"
+              [placeholder]="'timeEntry.dialog.timePlaceholder' | t"
               appendTo="body"
               fluid
               data-cy="champ-heure-debut"
@@ -120,7 +120,7 @@
           </div>
           <div class="flex flex-col gap-2 flex-1 min-w-40">
             <label for="time-entry-end-time" class="text-sm font-medium text-color"
-              >Heure de fin <span aria-hidden="true">*</span></label
+              >{{ 'timeEntry.dialog.endTime' | t }} <span aria-hidden="true">*</span></label
             >
             <p-datepicker
               formControlName="endTime"
@@ -131,7 +131,7 @@
               [defaultDate]="defaultEndTime()"
               [showIcon]="true"
               [showOnFocus]="false"
-              placeholder="hh:mm"
+              [placeholder]="'timeEntry.dialog.timePlaceholder' | t"
               appendTo="body"
               fluid
               data-cy="champ-heure-fin"
@@ -147,15 +147,15 @@
 
       <div class="flex flex-col gap-2">
         <span id="time-entry-type-label" class="text-sm font-medium text-color"
-          >Type d’activité <span aria-hidden="true">*</span></span
+          >{{ 'timeEntry.dialog.activityType' | t }} <span aria-hidden="true">*</span></span
         >
         <p-select
           formControlName="activityTypeCode"
           [options]="types.activeItems()"
           optionLabel="label"
           optionValue="code"
-          placeholder="Choisir un type"
-          emptyMessage="Aucun type d’activité disponible."
+          [placeholder]="'timeEntry.dialog.chooseType' | t"
+          [emptyMessage]="'timeEntry.dialog.noType' | t"
           inputId="time-entry-type"
           ariaLabelledBy="time-entry-type-label"
           appendTo="body"
@@ -189,15 +189,15 @@
       @if (projectRequired()) {
         <div class="flex flex-col gap-2">
           <span id="time-entry-project-label" class="text-sm font-medium text-color"
-            >Projet <span aria-hidden="true">*</span></span
+            >{{ 'timeEntry.dialog.project' | t }} <span aria-hidden="true">*</span></span
           >
           <p-select
             formControlName="projectCode"
             [options]="projects.activeItems()"
             optionLabel="name"
             optionValue="code"
-            placeholder="Choisir un projet"
-            emptyMessage="Aucun projet disponible."
+            [placeholder]="'timeEntry.dialog.chooseProject' | t"
+            [emptyMessage]="'timeEntry.dialog.noProject' | t"
             inputId="time-entry-project"
             ariaLabelledBy="time-entry-project-label"
             appendTo="body"
@@ -217,7 +217,7 @@
       }
 
       <div class="flex flex-col gap-2">
-        <label for="time-entry-comment" class="text-sm font-medium text-color">Commentaire</label>
+        <label for="time-entry-comment" class="text-sm font-medium text-color">{{ 'timeEntry.dialog.comment' | t }}</label>
         <textarea
           pTextarea
           id="time-entry-comment"
@@ -235,14 +235,14 @@
     </fieldset>
 
     <p class="text-sm text-color m-0" aria-live="polite">
-      Durée calculée :
+      {{ 'timeEntry.dialog.calculatedDuration' | t }}
       <span class="font-medium tabular-nums" data-cy="duree-calculee">{{ durationText() }}</span>
     </p>
 
     <div class="flex justify-end gap-2">
       <p-button
         type="button"
-        label="Annuler"
+        [label]="'common.cancel' | t"
         [text]="true"
         severity="secondary"
         [disabled]="submitting()"
@@ -251,7 +251,7 @@
       />
       <p-button
         type="submit"
-        label="Enregistrer"
+        [label]="'common.save' | t"
         [loading]="submitting()"
         data-cy="btn-enregistrer"
       />

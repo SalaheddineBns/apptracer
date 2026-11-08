@@ -1,12 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { AbstractControl } from '@angular/forms';
 import { merge, of, switchMap } from 'rxjs';
+import { I18n } from '../../core/i18n/i18n.service';
+import { TranslationKey, TranslationParams } from '../../core/i18n/keys';
 import { SERVER_ERROR_KEY } from '../forms/apply-field-errors';
+
+/** Message d'un validateur : une clé du dictionnaire, ou une clé avec ses paramètres (RG-08-05). */
+export type MessageSpec = TranslationKey | { readonly key: TranslationKey; readonly params: TranslationParams };
+export type FieldMessages = Record<string, MessageSpec>;
 
 /**
  * Message d'erreur sous un champ, affiché après le premier blur (ou immédiatement pour une erreur serveur).
- * `messages` associe une clé d'erreur de validateur à son libellé.
+ * `messages` associe une clé d'erreur de validateur à son message (clé du dictionnaire, traduite dans la langue en vigueur).
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,7 +25,8 @@ import { SERVER_ERROR_KEY } from '../forms/apply-field-errors';
 })
 export class FieldError {
   readonly control = input.required<AbstractControl | null>();
-  readonly messages = input<Record<string, string>>({});
+  readonly messages = input<FieldMessages>({});
+  private readonly i18n = inject(I18n);
   /** `data-cy` du message (par défaut `field-error`). */
   readonly cy = input('field-error');
 
@@ -45,6 +52,10 @@ export class FieldError {
       return null;
     }
     const key = Object.keys(errors).find((k) => k in this.messages());
-    return key ? (this.messages()[key] ?? null) : null;
+    const spec = key ? this.messages()[key] : undefined;
+    if (spec === undefined) {
+      return null;
+    }
+    return typeof spec === 'string' ? this.i18n.t(spec) : this.i18n.t(spec.key, spec.params);
   });
 }

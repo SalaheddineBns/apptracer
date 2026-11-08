@@ -9,3 +9,6 @@ type Paths<T> = {
 export type TranslationKey = Paths<Dictionary>;
 
 export type TranslationParams = Record<string, string | number>;
+
+/** Base d'une paire de pluriels : `'teams.memberCount'` pour `teams.memberCount.one` et `teams.memberCount.other`. */
+export type PluralKey = { [K in TranslationKey]: K extends `${infer Base}.one` ? Base : never }[TranslationKey];

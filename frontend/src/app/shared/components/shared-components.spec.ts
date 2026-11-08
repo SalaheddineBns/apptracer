@@ -19,13 +19,13 @@ describe('composants partagés', () => {
     const control = new FormControl('', { nonNullable: true, validators: [Validators.required] });
     const fixture = TestBed.createComponent(FieldError);
     fixture.componentRef.setInput('control', control);
-    fixture.componentRef.setInput('messages', { required: 'Champ obligatoire' });
+    fixture.componentRef.setInput('messages', { required: 'login.errors.emailRequired' });
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toBe('');
 
     control.markAsTouched();
     await fixture.whenStable();
-    expect(fixture.nativeElement.textContent).toContain('Champ obligatoire');
+    expect(fixture.nativeElement.textContent).toContain('L’e-mail est obligatoire.');
     expect(fixture.nativeElement.querySelector('[data-cy="field-error"]').className).toContain('text-red-700');
   });
 

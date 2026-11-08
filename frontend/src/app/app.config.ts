@@ -36,7 +36,9 @@ export const appConfig: ApplicationConfig = {
     provideApiBasePath(),
     MessageService,
     ConfirmationService,
-    { provide: LOCALE_ID, useValue: 'fr' },
+    // Aucun pipe Angular dépendant de la locale (date, number…) n'est utilisé : les formats passent par `Intl` et le service de langue
+    // (RG-08-08). La locale du framework est celle de la langue au démarrage, pour ne pas laisser un « fr » figé.
+    { provide: LOCALE_ID, useFactory: () => inject(I18n).lang() },
     providePrimeNG({
       license: PRIMEUI_LICENSE,
       translation: PRIMENG_FR,

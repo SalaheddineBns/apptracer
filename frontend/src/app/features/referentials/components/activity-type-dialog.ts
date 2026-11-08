@@ -11,7 +11,7 @@ import { ActivityTypeResponse, TagColor } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
 import { TAG_COLOR_OPTIONS } from '../../../shared/activity-type.ui';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
-import { FieldError } from '../../../shared/components/field-error';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
 import { ActivityTypesStore } from '../data/activity-types.store';
@@ -62,11 +62,11 @@ export class ActivityTypeDialog {
 
   protected readonly codeExample = 'REUNION_CLIENT';
   protected readonly codeMessages = referentialCodeMessages(this.codeExample);
-  protected readonly labelMessages = {
-    required: 'Le libellé est obligatoire.',
-    maxlength: 'Le libellé ne doit pas dépasser 100 caractères.',
+  protected readonly labelMessages: FieldMessages = {
+    required: 'activityTypes.dialog.errors.labelRequired',
+    maxlength: 'activityTypes.dialog.errors.labelTooLong',
   };
-  protected readonly colorMessages = { required: 'La couleur est obligatoire.' };
+  protected readonly colorMessages: FieldMessages = { required: 'activityTypes.dialog.errors.colorRequired' };
 
   private originCy: string | null = null;
 

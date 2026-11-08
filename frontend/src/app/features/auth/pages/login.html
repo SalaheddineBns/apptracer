@@ -5,7 +5,7 @@
         <p class="text-lg font-medium text-primary m-0">AppTracer</p>
         <app-language-selector />
       </div>
-      <h1 class="text-2xl font-semibold text-color">Connexion</h1>
+      <h1 class="text-2xl font-semibold text-color">{{ 'login.title' | t }}</h1>
     </header>
 
     <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="form-connexion">
@@ -14,7 +14,7 @@
       }
 
       <div class="flex flex-col gap-2">
-        <label for="login-email" class="text-sm font-medium text-color">E-mail <span aria-hidden="true">*</span></label>
+        <label for="login-email" class="text-sm font-medium text-color">{{ 'login.email' | t }} <span aria-hidden="true">*</span></label>
         <input
           pInputText
           id="login-email"
@@ -31,7 +31,8 @@
       <app-password-field
         [control]="form.controls.password"
         inputId="login-password"
-        label="Mot de passe"
+        [label]="'password.password' | t"
+        [subject]="'password.subject' | t"
         autocomplete="current-password"
         fieldCy="champ-mot-de-passe"
         toggleCy="btn-afficher-mot-de-passe"
@@ -40,7 +41,7 @@
 
       <p-button
         type="submit"
-        label="Se connecter"
+        [label]="'login.submit' | t"
         [loading]="submitting()"
         fluid
         data-cy="btn-se-connecter"

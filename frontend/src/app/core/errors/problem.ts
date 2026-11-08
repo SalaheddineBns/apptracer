@@ -1,4 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
+import { translateNow } from '../i18n/i18n.service';
 
 export interface FieldError {
   readonly field: string;
@@ -15,8 +16,9 @@ export interface Problem {
   readonly fieldErrors: readonly FieldError[];
 }
 
-export const NETWORK_ERROR_MESSAGE = 'Le serveur est injoignable. Vérifiez votre connexion et réessayez.';
-export const DEFAULT_ERROR_MESSAGE = 'Une erreur est survenue. Veuillez réessayer.';
+/** Messages génériques (RG-08-05) : dans la langue en vigueur au moment de l'erreur. */
+const networkErrorMessage = (): string => translateNow('errors.network');
+const defaultErrorMessage = (): string => translateNow('errors.generic');
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -35,21 +37,21 @@ function readFieldErrors(value: unknown): FieldError[] {
 
 export function toProblem(error: unknown): Problem {
   if (!(error instanceof HttpErrorResponse)) {
-    return { status: 0, detail: DEFAULT_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
+    return { status: 0, detail: defaultErrorMessage(), code: null, type: null, fieldErrors: [] };
   }
   if (error.status === 0) {
-    return { status: 0, detail: NETWORK_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
+    return { status: 0, detail: networkErrorMessage(), code: null, type: null, fieldErrors: [] };
   }
   const body: unknown = error.error;
   if (!isRecord(body)) {
-    return { status: error.status, detail: DEFAULT_ERROR_MESSAGE, code: null, type: null, fieldErrors: [] };
+    return { status: error.status, detail: defaultErrorMessage(), code: null, type: null, fieldErrors: [] };
   }
   const detail = body['detail'];
   const code = body['code'];
   const type = body['type'];
   return {
     status: error.status,
-    detail: typeof detail === 'string' && detail.length > 0 ? detail : DEFAULT_ERROR_MESSAGE,
+    detail: typeof detail === 'string' && detail.length > 0 ? detail : defaultErrorMessage(),
     code: typeof code === 'string' ? code : null,
     type: typeof type === 'string' ? type : null,
     fieldErrors: readFieldErrors(body['errors']),

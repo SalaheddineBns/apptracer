@@ -10,12 +10,13 @@ import { Role } from '../api/generated';
 import { AuthStore } from '../auth/auth.store';
 import { I18n } from '../i18n/i18n.service';
 import { LANGS } from '../i18n/lang';
+import { TPipe } from '../i18n/t.pipe';
 import { FocusAnchor, FocusRestorer } from '../../shared/focus-restorer';
 
 /** Coquille applicative (SFD-03 E2 En-tête) : enveloppe les pages protégées, `/login` reste en dehors. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarModule, ButtonModule, MenuModule, ConfirmDialogModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarModule, ButtonModule, MenuModule, ConfirmDialogModule, TPipe],
   selector: 'app-shell',
   templateUrl: './shell.html',
 })
@@ -71,7 +72,7 @@ export class Shell {
   protected readonly menuItems = computed<MenuItem[]>(() => {
     const current = this.i18n.lang();
     return [
-      { label: 'Changer mon mot de passe', dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/account/password']) },
+      { label: this.i18n.t('userMenu.changePassword'), dataCy: 'menu-changer-mot-de-passe', command: () => void this.router.navigate(['/account/password']) },
       {
         label: this.i18n.t('language.label'),
         dataCy: 'menu-langue',
@@ -83,7 +84,7 @@ export class Shell {
           command: () => this.i18n.setLang(lang),
         })),
       },
-      { label: 'Se déconnecter', dataCy: 'menu-se-deconnecter', command: () => this.logout() },
+      { label: this.i18n.t('userMenu.signOut'), dataCy: 'menu-se-deconnecter', command: () => this.logout() },
     ];
   });
 

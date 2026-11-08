@@ -6,6 +6,9 @@ import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { Role, UserResponse } from '../../../core/api/generated';
 import { AuthStore } from '../../../core/auth/auth.store';
+import { ROLE_LABEL_KEYS } from '../../../core/auth/roles';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -13,11 +16,6 @@ import { FocusRestorer } from '../../../shared/focus-restorer';
 import { AccountDialog, AccountSaved } from '../components/account-dialog';
 import { AccountsStore, isAccountSortField } from '../data/accounts.store';
 
-const ROLE_LABELS: Record<Role, string> = {
-  [Role.User]: 'Utilisateur',
-  [Role.Manager]: 'Manager',
-  [Role.Admin]: 'Administrateur',
-};
 const ROLE_SEVERITIES: Record<Role, 'secondary' | 'info' | 'contrast'> = {
   [Role.User]: 'secondary',
   [Role.Manager]: 'info',
@@ -27,7 +25,7 @@ const ROLE_SEVERITIES: Record<Role, 'secondary' | 'info' | 'contrast'> = {
 /** SFD-03 E4 Comptes (ADMIN). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, AccountDialog],
+  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, AccountDialog, TPipe],
   selector: 'app-accounts',
   templateUrl: './accounts.html',
 })
@@ -37,6 +35,7 @@ export class AccountsPage {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly focus = inject(FocusRestorer);
+  private readonly i18n = inject(I18n);
 
   protected readonly first = computed(() => this.store.page() * this.store.size());
   protected readonly rowsPerPage = [10, 20, 50];
@@ -60,14 +59,15 @@ export class AccountsPage {
   }
 
   protected onSaved(event: AccountSaved): void {
+    const name = this.fullName(event.user);
     this.notify(
-      event.mode === 'create' ? 'Compte créé' : 'Compte mis à jour',
-      event.mode === 'create' ? `Le compte de ${this.fullName(event.user)} est créé.` : `Le compte de ${this.fullName(event.user)} est modifié.`,
+      this.i18n.t(event.mode === 'create' ? 'accounts.toast.created' : 'accounts.toast.updated'),
+      this.i18n.t(event.mode === 'create' ? 'accounts.toast.createdDetail' : 'accounts.toast.updatedDetail', { name }),
     );
   }
 
   protected roleLabel(role: Role): string {
-    return ROLE_LABELS[role];
+    return this.i18n.t(ROLE_LABEL_KEYS[role]);
   }
 
   protected roleSeverity(role: Role): 'secondary' | 'info' | 'contrast' {
@@ -93,15 +93,15 @@ export class AccountsPage {
   /** Désactivation : confirmation préalable (RG-03-14 : ses sessions sont révoquées). */
   protected confirmDeactivate(user: UserResponse): void {
     this.confirmation.confirm({
-      header: 'Désactiver le compte',
-      message: `Désactiver le compte de ${this.fullName(user)} (${user.email}) ? Cette personne ne pourra plus se connecter et ses sessions seront fermées.`,
-      acceptLabel: 'Désactiver',
-      rejectLabel: 'Annuler',
+      header: this.i18n.t('accounts.deactivate.header'),
+      message: this.i18n.t('accounts.deactivate.message', { name: this.fullName(user), email: user.email }),
+      acceptLabel: this.i18n.t('common.deactivate'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>
         this.store.deactivate(user.id).subscribe({
-          next: () => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est désactivé.`),
+          next: () => this.notify(this.i18n.t('accounts.toast.updated'), this.i18n.t('accounts.toast.deactivatedDetail', { name: this.fullName(user) })),
           // RG-05-10 (manager d'une équipe, 409 nommant l'équipe), RG-03-13 : le refus est affiché en toast par l'intercepteur
           // d'erreurs, la ligne reste inchangée (« Actif ») et son bouton est de nouveau disponible.
           error: () => undefined,
@@ -115,7 +115,7 @@ export class AccountsPage {
     const anchor = this.focus.capture();
     this.store.reactivate(user.id)
       .pipe(finalize(() => this.focus.restore(anchor)))
-      .subscribe(() => this.notify('Compte mis à jour', `Le compte de ${this.fullName(user)} est réactivé.`));
+      .subscribe(() => this.notify(this.i18n.t('accounts.toast.updated'), this.i18n.t('accounts.toast.reactivatedDetail', { name: this.fullName(user) })));
   }
 
   private notify(summary: string, detail: string): void {

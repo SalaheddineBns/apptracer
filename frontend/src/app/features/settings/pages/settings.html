@@ -1,5 +1,5 @@
 <div class="flex flex-col gap-6">
-  <h1 class="text-2xl font-semibold text-color">Paramètres</h1>
+  <h1 class="text-2xl font-semibold text-color">{{ 'settings.title' | t }}</h1>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6 w-full max-w-lg">
     @if (store.error() && (!store.loaded() || conflict())) {
@@ -9,7 +9,7 @@
         class="flex flex-col gap-4"
         data-cy="etat-chargement"
         aria-busy="true"
-        aria-label="Chargement en cours"
+        [attr.aria-label]="'common.loading' | t"
       >
         <p-skeleton width="9rem" height="1.75rem" />
         <div class="flex flex-col gap-2">
@@ -37,12 +37,11 @@
         novalidate
         data-cy="form-parametres"
       >
-        <h2 class="text-lg font-medium text-color" id="journee-standard-titre">Journée standard</h2>
+        <h2 class="text-lg font-medium text-color" id="journee-standard-titre">{{ 'settings.standardDay' | t }}</h2>
 
         @if (conflict() && !store.loading()) {
           <p-message severity="warn" data-cy="message-conflit">
-            Un autre administrateur a modifié la journée standard. La valeur actuelle est affichée :
-            vérifiez-la avant d’enregistrer à nouveau.
+            {{ 'settings.conflict' | t }}
           </p-message>
         }
 
@@ -50,7 +49,7 @@
           <div class="flex flex-wrap gap-4">
             <div class="flex flex-col gap-2 flex-1 min-w-28">
               <label for="standard-day-hours" class="text-sm font-medium text-color"
-                >Heures <span aria-hidden="true">*</span></label
+                >{{ 'settings.hours' | t }} <span aria-hidden="true">*</span></label
               >
               <p-inputnumber
                 formControlName="hours"
@@ -71,7 +70,7 @@
             </div>
             <div class="flex flex-col gap-2 flex-1 min-w-28">
               <label for="standard-day-minutes" class="text-sm font-medium text-color"
-                >Minutes <span aria-hidden="true">*</span></label
+                >{{ 'settings.minutes' | t }} <span aria-hidden="true">*</span></label
               >
               <p-inputnumber
                 formControlName="minutes"
@@ -98,8 +97,7 @@
             id="journee-standard-aide"
             data-cy="aide-parametres"
           >
-            Par pas de 15 minutes, de 1 h à 24 h. Les saisies déjà enregistrées ne sont pas
-            recalculées : le changement ne concerne que les saisies créées ou modifiées ensuite.
+            {{ 'settings.help' | t }}
           </small>
         </div>
 
@@ -110,7 +108,7 @@
         <div class="flex justify-end">
           <p-button
             type="submit"
-            label="Enregistrer"
+            [label]="'common.save' | t"
             [loading]="store.saving()"
             [disabled]="unchanged()"
             data-cy="btn-enregistrer"

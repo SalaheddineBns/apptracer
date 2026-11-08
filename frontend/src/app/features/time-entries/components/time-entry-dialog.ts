@@ -23,9 +23,11 @@ import { TextareaModule } from 'primeng/textarea';
 import { map } from 'rxjs';
 import { CreateTimeEntryRequest, Granularity, TimeEntryResponse } from '../../../core/api/generated';
 import { FieldError as ApiFieldError, toProblem } from '../../../core/errors/problem';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { AppSettingsStore } from '../../../core/settings/app-settings.store';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
-import { FieldError } from '../../../shared/components/field-error';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { isoToLocalDate, localDateToIso, todayInParis } from '../../../shared/dates/week';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { formatDuration } from '../../../shared/pipes/duration';
@@ -64,6 +66,7 @@ export interface TimeEntrySaved {
     TextareaModule,
     FieldError,
     ActivityTypeTag,
+    TPipe,
   ],
   selector: 'app-time-entry-dialog',
   templateUrl: './time-entry-dialog.html',
@@ -74,6 +77,7 @@ export class TimeEntryDialog {
   protected readonly projects = inject(ProjectsStore);
   private readonly settings = inject(AppSettingsStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
   /** Saisie à modifier, ou `null` pour une création. */
@@ -88,11 +92,11 @@ export class TimeEntryDialog {
   protected readonly isEdit = computed(() => this.entry() !== null);
   protected readonly Granularity = Granularity;
   protected readonly timeStep = TIME_STEP_MINUTES;
-  protected readonly granularityOptions = [
-    { label: 'Heure', value: Granularity.Hour },
-    { label: 'Journée', value: Granularity.Day },
-    { label: 'Plage', value: Granularity.Range },
-  ];
+  protected readonly granularityOptions = computed(() => [
+    { label: this.i18n.t('timeEntry.dialog.hour'), value: Granularity.Hour },
+    { label: this.i18n.t('timeEntry.dialog.day'), value: Granularity.Day },
+    { label: this.i18n.t('timeEntry.dialog.rangeOption'), value: Granularity.Range },
+  ]);
   /** RG-01-07 : dernier jour proposé pour la date de début (date du jour à Paris). */
   protected readonly today = signal(isoToLocalDate(todayInParis()));
 
@@ -158,36 +162,35 @@ export class TimeEntryDialog {
     }
     const days =
       duration.weekdays === 0
-        ? 'aucun jour ouvré'
-        : `${duration.weekdays} jour${duration.weekdays > 1 ? 's' : ''} ouvré${duration.weekdays > 1 ? 's' : ''}`;
+        ? this.i18n.t('timeEntry.dialog.noWorkingDay')
+        : this.i18n.plural('timeEntry.dialog.workingDays', duration.weekdays);
     return `${text} (${days})`;
   });
 
-  protected readonly startDateMessages = {
-    required: 'La date est obligatoire.',
-    future: 'La date de début ne peut pas être dans le futur.',
+  protected readonly startDateMessages: FieldMessages = {
+    required: 'timeEntry.dialog.errors.dateRequired',
+    future: 'timeEntry.dialog.errors.startDateFuture',
   };
-  protected readonly endDateMessages = {
-    required: 'La date de fin est obligatoire.',
-    endDateNotAfter: 'La date de fin doit être après la date de début.',
-    rangeTooLong: `Une plage fait au plus ${MAX_RANGE_DAYS} jours, bornes incluses.`,
+  protected readonly endDateMessages: FieldMessages = {
+    required: 'timeEntry.dialog.errors.endDateRequired',
+    endDateNotAfter: 'timeEntry.dialog.errors.endDateNotAfter',
+    rangeTooLong: { key: 'timeEntry.dialog.errors.rangeTooLong', params: { max: MAX_RANGE_DAYS } },
   };
-  protected readonly startTimeMessages = {
-    required: 'L’heure de début est obligatoire.',
-    quarterHour: `L’heure se saisit par pas de ${TIME_STEP_MINUTES} minutes.`,
+  protected readonly startTimeMessages: FieldMessages = {
+    required: 'timeEntry.dialog.errors.startTimeRequired',
+    quarterHour: { key: 'timeEntry.dialog.errors.quarterHour', params: { step: TIME_STEP_MINUTES } },
   };
-  protected readonly endTimeMessages = {
-    required: 'L’heure de fin est obligatoire.',
-    quarterHour: `L’heure se saisit par pas de ${TIME_STEP_MINUTES} minutes.`,
-    endBeforeStart: 'L’heure de fin doit être après l’heure de début.',
+  protected readonly endTimeMessages: FieldMessages = {
+    required: 'timeEntry.dialog.errors.endTimeRequired',
+    quarterHour: { key: 'timeEntry.dialog.errors.quarterHour', params: { step: TIME_STEP_MINUTES } },
+    endBeforeStart: 'timeEntry.dialog.errors.endBeforeStart',
   };
-  protected readonly activityTypeMessages = { required: 'Le type d’activité est obligatoire.' };
-  protected readonly projectMessages = {
-    required: 'Le projet est obligatoire pour ce type d’activité.',
+  protected readonly activityTypeMessages: FieldMessages = { required: 'timeEntry.dialog.errors.typeRequired' };
+  protected readonly projectMessages: FieldMessages = { required: 'timeEntry.dialog.errors.projectRequired' };
+  protected readonly commentMessages: FieldMessages = {
+    maxlength: { key: 'timeEntry.dialog.errors.commentTooLong', params: { max: COMMENT_MAX_LENGTH } },
   };
-  protected readonly commentMessages = {
-    maxlength: `Le commentaire ne doit pas dépasser ${COMMENT_MAX_LENGTH} caractères.`,
-  };
+
 
   private originCy: string | null = null;
 
@@ -350,7 +353,7 @@ export class TimeEntryDialog {
     const shown = errors.filter((error) => this.form.get(error.field)?.enabled);
     const hidden = errors.filter((error) => !shown.includes(error));
     for (const error of [...applyFieldErrors(this.form, shown), ...hidden]) {
-      this.messages.add({ severity: 'error', summary: 'Erreur', detail: error.message, life: 5000 });
+      this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: error.message, life: 5000 });
     }
   }
 }

@@ -19,8 +19,11 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { Role, UserResponse } from '../../../core/api/generated';
 import { AuthStore } from '../../../core/auth/auth.store';
+import { ROLE_LABEL_KEYS } from '../../../core/auth/roles';
 import { toProblem } from '../../../core/errors/problem';
-import { FieldError } from '../../../shared/components/field-error';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { PasswordField } from '../../../shared/components/password-field';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { PASSWORD_MESSAGES, passwordPolicyValidator } from '../../../shared/forms/password-rules';
@@ -42,6 +45,7 @@ export interface AccountSaved {
     SelectModule,
     FieldError,
     PasswordField,
+    TPipe,
   ],
   selector: 'app-account-dialog',
   templateUrl: './account-dialog.html',
@@ -50,6 +54,7 @@ export class AccountDialog {
   private readonly store = inject(AccountsStore);
   private readonly auth = inject(AuthStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
   /** Compte à modifier, ou `null` pour une création. */
@@ -66,11 +71,9 @@ export class AccountDialog {
     return account !== null && account.id === this.auth.user()?.id;
   });
 
-  protected readonly roleOptions = [
-    { label: 'Utilisateur', value: Role.User },
-    { label: 'Manager', value: Role.Manager },
-    { label: 'Administrateur', value: Role.Admin },
-  ];
+  protected readonly roleOptions = computed(() =>
+    [Role.User, Role.Manager, Role.Admin].map((value) => ({ label: this.i18n.t(ROLE_LABEL_KEYS[value]), value })),
+  );
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     // RG-03-01 / SFD : prénom et nom 100 caractères au plus, e-mail au format valide.
@@ -82,18 +85,20 @@ export class AccountDialog {
     initialPassword: ['', [Validators.required, passwordPolicyValidator]],
   });
 
-  protected readonly nameMessages = (label: string) => ({
-    required: `${label} est obligatoire.`,
-    maxlength: `${label} ne doit pas dépasser 100 caractères.`,
-  });
-  protected readonly firstNameMessages = this.nameMessages('Le prénom');
-  protected readonly lastNameMessages = this.nameMessages('Le nom');
-  protected readonly emailMessages = {
-    required: 'L’e-mail est obligatoire.',
-    email: 'Saisissez une adresse e-mail valide.',
-    maxlength: 'L’e-mail ne doit pas dépasser 254 caractères.',
+  protected readonly firstNameMessages: FieldMessages = {
+    required: 'accounts.dialog.errors.firstNameRequired',
+    maxlength: 'accounts.dialog.errors.firstNameTooLong',
   };
-  protected readonly roleMessages = { required: 'Le rôle est obligatoire.' };
+  protected readonly lastNameMessages: FieldMessages = {
+    required: 'accounts.dialog.errors.lastNameRequired',
+    maxlength: 'accounts.dialog.errors.lastNameTooLong',
+  };
+  protected readonly emailMessages: FieldMessages = {
+    required: 'accounts.dialog.errors.emailRequired',
+    email: 'accounts.dialog.errors.emailInvalid',
+    maxlength: 'accounts.dialog.errors.emailTooLong',
+  };
+  protected readonly roleMessages: FieldMessages = { required: 'accounts.dialog.errors.roleRequired' };
   protected readonly passwordMessages = PASSWORD_MESSAGES;
 
   private originCy: string | null = null;
@@ -216,7 +221,7 @@ export class AccountDialog {
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({
             severity: 'error',
-            summary: 'Erreur',
+            summary: this.i18n.t('common.error'),
             detail: e.message,
             life: 5000,
           });

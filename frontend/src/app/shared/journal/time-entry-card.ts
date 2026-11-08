@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TimeEntryResponse } from '../../core/api/generated';
+import { I18n } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { ActivityTypeTag } from '../components/activity-type-tag';
 import { DurationPipe } from '../pipes/duration';
 import { datesLabel, periodLabel } from './time-entry.ui';
@@ -11,7 +13,7 @@ import { datesLabel, periodLabel } from './time-entry.ui';
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, ActivityTypeTag, DurationPipe],
+  imports: [ButtonModule, ActivityTypeTag, DurationPipe, TPipe],
   selector: 'app-time-entry-card',
   template: `
     <article
@@ -55,7 +57,7 @@ import { datesLabel, periodLabel } from './time-entry.ui';
             [text]="true"
             size="small"
             severity="secondary"
-            [ariaLabel]="'Modifier la saisie ' + name()"
+            [ariaLabel]="'timeEntry.editAria' | t: { name: name() }"
             (onClick)="edit.emit(entry())"
             [attr.data-cy]="'btn-modifier-saisie-' + entry().id"
           />
@@ -65,7 +67,7 @@ import { datesLabel, periodLabel } from './time-entry.ui';
             [text]="true"
             size="small"
             severity="secondary"
-            [ariaLabel]="'Supprimer la saisie ' + name()"
+            [ariaLabel]="'timeEntry.deleteAria' | t: { name: name() }"
             (onClick)="remove.emit(entry())"
             [attr.data-cy]="'btn-supprimer-saisie-' + entry().id"
           />
@@ -87,8 +89,9 @@ export class TimeEntryCard {
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
 
-  protected readonly period = computed(() => periodLabel(this.entry()));
+  private readonly i18n = inject(I18n);
+  protected readonly period = computed(() => periodLabel(this.entry(), this.i18n));
   protected readonly name = computed(
-    () => `${this.entry().activityType.label} ${datesLabel(this.entry())}`,
+    () => `${this.entry().activityType.label} ${datesLabel(this.entry(), this.i18n)}`,
   );
 }

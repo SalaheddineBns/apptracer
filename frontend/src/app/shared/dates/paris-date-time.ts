@@ -12,11 +12,14 @@ const TIME = new Intl.DateTimeFormat('fr-FR', {
   hourCycle: 'h23',
 });
 
-/** Instant ISO 8601 affiché en heure de Paris : « 12/10/2026 à 14:05 ». Chaîne vide si la date est illisible. */
-export function formatParisDateTime(iso: string): string {
+/**
+ * Instant ISO 8601 en heure de Paris : date « 12/10/2026 » et heure « 14:05 », identiques dans les deux langues (RG-08-08).
+ * Le mot qui les relie (« à » / « at ») appartient au dictionnaire. Null si la date est illisible.
+ */
+export function parisDateTimeParts(iso: string): { date: string; time: string } | null {
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) {
-    return '';
+    return null;
   }
-  return `${DATE.format(date)} à ${TIME.format(date)}`;
+  return { date: DATE.format(date), time: TIME.format(date) };
 }

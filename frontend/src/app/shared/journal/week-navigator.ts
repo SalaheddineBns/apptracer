@@ -1,17 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, model } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
+import { I18n } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { addDays, formatDate } from '../dates/week';
 
 /** Navigation de semaine en semaine (SFD-01 E1, SFD-04 E1 et E2). `weekStart` est un lundi, `YYYY-MM-DD`. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule],
+  imports: [ButtonModule, TPipe],
   selector: 'app-week-navigator',
   template: `
     <div class="flex flex-wrap items-center justify-between gap-2" data-cy="navigation-semaine">
       <p-button
         type="button"
-        label="Semaine précédente"
+        [label]="'weekNavigator.previous' | t"
         icon="pi pi-chevron-left"
         [text]="true"
         severity="secondary"
@@ -26,7 +28,7 @@ import { addDays, formatDate } from '../dates/week';
       >
       <p-button
         type="button"
-        label="Semaine suivante"
+        [label]="'weekNavigator.next' | t"
         icon="pi pi-chevron-right"
         iconPos="right"
         [text]="true"
@@ -40,9 +42,12 @@ import { addDays, formatDate } from '../dates/week';
 export class WeekNavigator {
   readonly weekStart = model.required<string>();
 
-  protected readonly label = computed(
-    () =>
-      `Semaine du ${formatDate(this.weekStart())} au ${formatDate(addDays(this.weekStart(), 6))}`,
+  private readonly i18n = inject(I18n);
+  protected readonly label = computed(() =>
+    this.i18n.t('weekNavigator.label', {
+      start: formatDate(this.weekStart()),
+      end: formatDate(addDays(this.weekStart(), 6)),
+    }),
   );
 
   protected shift(days: number): void {

@@ -1,9 +1,9 @@
 <div class="flex flex-col gap-6">
   <div class="flex flex-wrap items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color" data-cy="titre-journal">Mon journal</h1>
+    <h1 class="text-2xl font-semibold text-color" data-cy="titre-journal">{{ 'journal.title' | t }}</h1>
     <p-button
       type="button"
-      label="Nouvelle saisie"
+      [label]="'journal.newEntry' | t"
       icon="pi pi-plus"
       (onClick)="openCreate()"
       data-cy="btn-nouvelle-saisie"
@@ -18,7 +18,7 @@
     } @else if (store.week(); as week) {
       @if (week.entries.length === 0) {
         <!-- Sans bouton : « Nouvelle saisie » en haut à droite et le « + » de chaque jour suffisent. -->
-        <app-empty-state message="Aucune activité cette semaine." icon="pi pi-calendar" />
+        <app-empty-state [message]="'journal.empty' | t" icon="pi pi-calendar" />
       }
       <!-- Affichée même sans saisie : chaque jour porte son « + ». -->
       <app-week-journal
@@ -36,7 +36,7 @@
         class="grid grid-cols-1 md:grid-cols-7 gap-4 md:gap-2"
         data-cy="etat-chargement"
         aria-busy="true"
-        aria-label="Chargement en cours"
+        [attr.aria-label]="'common.loading' | t"
       >
         @for (day of skeletonDays; track day) {
           <div class="flex flex-col gap-2">

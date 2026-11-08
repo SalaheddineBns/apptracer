@@ -8,14 +8,15 @@ import { AuthStore } from '../../../core/auth/auth.store';
 import { safeReturnUrl } from '../../../core/auth/return-url';
 import { homeUrlFor } from '../../../core/auth/roles';
 import { LanguageSelector } from '../../../core/i18n/language-selector';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { toProblem } from '../../../core/errors/problem';
-import { FieldError } from '../../../shared/components/field-error';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { PasswordField } from '../../../shared/components/password-field';
 
 /** SFD-03 E1 Connexion. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError, PasswordField, LanguageSelector],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, MessageModule, FieldError, PasswordField, LanguageSelector, TPipe],
   selector: 'app-login',
   templateUrl: './login.html',
 })
@@ -33,11 +34,11 @@ export class LoginPage {
     password: ['', [Validators.required]],
   });
 
-  protected readonly emailMessages = {
-    required: 'L’e-mail est obligatoire.',
-    email: 'Saisissez une adresse e-mail valide.',
+  protected readonly emailMessages: FieldMessages = {
+    required: 'login.errors.emailRequired',
+    email: 'login.errors.emailInvalid',
   };
-  protected readonly passwordMessages = { required: 'Le mot de passe est obligatoire.' };
+  protected readonly passwordMessages: FieldMessages = { required: 'password.errors.required' };
 
   protected submit(): void {
     if (this.submitting()) {

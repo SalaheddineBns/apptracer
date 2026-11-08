@@ -1,4 +1,12 @@
 import { Role } from '../api/generated';
+import { TranslationKey } from '../i18n/keys';
+
+/** Libellé de chaque rôle (RG-08-05) : « Utilisateur », « Manager », « Administrateur » / « User », « Manager », « Administrator ». */
+export const ROLE_LABEL_KEYS: Record<Role, TranslationKey> = {
+  [Role.User]: 'roles.user',
+  [Role.Manager]: 'roles.manager',
+  [Role.Admin]: 'roles.admin',
+};
 
 // RG-03-10 : MANAGER inclut les droits USER ; ADMIN n'inclut ni USER ni MANAGER (comme côté back).
 const GRANTED: Record<Role, readonly Role[]> = {

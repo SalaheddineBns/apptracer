@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { TimeEntryResponse, WeeklyTimeEntriesResponse } from '../../core/api/generated';
 import { ButtonModule } from 'primeng/button';
 import { I18n } from '../../core/i18n/i18n.service';
+import { TPipe } from '../../core/i18n/t.pipe';
 import { formatDayMonth, formatWeekdayName, todayInParis, weekDays } from '../dates/week';
 import { DecimalHoursPipe } from '../pipes/duration';
 import { TimeEntryCard } from './time-entry-card';
@@ -14,7 +15,7 @@ import { coversDay } from './time-entry.ui';
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, TimeEntryCard, DecimalHoursPipe],
+  imports: [ButtonModule, TimeEntryCard, DecimalHoursPipe, TPipe],
   selector: 'app-week-journal',
   template: `
     <div class="flex flex-col gap-4" data-cy="journal-semaine">
@@ -41,7 +42,7 @@ import { coversDay } from './time-entry.ui';
                   <span aria-hidden="true" [class.text-muted-color]="day.minutes === 0" [attr.data-cy]="'total-jour-' + day.iso">{{
                     day.minutes === 0 ? '–' : (day.minutes | decimalHours)
                   }}</span>
-                  <span class="sr-only">Total du {{ day.name }} : {{ day.minutes | decimalHours }}</span>
+                  <span class="sr-only">{{ 'weekJournal.dayTotal' | t: { day: day.name, total: (day.minutes | decimalHours) } }}</span>
                 </span>
               }
               <span
@@ -57,7 +58,7 @@ import { coversDay } from './time-entry.ui';
                   size="small"
                   severity="secondary"
                   class="justify-self-end md:col-start-2 md:row-start-2"
-                  [ariaLabel]="'Ajouter une saisie le ' + day.name + ' ' + day.label"
+                  [ariaLabel]="'weekJournal.addEntry' | t: { day: day.name, date: day.label }"
                   (onClick)="add.emit(day.iso)"
                   [attr.data-cy]="'btn-ajouter-saisie-' + day.iso"
                 />
@@ -74,13 +75,13 @@ import { coversDay } from './time-entry.ui';
                 (remove)="remove.emit($event)"
               />
             } @empty {
-              <p class="text-xs text-muted-color m-0">Aucune saisie</p>
+              <p class="text-xs text-muted-color m-0">{{ 'weekJournal.noEntries' | t }}</p>
             }
           </li>
         }
       </ol>
       <p class="text-sm text-color m-0 md:text-right">
-        Total de la semaine :
+        {{ 'weekJournal.weekTotal' | t }}
         <span class="font-semibold tabular-nums" data-cy="total-semaine">{{
           week().totalMinutes | decimalHours
         }}</span>
@@ -119,8 +120,8 @@ export class WeekJournal {
       // RG-01-07 : pas de saisie à une date de début future, donc pas de « + » sur un jour à venir.
       addable: iso <= today,
       name: formatWeekdayName(iso, lang),
-      // « lun. » … « dim. » : les trois premières lettres suffisent à distinguer les jours (français et anglais).
-      shortName: `${formatWeekdayName(iso, lang).slice(0, 3)}.`,
+      // « lun. » … « dim. » ou « Mon » … « Sun » : les trois premières lettres suffisent à distinguer les jours.
+      shortName: this.i18n.t('weekJournal.shortDay', { name: formatWeekdayName(iso, lang).slice(0, 3) }),
       label: formatDayMonth(iso),
       minutes: totals.get(iso) ?? 0,
       // L'ordre de l'API (date puis heure de début) est conservé.

@@ -1,8 +1,5 @@
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 
-export const STANDARD_DAY_MESSAGE =
-  'La journée standard doit être comprise entre 1 h et 24 h, par pas de 15 minutes.';
-
 export interface HoursMinutes {
   readonly hours: number | null;
   readonly minutes: number | null;

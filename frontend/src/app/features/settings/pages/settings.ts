@@ -17,15 +17,16 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { map, startWith } from 'rxjs';
 import { AppSettingsStore } from '../../../core/settings/app-settings.store';
 import { toProblem } from '../../../core/errors/problem';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { ErrorState } from '../../../shared/components/error-state';
-import { FieldError } from '../../../shared/components/field-error';
-import { formatParisDateTime } from '../../../shared/dates/paris-date-time';
+import { FieldError, FieldMessages } from '../../../shared/components/field-error';
+import { parisDateTimeParts } from '../../../shared/dates/paris-date-time';
 import { QuarterHourStep } from '../../../shared/forms/quarter-hour-step';
 import { SERVER_ERROR_KEY } from '../../../shared/forms/apply-field-errors';
 import {
   formatDuration,
   fromMinutes,
-  STANDARD_DAY_MESSAGE,
   standardDayValidator,
   toMinutes,
 } from '../standard-day';
@@ -42,6 +43,7 @@ import {
     SkeletonModule,
     ErrorState,
     FieldError,
+    TPipe,
   ],
   selector: 'app-settings',
   templateUrl: './settings.html',
@@ -49,6 +51,7 @@ import {
 export class SettingsPage {
   protected readonly store = inject(AppSettingsStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   // Le formulaire porte la durée en heures et minutes ; l'API reçoit le total en minutes (`standardDayMinutes`).
   protected readonly form = new FormGroup(
@@ -57,7 +60,7 @@ export class SettingsPage {
     { validators: standardDayValidator },
   );
 
-  protected readonly durationMessages = { standardDay: STANDARD_DAY_MESSAGE };
+  protected readonly durationMessages: FieldMessages = { standardDay: 'settings.invalid' };
   protected readonly conflict = signal(false);
 
   private readonly total = toSignal(
@@ -93,19 +96,21 @@ export class SettingsPage {
   /** Après un 409, une relecture en échec ne doit pas laisser croire que le formulaire montre la valeur actuelle. */
   protected readonly loadErrorMessage = computed(() =>
     this.conflict()
-      ? 'Un autre administrateur a modifié la journée standard, mais la valeur actuelle n’a pas pu être rechargée.'
+      ? this.i18n.t('settings.conflictReloadFailed')
       : (this.store.error() ?? ''),
   );
 
-  /** RG-06-05 : « Prénom Nom, le dd/MM/yyyy à HH:mm » (heure de Paris), ou la mention « jamais modifiée ». */
+  /** RG-06-05 : « Prénom Nom, le dd/MM/yyyy à HH:mm » ou « Prénom Nom, on dd/MM/yyyy at HH:mm » (heure de Paris), ou la mention « jamais modifiée ». */
   protected lastModifiedText(): string {
     const at = this.store.lastModifiedAt();
     if (!at) {
-      return 'Jamais modifiée depuis l’installation.';
+      return this.i18n.t('settings.neverModified');
     }
+    const when = parisDateTimeParts(at) ?? { date: '', time: '' };
     const author = this.store.lastModifiedBy();
-    const who = author ? `${author.firstName} ${author.lastName}, le` : 'le';
-    return `Dernière modification : ${who} ${formatParisDateTime(at)}`;
+    return author
+      ? this.i18n.t('settings.lastModifiedBy', { author: `${author.firstName} ${author.lastName}`, ...when })
+      : this.i18n.t('settings.lastModified', when);
   }
 
   protected submit(): void {
@@ -127,8 +132,8 @@ export class SettingsPage {
       next: (saved) =>
         this.messages.add({
           severity: 'success',
-          summary: 'Paramètres enregistrés',
-          detail: `Journée standard : ${formatDuration(saved.standardDayMinutes)}.`,
+          summary: this.i18n.t('settings.saved'),
+          detail: this.i18n.t('settings.savedDetail', { duration: formatDuration(saved.standardDayMinutes) }),
           life: 3000,
         }),
       error: (error: unknown) => {

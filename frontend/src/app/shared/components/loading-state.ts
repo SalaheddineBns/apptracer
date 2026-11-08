@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TPipe } from '../../core/i18n/t.pipe';
 
 /** État de chargement : lignes `p-skeleton` qui reproduisent la forme du contenu. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SkeletonModule],
+  imports: [SkeletonModule, TPipe],
   selector: 'app-loading-state',
   template: `
-    <div class="flex flex-col gap-2" data-cy="etat-chargement" aria-busy="true" aria-label="Chargement en cours">
+    <div class="flex flex-col gap-2" data-cy="etat-chargement" aria-busy="true" [attr.aria-label]="'common.loading' | t">
       @for (row of rowIndexes(); track row) {
         <p-skeleton height="2.5rem" />
       }

@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-6">
   <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color">Comptes</h1>
-    <p-button type="button" label="Nouveau compte" (onClick)="openCreate()" data-cy="btn-nouveau-compte" />
+    <h1 class="text-2xl font-semibold text-color">{{ 'accounts.title' | t }}</h1>
+    <p-button type="button" [label]="'accounts.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-compte" />
   </div>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
@@ -10,8 +10,8 @@
     } @else if (!store.loaded()) {
       <app-loading-state [rows]="6" />
     } @else if (store.total() === 0) {
-      <app-empty-state message="Aucun compte à afficher.">
-        <p-button type="button" label="Nouveau compte" (onClick)="openCreate()" data-cy="btn-nouveau-compte-vide" />
+      <app-empty-state [message]="'accounts.empty' | t">
+        <p-button type="button" [label]="'accounts.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-compte-vide" />
       </app-empty-state>
     } @else {
         <p-table
@@ -34,11 +34,11 @@
         >
           <ng-template #header>
             <tr>
-              <th pFrozenColumn pSortableColumn="lastName" scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Nom <p-sort-icon field="lastName" /></th>
-              <th pSortableColumn="email" scope="col">E-mail <p-sort-icon field="email" /></th>
-              <th pSortableColumn="role" scope="col">Rôle <p-sort-icon field="role" /></th>
-              <th pSortableColumn="active" scope="col">Statut <p-sort-icon field="active" /></th>
-              <th scope="col">Actions</th>
+              <th pFrozenColumn pSortableColumn="lastName" scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'accounts.name' | t }} <p-sort-icon field="lastName" /></th>
+              <th pSortableColumn="email" scope="col">{{ 'common.email' | t }} <p-sort-icon field="email" /></th>
+              <th pSortableColumn="role" scope="col">{{ 'common.role' | t }} <p-sort-icon field="role" /></th>
+              <th pSortableColumn="active" scope="col">{{ 'common.status' | t }} <p-sort-icon field="active" /></th>
+              <th scope="col">{{ 'common.actions' | t }}</th>
             </tr>
           </ng-template>
           <ng-template #body let-user>
@@ -46,14 +46,14 @@
               <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">
                 {{ fullName(user) }}
                 @if (isSelf(user)) {
-                  <span class="text-xs text-muted-color" data-cy="indicateur-vous">(vous)</span>
+                  <span class="text-xs text-muted-color" data-cy="indicateur-vous">{{ 'accounts.you' | t }}</span>
                 }
               </td>
               <td>{{ user.email }}</td>
               <td><p-tag [value]="roleLabel(user.role)" [severity]="roleSeverity(user.role)" /></td>
               <td>
                 <p-tag
-                  [value]="user.active ? 'Actif' : 'Inactif'"
+                  [value]="(user.active ? 'common.active' : 'common.inactive') | t"
                   [severity]="user.active ? 'success' : 'secondary'"
                   [attr.data-cy]="'statut-compte-' + user.id"
                 />
@@ -61,11 +61,11 @@
               <td class="sm:whitespace-nowrap">
                 <p-button
                   type="button"
-                  label="Modifier"
+                  [label]="'common.edit' | t"
                   [text]="true"
                   size="small"
                   severity="secondary"
-                  [ariaLabel]="'Modifier le compte de ' + fullName(user)"
+                  [ariaLabel]="'accounts.editAria' | t: { name: fullName(user) }"
                   (onClick)="openEdit(user)"
                   [attr.data-cy]="'btn-modifier-' + user.id"
                 />
@@ -73,11 +73,11 @@
                   @if (!isSelf(user)) {
                     <p-button
                       type="button"
-                      label="Désactiver"
+                      [label]="'common.deactivate' | t"
                       [text]="true"
                       size="small"
                       severity="secondary"
-                      [ariaLabel]="'Désactiver le compte de ' + fullName(user)"
+                      [ariaLabel]="'accounts.deactivateAria' | t: { name: fullName(user) }"
                       [disabled]="store.pending.has(user.id)"
                       (onClick)="confirmDeactivate(user)"
                       [attr.data-cy]="'btn-desactiver-' + user.id"
@@ -86,11 +86,11 @@
                 } @else {
                   <p-button
                     type="button"
-                    label="Réactiver"
+                    [label]="'common.reactivate' | t"
                     [text]="true"
                     size="small"
                     severity="secondary"
-                    [ariaLabel]="'Réactiver le compte de ' + fullName(user)"
+                    [ariaLabel]="'accounts.reactivateAria' | t: { name: fullName(user) }"
                     [disabled]="store.pending.has(user.id)"
                     (onClick)="reactivate(user)"
                     [attr.data-cy]="'btn-reactiver-' + user.id"

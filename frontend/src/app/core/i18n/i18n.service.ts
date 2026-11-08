@@ -4,8 +4,8 @@ import { PRIMENG_EN } from '../theme/primeng-en';
 import { PRIMENG_FR } from '../theme/primeng-fr';
 import { en } from './en';
 import { Dictionary, fr } from './fr';
-import { TranslationKey, TranslationParams } from './keys';
-import { DEFAULT_LANG, detectLang, isLang, Lang, LANG_STORAGE_KEY } from './lang';
+import { PluralKey, TranslationKey, TranslationParams } from './keys';
+import { DEFAULT_LANG, detectLang, INTL_LOCALE, isLang, Lang, LANG_STORAGE_KEY } from './lang';
 
 export const DICTIONARIES: Record<Lang, Dictionary> = { fr, en };
 const PRIMENG_TRANSLATIONS = { fr: PRIMENG_FR, en: PRIMENG_EN };
@@ -24,6 +24,22 @@ function browserLang(): Lang {
     return DEFAULT_LANG;
   }
   return detectLang(navigator.languages?.[0] ?? navigator.language);
+}
+
+function lookup(dictionary: Dictionary, key: TranslationKey): string {
+  return key.split('.').reduce<unknown>((node, part) => (node as Record<string, unknown>)[part], dictionary) as string;
+}
+
+function interpolate(text: string, params?: TranslationParams): string {
+  return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match)) : text;
+}
+
+/**
+ * Traduction hors injection (fonctions pures comme `toProblem`) : la langue en vigueur est celle du `localStorage`
+ * (écrite par `setLang`), sinon celle du navigateur, exactement comme au démarrage du service.
+ */
+export function translateNow(key: TranslationKey, params?: TranslationParams): string {
+  return interpolate(lookup(DICTIONARIES[storedLang() ?? browserLang()], key), params);
 }
 
 /**
@@ -56,10 +72,16 @@ export class I18n {
 
   /** Traduit une clé dans la langue courante ; `{nom}` est remplacé par le paramètre du même nom. */
   t(key: TranslationKey, params?: TranslationParams): string {
-    const text = key
-      .split('.')
-      .reduce<unknown>((node, part) => (node as Record<string, unknown>)[part], this.dictionary()) as string;
-    return params ? text.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match)) : text;
+    return interpolate(lookup(this.dictionary(), key), params);
+  }
+
+  /**
+   * Pluriel selon la règle de la langue (RG-08-08) : `plural('teams.memberCount', 0)` donne « 0 membre » en français
+   * (0 est au singulier) et « 0 members » en anglais. `{count}` est fourni.
+   */
+  plural(key: PluralKey, count: number, params: TranslationParams = {}): string {
+    const category = new Intl.PluralRules(INTL_LOCALE[this.current()]).select(count) === 'one' ? 'one' : 'other';
+    return this.t(`${key}.${category}` as TranslationKey, { ...params, count });
   }
 
   /** RG-08-05 : langue déclarée de la page, titre de l'onglet, textes des composants PrimeNG. */

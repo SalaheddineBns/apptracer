@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, effect, input, signal } from '@angu
 import { FormControl, FormResetEvent, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { FieldError } from './field-error';
+import { TPipe } from '../../core/i18n/t.pipe';
+import { FieldError, FieldMessages } from './field-error';
 
 /**
  * Champ mot de passe : libellé, bouton « Afficher / Masquer » (focalisable, nom accessible), saisie,
@@ -10,7 +11,7 @@ import { FieldError } from './field-error';
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, FieldError],
+  imports: [ReactiveFormsModule, ButtonModule, InputTextModule, FieldError, TPipe],
   selector: 'app-password-field',
   template: `
     <div class="flex flex-col gap-2">
@@ -20,8 +21,8 @@ import { FieldError } from './field-error';
           type="button"
           [text]="true"
           size="small"
-          [label]="visible() ? 'Masquer' : 'Afficher'"
-          [ariaLabel]="(visible() ? 'Masquer ' : 'Afficher ') + subject()"
+          [label]="(visible() ? 'password.hide' : 'password.show') | t"
+          [ariaLabel]="(visible() ? 'password.hideAria' : 'password.showAria') | t: { subject: subject() }"
           (onClick)="visible.set(!visible())"
           [attr.data-cy]="toggleCy()"
         />
@@ -51,10 +52,10 @@ export class PasswordField {
   readonly autocomplete = input.required<string>();
   readonly fieldCy = input.required<string>();
   readonly toggleCy = input.required<string>();
-  readonly messages = input<Record<string, string>>({});
+  readonly messages = input<FieldMessages>({});
   readonly hint = input<string | null>(null);
-  /** Complément du libellé accessible du bouton : « Afficher le mot de passe ». */
-  readonly subject = input('le mot de passe');
+  /** Complément (déjà traduit) du libellé accessible du bouton : « Afficher le mot de passe ». */
+  readonly subject = input.required<string>();
 
   protected readonly visible = signal(false);
 

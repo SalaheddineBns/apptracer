@@ -5,6 +5,7 @@ import { defer, EMPTY, finalize, Observable, tap } from 'rxjs';
 import { AppSettingsResponse, AppSettingsService, SettingsAuthor } from '../api/generated';
 import { SKIP_ERROR_TOAST } from '../errors/error.interceptor';
 import { toProblem } from '../errors/problem';
+import { I18n } from '../i18n/i18n.service';
 
 /**
  * Paramètres de l'application (SFD-06), lus par tous les rôles (RG-06-03) : écran « Paramètres » (ADMIN) et
@@ -15,6 +16,7 @@ import { toProblem } from '../errors/problem';
 export class AppSettingsStore {
   private readonly api = inject(AppSettingsService);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
   private requestId = 0;
 
   readonly settings = signal<AppSettingsResponse | null>(null);
@@ -105,7 +107,7 @@ export class AppSettingsStore {
     } else if (problem.fieldErrors.length === 0) {
       this.messages.add({
         severity: 'error',
-        summary: 'Erreur',
+        summary: this.i18n.t('common.error'),
         detail: problem.detail,
         life: 5000,
       });

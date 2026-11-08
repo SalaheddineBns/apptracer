@@ -2,6 +2,7 @@ import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular
 import { inject } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { catchError, throwError } from 'rxjs';
+import { I18n } from '../i18n/i18n.service';
 import { toProblem } from './problem';
 
 /**
@@ -18,12 +19,13 @@ export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const messages = inject(MessageService);
+  const i18n = inject(I18n);
   return next(req).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status !== 401 && !req.context.get(SKIP_ERROR_TOAST)) {
         const problem = toProblem(error);
         if (problem.fieldErrors.length === 0) {
-          messages.add({ severity: 'error', summary: 'Erreur', detail: problem.detail, life: 5000 });
+          messages.add({ severity: 'error', summary: i18n.t('common.error'), detail: problem.detail, life: 5000 });
         }
       }
       return throwError(() => error);

@@ -1,13 +1,14 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import type { FieldMessages } from '../components/field-error';
 
 export const PASSWORD_MIN_LENGTH = 12;
-// Libellés identiques à ceux du back (PasswordPolicy).
-export const PASSWORD_MESSAGES: Record<string, string> = {
-  required: 'Le mot de passe est obligatoire.',
-  passwordLength: `Le mot de passe doit faire au moins ${PASSWORD_MIN_LENGTH} caractères.`,
-  passwordLetter: 'Le mot de passe doit contenir au moins une lettre.',
-  passwordDigit: 'Le mot de passe doit contenir au moins un chiffre.',
-  passwordTooLong: 'Le mot de passe est trop long (72 octets au maximum).',
+// Messages équivalents à ceux du back (PasswordPolicy), dans les deux langues.
+export const PASSWORD_MESSAGES: FieldMessages = {
+  required: 'password.errors.required',
+  passwordLength: { key: 'password.errors.length', params: { min: PASSWORD_MIN_LENGTH } },
+  passwordLetter: 'password.errors.letter',
+  passwordDigit: 'password.errors.digit',
+  passwordTooLong: 'password.errors.tooLong',
 };
 
 /** RG-03-02 : au moins 12 caractères, au moins une lettre et un chiffre (le back reste la référence). */

@@ -13,6 +13,8 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimeEntryResponse } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { isIsoDate, mondayOf, todayInParis } from '../../../shared/dates/week';
@@ -29,6 +31,7 @@ import { TimeEntriesStore } from '../data/time-entries.store';
   imports: [
     ButtonModule,
     SkeletonModule,
+    TPipe,
     EmptyState,
     ErrorState,
     WeekJournal,
@@ -44,6 +47,7 @@ export class JournalPage {
   private readonly router = inject(Router);
   private readonly messages = inject(MessageService);
   private readonly confirmation = inject(ConfirmationService);
+  private readonly i18n = inject(I18n);
 
   private readonly params = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
@@ -82,20 +86,24 @@ export class JournalPage {
 
   /** E3, RG-01-10, RG-01-11 : confirmation explicite avant de supprimer ; la saisie sort du journal et du total. */
   protected confirmRemove(entry: TimeEntryResponse): void {
-    const name = `${entry.activityType.label} ${datesLabel(entry)}`;
+    const name = `${entry.activityType.label} ${datesLabel(entry, this.i18n)}`;
     this.confirmation.confirm({
-      header: 'Supprimer la saisie',
-      message: `Supprimer la saisie « ${entry.activityType.label} » ${datesLabel(entry)} (${formatDuration(entry.durationMinutes)}) ?`,
-      acceptLabel: 'Supprimer',
-      rejectLabel: 'Annuler',
+      header: this.i18n.t('journal.delete.header'),
+      message: this.i18n.t('journal.delete.message', {
+        label: entry.activityType.label,
+        dates: datesLabel(entry, this.i18n),
+        duration: formatDuration(entry.durationMinutes),
+      }),
+      acceptLabel: this.i18n.t('common.delete'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>
         this.store.remove(entry.id).subscribe(() =>
           this.messages.add({
             severity: 'success',
-            summary: 'Saisie supprimée',
-            detail: `${name} est supprimée.`,
+            summary: this.i18n.t('journal.delete.deleted'),
+            detail: this.i18n.t('journal.delete.deletedDetail', { name }),
             life: 3000,
           }),
         ),
@@ -107,8 +115,11 @@ export class JournalPage {
     const { entry } = event;
     this.messages.add({
       severity: 'success',
-      summary: event.mode === 'create' ? 'Saisie enregistrée' : 'Saisie modifiée',
-      detail: `${entry.activityType.label} ${datesLabel(entry)} (${formatDuration(entry.durationMinutes)}).`,
+      summary: this.i18n.t(event.mode === 'create' ? 'journal.saved' : 'journal.updated'),
+      detail: this.i18n.t('journal.savedDetail', {
+        name: `${entry.activityType.label} ${datesLabel(entry, this.i18n)}`,
+        duration: formatDuration(entry.durationMinutes),
+      }),
       life: 3000,
     });
     const weekStart = mondayOf(entry.startDate);

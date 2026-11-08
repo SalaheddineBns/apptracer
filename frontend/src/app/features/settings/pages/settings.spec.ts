@@ -6,11 +6,12 @@ import { of, Subject, throwError } from 'rxjs';
 import { AppSettingsResponse, AppSettingsService } from '../../../core/api/generated';
 import {
   fromMinutes,
-  STANDARD_DAY_MESSAGE,
   standardDayValidator,
   toMinutes,
 } from '../standard-day';
 import { SettingsPage } from './settings';
+
+const STANDARD_DAY_MESSAGE = 'La journée standard doit être comprise entre 1 h et 24 h, par pas de 15 minutes.';
 
 const settings = (
   minutes: number,
