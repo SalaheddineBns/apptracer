@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-6">
   <div class="flex flex-wrap items-center justify-between gap-4 min-h-10">
-    <h1 #title tabindex="-1" class="text-2xl font-semibold text-color outline-none" data-cy="titre-equipe">Mon équipe</h1>
+    <h1 #title tabindex="-1" class="text-2xl font-semibold text-color outline-none" data-cy="titre-equipe">{{ 'teamView.title' | t }}</h1>
     <!-- RG-04-08 : le choix de l'équipe n'est proposé que si le MANAGER en a plusieurs. -->
     @if (store.teams().length > 1) {
       <p-select
@@ -10,8 +10,8 @@
         [ngModel]="teamId()"
         (onChange)="selectTeam($event.value)"
         [showClear]="false"
-        placeholder="Choisir une équipe"
-        ariaLabel="Équipe affichée"
+        [placeholder]="'teamView.chooseTeam' | t"
+        [ariaLabel]="'teamView.displayedTeam' | t"
         class="w-64 max-w-full"
         data-cy="select-equipe"
       >
@@ -37,7 +37,7 @@
   } @else if (store.teams().length === 0) {
     <!-- RG-04-01, CA-04-09 : un MANAGER sans équipe accède à la vue et en est informé. -->
     <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6" data-cy="message-aucune-equipe">
-      <app-empty-state message="Aucune équipe ne vous est rattachée." icon="pi pi-users" />
+      <app-empty-state [message]="'teamView.noTeam' | t" icon="pi pi-users" />
     </section>
   } @else {
     <!-- RG-04-04 : semaine du lundi au dimanche, précédente et suivante. Masquée quand la vue est refusée : chaque
@@ -50,10 +50,10 @@
       @if (store.summaryForbidden()) {
         <!-- RG-04-02 : équipe hors du périmètre (lien périmé) ; « Réessayer » n'y changerait rien. -->
         <div class="flex flex-col items-start gap-4" data-cy="message-equipe-interdite">
-          <p-message severity="warn">Cette équipe ne fait pas partie de celles dont vous êtes manager.</p-message>
+          <p-message severity="warn">{{ 'teamView.forbidden' | t }}</p-message>
           <p-button
             type="button"
-            label="Afficher mes équipes"
+            [label]="'teamView.showMyTeams' | t"
             icon="pi pi-users"
             severity="secondary"
             (onClick)="showMyTeams()"
@@ -64,7 +64,7 @@
         <app-error-state [message]="message" (retry)="store.reloadSummary()" />
       } @else if (store.summary(); as summary) {
         @if (summary.members.length === 0) {
-          <app-empty-state message="Cette équipe n'a aucun membre." icon="pi pi-users" />
+          <app-empty-state [message]="'teamView.noMembers' | t" icon="pi pi-users" />
         } @else {
           <!-- RG-04-09 : membres triés par nom puis prénom par l'API ; l'ordre reçu n'est jamais retrié ici. -->
           <p-table
@@ -76,14 +76,14 @@
           >
             <ng-template #header>
               <tr>
-                <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Membre</th>
+                <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'teamView.member' | t }}</th>
                 @for (day of days(); track day.iso) {
                   <th scope="col" class="text-right whitespace-nowrap" [attr.data-cy]="'colonne-jour-' + day.iso">
                     <span class="capitalize">{{ day.name }}</span>
                     <span class="block text-xs font-normal text-muted-color tabular-nums">{{ day.label }}</span>
                   </th>
                 }
-                <th scope="col" class="text-right whitespace-nowrap">Total</th>
+                <th scope="col" class="text-right whitespace-nowrap">{{ 'teamView.total' | t }}</th>
               </tr>
             </ng-template>
             <ng-template #body let-row>
@@ -99,7 +99,7 @@
                     >
                     <!-- RG-04-07 : un membre inactif reste affiché, signalé comme tel. -->
                     @if (!row.member.active) {
-                      <p-tag value="Inactif" severity="secondary" [attr.data-cy]="'tag-inactif-' + row.member.id" />
+                      <p-tag [value]="'common.inactive' | t" severity="secondary" [attr.data-cy]="'tag-inactif-' + row.member.id" />
                     }
                   </span>
                 </td>
@@ -107,7 +107,7 @@
                   <td class="text-right tabular-nums whitespace-nowrap" [attr.data-cy]="'duree-membre-' + row.member.id + '-' + day.date">
                     @if (day.minutes === 0) {
                       <span aria-hidden="true" class="text-muted-color">–</span>
-                      <span class="sr-only">0 h</span>
+                      <span class="sr-only">{{ 0 | decimalHours }}</span>
                     } @else {
                       {{ day.minutes | decimalHours }}
                     }

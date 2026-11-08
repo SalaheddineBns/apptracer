@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-6">
   <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color">Projets</h1>
-    <p-button type="button" label="Nouveau projet" (onClick)="openCreate()" data-cy="btn-nouveau-projet" />
+    <h1 class="text-2xl font-semibold text-color">{{ 'projects.title' | t }}</h1>
+    <p-button type="button" [label]="'projects.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-projet" />
   </div>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
@@ -10,17 +10,17 @@
     } @else if (!store.loaded()) {
       <app-loading-state [rows]="6" />
     } @else if (store.items().length === 0) {
-      <app-empty-state message="Aucun projet à afficher.">
-        <p-button type="button" label="Nouveau projet" (onClick)="openCreate()" data-cy="btn-nouveau-projet-vide" />
+      <app-empty-state [message]="'projects.empty' | t">
+        <p-button type="button" [label]="'projects.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-projet-vide" />
       </app-empty-state>
     } @else {
       <p-table [value]="store.items()" [loading]="store.loading()" [scrollable]="true" dataKey="id" class="text-sm" data-cy="table-projets">
         <ng-template #header>
           <tr>
-            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Code</th>
-            <th scope="col">Nom</th>
-            <th scope="col">Statut</th>
-            <th scope="col">Actions</th>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'common.code' | t }}</th>
+            <th scope="col">{{ 'common.name' | t }}</th>
+            <th scope="col">{{ 'common.status' | t }}</th>
+            <th scope="col">{{ 'common.actions' | t }}</th>
           </tr>
         </ng-template>
         <ng-template #body let-project>
@@ -29,7 +29,7 @@
             <td>{{ project.name }}</td>
             <td>
               <p-tag
-                [value]="project.active ? 'Actif' : 'Inactif'"
+                [value]="(project.active ? 'common.active' : 'common.inactive') | t"
                 [severity]="project.active ? 'success' : 'secondary'"
                 [attr.data-cy]="'statut-projet-' + project.id"
               />
@@ -37,22 +37,22 @@
             <td class="sm:whitespace-nowrap">
               <p-button
                 type="button"
-                label="Modifier"
+                [label]="'common.edit' | t"
                 [text]="true"
                 size="small"
                 severity="secondary"
-                [ariaLabel]="'Modifier le projet ' + project.name"
+                [ariaLabel]="'projects.editAria' | t: { name: project.name }"
                 (onClick)="openEdit(project)"
                 [attr.data-cy]="'btn-modifier-projet-' + project.id"
               />
               @if (project.active) {
                 <p-button
                   type="button"
-                  label="Désactiver"
+                  [label]="'common.deactivate' | t"
                   [text]="true"
                   size="small"
                   severity="secondary"
-                  [ariaLabel]="'Désactiver le projet ' + project.name"
+                  [ariaLabel]="'projects.deactivateAria' | t: { name: project.name }"
                   [disabled]="store.pending.has(project.id)"
                   (onClick)="confirmDeactivate(project)"
                   [attr.data-cy]="'btn-desactiver-projet-' + project.id"
@@ -60,11 +60,11 @@
               } @else {
                 <p-button
                   type="button"
-                  label="Réactiver"
+                  [label]="'common.reactivate' | t"
                   [text]="true"
                   size="small"
                   severity="secondary"
-                  [ariaLabel]="'Réactiver le projet ' + project.name"
+                  [ariaLabel]="'projects.reactivateAria' | t: { name: project.name }"
                   [disabled]="store.pending.has(project.id)"
                   (onClick)="reactivate(project)"
                   [attr.data-cy]="'btn-reactiver-projet-' + project.id"

@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { isIsoDate, mondayOf, todayInParis } from '../../../shared/dates/week';
@@ -18,7 +19,7 @@ import { TeamViewStore } from '../data/team-view.store';
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonModule, MessageModule, SkeletonModule, TagModule, EmptyState, ErrorState, WeekJournal, WeekNavigator],
+  imports: [TPipe, ButtonModule, MessageModule, SkeletonModule, TagModule, EmptyState, ErrorState, WeekJournal, WeekNavigator],
   selector: 'app-member-journal',
   templateUrl: './member-journal.html',
 })

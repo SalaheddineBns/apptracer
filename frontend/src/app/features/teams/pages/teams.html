@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-6">
   <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color">Équipes</h1>
-    <p-button type="button" label="Nouvelle équipe" (onClick)="openCreate()" data-cy="btn-nouvelle-equipe" />
+    <h1 class="text-2xl font-semibold text-color">{{ 'teams.title' | t }}</h1>
+    <p-button type="button" [label]="'teams.new' | t" (onClick)="openCreate()" data-cy="btn-nouvelle-equipe" />
   </div>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
@@ -10,17 +10,17 @@
     } @else if (!store.loaded()) {
       <app-loading-state [rows]="6" />
     } @else if (store.items().length === 0) {
-      <app-empty-state message="Aucune équipe à afficher." icon="pi pi-users">
-        <p-button type="button" label="Nouvelle équipe" (onClick)="openCreate()" data-cy="btn-nouvelle-equipe-vide" />
+      <app-empty-state [message]="'teams.empty' | t" icon="pi pi-users">
+        <p-button type="button" [label]="'teams.new' | t" (onClick)="openCreate()" data-cy="btn-nouvelle-equipe-vide" />
       </app-empty-state>
     } @else {
       <p-table [value]="store.items()" [loading]="store.loading()" [scrollable]="true" dataKey="id" class="text-sm" data-cy="table-equipes">
         <ng-template #header>
           <tr>
-            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Nom</th>
-            <th scope="col">Manager</th>
-            <th scope="col">Membres</th>
-            <th scope="col">Actions</th>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'common.name' | t }}</th>
+            <th scope="col">{{ 'teams.manager' | t }}</th>
+            <th scope="col">{{ 'teams.members' | t }}</th>
+            <th scope="col">{{ 'common.actions' | t }}</th>
           </tr>
         </ng-template>
         <ng-template #body let-team>
@@ -31,21 +31,21 @@
             <td class="sm:whitespace-nowrap">
               <p-button
                 type="button"
-                label="Modifier"
+                [label]="'common.edit' | t"
                 [text]="true"
                 size="small"
                 severity="secondary"
-                [ariaLabel]="'Modifier l’équipe ' + team.name"
+                [ariaLabel]="'teams.editAria' | t: { name: team.name }"
                 (onClick)="openEdit(team)"
                 [attr.data-cy]="'btn-modifier-equipe-' + team.id"
               />
               <p-button
                 type="button"
-                label="Supprimer"
+                [label]="'common.delete' | t"
                 [text]="true"
                 size="small"
                 severity="secondary"
-                [ariaLabel]="'Supprimer l’équipe ' + team.name"
+                [ariaLabel]="'teams.deleteAria' | t: { name: team.name }"
                 [disabled]="store.pending.has(team.id)"
                 (onClick)="confirmRemove(team)"
                 [attr.data-cy]="'btn-supprimer-equipe-' + team.id"

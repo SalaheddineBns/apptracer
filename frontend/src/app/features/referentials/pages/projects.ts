@@ -5,6 +5,8 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ProjectResponse } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -15,7 +17,7 @@ import { ProjectsStore } from '../data/projects.store';
 /** SFD-02 E3 Projets (ADMIN) et E5 confirmation de désactivation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, ProjectDialog],
+  imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, ProjectDialog, TPipe],
   selector: 'app-projects',
   templateUrl: './projects.html',
 })
@@ -24,6 +26,7 @@ export class ProjectsPage {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly focus = inject(FocusRestorer);
+  private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
   /** Projet en cours de modification ; `null` pour une création. */
@@ -45,22 +48,23 @@ export class ProjectsPage {
   }
 
   protected onSaved(event: ProjectSaved): void {
+    const name = event.project.name;
     this.notify(
-      event.mode === 'create' ? 'Projet créé' : 'Projet mis à jour',
-      event.mode === 'create' ? `Le projet « ${event.project.name} » est créé.` : `Le projet « ${event.project.name} » est modifié.`,
+      this.i18n.t(event.mode === 'create' ? 'projects.toast.created' : 'projects.toast.updated'),
+      this.i18n.t(event.mode === 'create' ? 'projects.toast.createdDetail' : 'projects.toast.updatedDetail', { name }),
     );
   }
 
   /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
   protected confirmDeactivate(project: ProjectResponse): void {
     this.confirmation.confirm({
-      header: 'Désactiver le projet',
-      message: `Désactiver le projet « ${project.name} » ? Il ne sera plus proposé pour une nouvelle saisie ni pour la modification d'une saisie. Les saisies existantes sont conservées.`,
-      acceptLabel: 'Désactiver',
-      rejectLabel: 'Annuler',
+      header: this.i18n.t('projects.deactivate.header'),
+      message: this.i18n.t('projects.deactivate.message', { name: project.name }),
+      acceptLabel: this.i18n.t('common.deactivate'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.store.deactivate(project.id).subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est désactivé.`)),
+      accept: () => this.store.deactivate(project.id).subscribe(() => this.notify(this.i18n.t('projects.toast.updated'), this.i18n.t('projects.toast.deactivatedDetail', { name: project.name }))),
     });
   }
 
@@ -70,7 +74,7 @@ export class ProjectsPage {
     const anchor = this.focus.capture();
     this.store.reactivate(project.id)
       .pipe(finalize(() => this.focus.restore(anchor)))
-      .subscribe(() => this.notify('Projet mis à jour', `Le projet « ${project.name} » est réactivé.`));
+      .subscribe(() => this.notify(this.i18n.t('projects.toast.updated'), this.i18n.t('projects.toast.reactivatedDetail', { name: project.name })));
   }
 
   private notify(summary: string, detail: string): void {

@@ -5,6 +5,8 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ActivityTypeResponse } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
@@ -16,7 +18,7 @@ import { ActivityTypesStore } from '../data/activity-types.store';
 /** SFD-02 E1 Types d'activité (ADMIN) et E5 confirmation de désactivation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, TagModule, ButtonModule, ActivityTypeTag, EmptyState, ErrorState, LoadingState, ActivityTypeDialog],
+  imports: [TableModule, TagModule, ButtonModule, ActivityTypeTag, EmptyState, ErrorState, LoadingState, ActivityTypeDialog, TPipe],
   selector: 'app-activity-types',
   templateUrl: './activity-types.html',
 })
@@ -25,6 +27,7 @@ export class ActivityTypesPage {
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
   private readonly focus = inject(FocusRestorer);
+  private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
   /** Type en cours de modification ; `null` pour une création. */
@@ -46,22 +49,23 @@ export class ActivityTypesPage {
   }
 
   protected onSaved(event: ActivityTypeSaved): void {
+    const label = event.type.label;
     this.notify(
-      event.mode === 'create' ? 'Type créé' : 'Type mis à jour',
-      event.mode === 'create' ? `Le type « ${event.type.label} » est créé.` : `Le type « ${event.type.label} » est modifié.`,
+      this.i18n.t(event.mode === 'create' ? 'activityTypes.toast.created' : 'activityTypes.toast.updated'),
+      this.i18n.t(event.mode === 'create' ? 'activityTypes.toast.createdDetail' : 'activityTypes.toast.updatedDetail', { label }),
     );
   }
 
   /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
   protected confirmDeactivate(type: ActivityTypeResponse): void {
     this.confirmation.confirm({
-      header: 'Désactiver le type',
-      message: `Désactiver le type « ${type.label} » ? Il ne sera plus proposé pour une nouvelle saisie ni pour la modification d'une saisie. Les saisies existantes sont conservées.`,
-      acceptLabel: 'Désactiver',
-      rejectLabel: 'Annuler',
+      header: this.i18n.t('activityTypes.deactivate.header'),
+      message: this.i18n.t('activityTypes.deactivate.message', { label: type.label }),
+      acceptLabel: this.i18n.t('common.deactivate'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
-      accept: () => this.store.deactivate(type.id).subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est désactivé.`)),
+      accept: () => this.store.deactivate(type.id).subscribe(() => this.notify(this.i18n.t('activityTypes.toast.updated'), this.i18n.t('activityTypes.toast.deactivatedDetail', { label: type.label }))),
     });
   }
 
@@ -71,7 +75,7 @@ export class ActivityTypesPage {
     const anchor = this.focus.capture();
     this.store.reactivate(type.id)
       .pipe(finalize(() => this.focus.restore(anchor)))
-      .subscribe(() => this.notify('Type mis à jour', `Le type « ${type.label} » est réactivé.`));
+      .subscribe(() => this.notify(this.i18n.t('activityTypes.toast.updated'), this.i18n.t('activityTypes.toast.reactivatedDetail', { label: type.label })));
   }
 
   private notify(summary: string, detail: string): void {

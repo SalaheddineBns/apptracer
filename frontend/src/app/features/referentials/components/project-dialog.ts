@@ -6,6 +6,8 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProjectResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
@@ -19,13 +21,14 @@ export interface ProjectSaved {
 /** SFD-02 E4 Dialogue projet : création (project = null) ou modification d'un projet existant. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, FieldError],
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, FieldError, TPipe],
   selector: 'app-project-dialog',
   templateUrl: './project-dialog.html',
 })
 export class ProjectDialog {
   private readonly store = inject(ProjectsStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
   /** Projet à modifier, ou `null` pour une création. */
@@ -134,7 +137,7 @@ export class ProjectDialog {
         const problem = toProblem(error);
         // RG-02-01 (code) : les errors[] s'affichent sous le champ, le dialogue reste ouvert.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
-          this.messages.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 });
+          this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
         // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
         if (project && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {

@@ -9,6 +9,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -25,6 +26,7 @@ import { TeamViewStore } from '../data/team-view.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
+    TPipe,
     RouterLink,
     ButtonModule,
     MessageModule,

@@ -83,6 +83,20 @@ describe('core/i18n', () => {
     expect(leafPaths(DICTIONARIES.en).sort()).toEqual(fr);
   });
 
+  it('CA-08-08 : chaque clé a les mêmes paramètres {nom} en français et en anglais, et chaque paire de pluriels est complète', () => {
+    const params = (value: string) => [...value.matchAll(/\{(\w+)\}/g)].map((match) => match[1]).sort();
+    const value = (dictionary: object, path: string) =>
+      path.split('.').reduce<unknown>((node, part) => (node as Record<string, unknown>)[part], dictionary) as string;
+    for (const path of leafPaths(DICTIONARIES.fr)) {
+      expect(params(value(DICTIONARIES.en, path)), path).toEqual(params(value(DICTIONARIES.fr, path)));
+      expect(value(DICTIONARIES.en, path).trim(), path).not.toBe('');
+    }
+    const paths = leafPaths(DICTIONARIES.fr);
+    for (const path of paths.filter((p) => p.endsWith('.one'))) {
+      expect(paths, path).toContain(path.replace(/\.one$/, '.other'));
+    }
+  });
+
   it('RG-08-08 : les noms des jours suivent la langue', () => {
     expect(formatWeekdayName('2026-10-05', 'fr')).toBe('lundi');
     expect(formatWeekdayName('2026-10-05', 'en')).toBe('Monday');

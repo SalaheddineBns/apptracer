@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { TeamAccountSummary, TeamResponse } from '../../../core/api/generated';
 import { EmptyState } from '../../../shared/components/empty-state';
 import { ErrorState } from '../../../shared/components/error-state';
@@ -12,7 +14,7 @@ import { TeamsStore } from '../data/teams.store';
 /** SFD-05 E1 Équipes (ADMIN). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TableModule, ButtonModule, EmptyState, ErrorState, LoadingState, TeamDialog],
+  imports: [TableModule, ButtonModule, EmptyState, ErrorState, LoadingState, TeamDialog, TPipe],
   selector: 'app-teams',
   templateUrl: './teams.html',
 })
@@ -20,6 +22,7 @@ export class TeamsPage {
   protected readonly store = inject(TeamsStore);
   private readonly confirmation = inject(ConfirmationService);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
   /** Équipe en cours de modification ; `null` pour une création. */
@@ -41,10 +44,11 @@ export class TeamsPage {
   }
 
   protected onSaved(event: TeamSaved): void {
+    const name = event.team.name;
     this.messages.add({
       severity: 'success',
-      summary: event.mode === 'create' ? 'Équipe créée' : 'Équipe mise à jour',
-      detail: event.mode === 'create' ? `L’équipe « ${event.team.name} » est créée.` : `L’équipe « ${event.team.name} » est modifiée.`,
+      summary: this.i18n.t(event.mode === 'create' ? 'teams.toast.created' : 'teams.toast.updated'),
+      detail: this.i18n.t(event.mode === 'create' ? 'teams.toast.createdDetail' : 'teams.toast.updatedDetail', { name }),
       life: 3000,
     });
   }
@@ -53,24 +57,24 @@ export class TeamsPage {
     return `${account.firstName} ${account.lastName}`;
   }
 
-  /** CA-05-01 : « 2 membres » ; singulier à 0 et 1 (usage français). */
+  /** CA-05-01 : « 2 membres » ; singulier à 0 et 1 en français, singulier à 1 seulement en anglais (RG-08-08). */
   protected memberCountLabel(count: number): string {
-    return count > 1 ? `${count} membres` : `${count} membre`;
+    return this.i18n.plural('teams.memberCount', count);
   }
 
   /** E3, RG-05-09 : confirmation citant le nom de l'équipe et le nombre de membres concernés. */
   protected confirmRemove(team: TeamResponse): void {
     this.confirmation.confirm({
-      header: 'Supprimer l’équipe',
-      message: `Supprimer l’équipe « ${team.name} » ? ${this.consequence(team.memberCount)} Cette suppression est définitive.`,
-      acceptLabel: 'Supprimer',
-      rejectLabel: 'Annuler',
+      header: this.i18n.t('teams.delete.header'),
+      message: this.i18n.t('teams.delete.message', { name: team.name, consequence: this.consequence(team.memberCount) }),
+      acceptLabel: this.i18n.t('common.delete'),
+      rejectLabel: this.i18n.t('common.cancel'),
       acceptButtonProps: { severity: 'danger' },
       rejectButtonProps: { severity: 'secondary', text: true },
       accept: () =>
         this.store.remove(team.id).subscribe({
           next: () => {
-            this.messages.add({ severity: 'success', summary: 'Équipe supprimée', detail: `L’équipe « ${team.name} » est supprimée.`, life: 3000 });
+            this.messages.add({ severity: 'success', summary: this.i18n.t('teams.delete.deleted'), detail: this.i18n.t('teams.delete.deletedDetail', { name: team.name }), life: 3000 });
             // La ligne a disparu : le focus passe à l'action principale de la page plutôt que de tomber sur <body>.
             setTimeout(() => document.querySelector<HTMLElement>('[data-cy="btn-nouvelle-equipe"] button')?.focus());
           },
@@ -82,8 +86,10 @@ export class TeamsPage {
 
   private consequence(memberCount: number): string {
     if (memberCount === 0) {
-      return 'Elle n’a aucun membre.';
+      return this.i18n.t('teams.delete.noMember');
     }
-    return memberCount === 1 ? 'Son membre se retrouvera sans équipe.' : `Ses ${memberCount} membres se retrouveront sans équipe.`;
+    return memberCount === 1
+      ? this.i18n.t('teams.delete.oneMember')
+      : this.i18n.t('teams.delete.manyMembers', { count: memberCount });
   }
 }

@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
 import { ActivityTypeResponse, ActivityTypesService, TagColor } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { ActivityTypeDialog } from './activity-type-dialog';
 
 const existing = (over: Partial<ActivityTypeResponse> = {}): ActivityTypeResponse => ({
@@ -200,9 +201,12 @@ describe('ActivityTypeDialog', () => {
 
   it('RG-02-04 : la liste de couleurs propose cinq options nommées en français, son nom accessible est « Couleur »', async () => {
     await open(null);
-    const dialog = fixture.componentInstance as unknown as { colorOptions: { value: TagColor; label: string }[] };
-    expect(dialog.colorOptions.map((o) => o.value)).toEqual(Object.values(TagColor));
-    expect(dialog.colorOptions.map((o) => o.label)).toEqual(['Bleu', 'Orange', 'Gris', 'Contraste', 'Vert']);
+    const dialog = fixture.componentInstance as unknown as { colorOptions: () => { value: TagColor; label: string }[] };
+    expect(dialog.colorOptions().map((o) => o.value)).toEqual(Object.values(TagColor));
+    expect(dialog.colorOptions().map((o) => o.label)).toEqual(['Bleu', 'Orange', 'Gris', 'Contraste', 'Vert']);
+    TestBed.inject(I18n).setLang('en');
+    expect(dialog.colorOptions().map((o) => o.label)).toEqual(['Blue', 'Orange', 'Grey', 'Contrast', 'Green']);
+    TestBed.inject(I18n).setLang('fr');
     const select = el('champ-couleur-type');
     const labelledBy = select?.querySelector('[role="combobox"]')?.getAttribute('aria-labelledby');
     expect(labelledBy).toBe('activity-type-color-label');

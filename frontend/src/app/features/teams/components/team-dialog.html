@@ -1,11 +1,11 @@
 <p-dialog
-  [header]="isEdit() ? 'Modifier l’équipe' : 'Nouvelle équipe'"
+  [header]="(isEdit() ? 'teams.dialog.editTitle' : 'teams.dialog.createTitle') | t"
   [(visible)]="visible"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="!submitting()"
-  closeAriaLabel="Fermer"
+  [closeAriaLabel]="'common.close' | t"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
   (onShow)="focusFirstField(nameInput)"
   (onHide)="onHide()"
@@ -13,7 +13,7 @@
 >
   <form class="flex flex-col gap-4" [formGroup]="form" (ngSubmit)="submit()" novalidate data-cy="form-equipe">
     <div class="flex flex-col gap-2">
-      <label for="team-name" class="text-sm font-medium text-color">Nom <span aria-hidden="true">*</span></label>
+      <label for="team-name" class="text-sm font-medium text-color">{{ 'common.name' | t }} <span aria-hidden="true">*</span></label>
       <input
         pInputText
         #nameInput
@@ -25,7 +25,7 @@
         [readonly]="submitting()"
         data-cy="champ-nom-equipe"
       />
-      <small class="text-xs text-muted-color">De 2 à 100 caractères, unique (sans distinction de casse).</small>
+      <small class="text-xs text-muted-color">{{ 'teams.dialog.nameHint' | t }}</small>
       <app-field-error [control]="form.controls.name" [messages]="nameMessages" cy="erreur-champ-nom-equipe" />
     </div>
 
@@ -35,17 +35,17 @@
       <app-error-state [message]="message" (retry)="retry(nameInput)" />
     } @else {
       <div class="flex flex-col gap-2">
-        <span id="team-manager-label" class="text-sm font-medium text-color">Manager <span aria-hidden="true">*</span></span>
+        <span id="team-manager-label" class="text-sm font-medium text-color">{{ 'teams.dialog.manager' | t }} <span aria-hidden="true">*</span></span>
         <p-select
           formControlName="managerId"
           [options]="managerOptions()"
           optionLabel="label"
           optionValue="id"
-          placeholder="Choisir un manager"
-          emptyMessage="Aucun manager actif disponible."
-          emptyFilterMessage="Aucun résultat."
+          [placeholder]="'teams.dialog.chooseManager' | t"
+          [emptyMessage]="'teams.dialog.noManager' | t"
+          [emptyFilterMessage]="'common.noResults' | t"
           filterBy="label,email"
-          filterPlaceholder="Rechercher un manager"
+          [filterPlaceholder]="'teams.dialog.searchManager' | t"
           [filter]="true"
           [showClear]="false"
           [readonly]="submitting()"
@@ -66,22 +66,22 @@
       </div>
 
       <div class="flex flex-col gap-2">
-        <span id="team-members-label" class="text-sm font-medium text-color">Membres</span>
+        <span id="team-members-label" class="text-sm font-medium text-color">{{ 'teams.dialog.members' | t }}</span>
         <p-multiselect
           formControlName="memberIds"
           [options]="memberOptions()"
           optionLabel="label"
           optionValue="id"
           display="chip"
-          placeholder="Choisir des membres"
-          emptyMessage="Aucun compte éligible."
-          emptyFilterMessage="Aucun résultat."
+          [placeholder]="'teams.dialog.chooseMembers' | t"
+          [emptyMessage]="'teams.dialog.noEligible' | t"
+          [emptyFilterMessage]="'common.noResults' | t"
           filterBy="label,email"
-          filterPlaceholder="Rechercher un membre"
+          [filterPlaceHolder]="'teams.dialog.searchMember' | t"
           [filter]="true"
           [showToggleAll]="false"
           [maxSelectedLabels]="null"
-          selectedItemsLabel="{0} membres sélectionnés"
+          [selectedItemsLabel]="'teams.dialog.selectedMembers' | t"
           [autofocusFilter]="true"
           [panelStyle]="{ maxWidth: 'calc(100vw - 1rem)' }"
           [pt]="{ dropdown: { 'data-cy': 'btn-ouvrir-membres' } }"
@@ -97,20 +97,20 @@
               <span class="flex flex-wrap items-center gap-2">
                 <span>{{ option.name }}</span>
                 @if (!option.active) {
-                  <p-tag value="Inactif" severity="secondary" />
+                  <p-tag [value]="'common.inactive' | t" severity="secondary" />
                 }
                 @if (option.currentTeam; as team) {
-                  <p-tag [value]="'Déjà dans l’équipe ' + team.name" severity="warn" styleClass="max-w-full whitespace-normal wrap-anywhere" />
+                  <p-tag [value]="'teams.dialog.alreadyInTeam' | t: { name: team.name }" severity="warn" styleClass="max-w-full whitespace-normal wrap-anywhere" />
                 }
               </span>
               <span class="text-xs text-muted-color">{{ option.email }}</span>
             </div>
           </ng-template>
         </p-multiselect>
-        <small class="text-xs text-muted-color">Facultatif. Le manager n’est pas membre de son équipe ; un compte n’est membre que d’une équipe.</small>
+        <small class="text-xs text-muted-color">{{ 'teams.dialog.membersHint' | t }}</small>
         @if (removedMemberName(); as removed) {
           <p-message severity="info" size="small" data-cy="info-membre-retire">
-            {{ removed }} a été retiré des membres : le manager ne peut pas être membre de son équipe.
+            {{ 'teams.dialog.removedMember' | t: { name: removed } }}
           </p-message>
         }
         <app-field-error [control]="form.controls.memberIds" [messages]="memberMessages" cy="erreur-champ-membres" />
@@ -118,10 +118,10 @@
     }
 
     <div class="flex justify-end gap-2">
-      <p-button type="button" label="Annuler" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
+      <p-button type="button" [label]="'common.cancel' | t" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
       <p-button
         type="submit"
-        label="Enregistrer"
+        [label]="'common.save' | t"
         [loading]="submitting()"
         [disabled]="store.candidatesLoading() || store.candidatesError() !== null"
         data-cy="btn-enregistrer"

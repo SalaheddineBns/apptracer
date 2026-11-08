@@ -1,4 +1,5 @@
 import { TagColor } from '../core/api/generated';
+import { TranslationKey } from '../core/i18n/keys';
 
 export type TagSeverity = 'info' | 'warn' | 'secondary' | 'contrast' | 'success';
 
@@ -30,21 +31,18 @@ export function iconForCode(code: string): string | undefined {
   return Object.hasOwn(ICON_BY_CODE, code) ? ICON_BY_CODE[code] : undefined;
 }
 
-/** RG-02-04 : nom français de chaque couleur de la palette (la couleur n'est jamais le seul porteur d'information). */
-const LABEL_BY_COLOR: Record<TagColor, string> = {
-  [TagColor.Info]: 'Bleu',
-  [TagColor.Warn]: 'Orange',
-  [TagColor.Secondary]: 'Gris',
-  [TagColor.Contrast]: 'Contraste',
-  [TagColor.Success]: 'Vert',
+/** RG-02-04 : clé du nom de chaque couleur de la palette (la couleur n'est jamais le seul porteur d'information). */
+const LABEL_KEY_BY_COLOR: Record<TagColor, TranslationKey> = {
+  [TagColor.Info]: 'colors.info',
+  [TagColor.Warn]: 'colors.warn',
+  [TagColor.Secondary]: 'colors.secondary',
+  [TagColor.Contrast]: 'colors.contrast',
+  [TagColor.Success]: 'colors.success',
 };
 
-export function labelForColor(color: TagColor): string {
-  return LABEL_BY_COLOR[color];
+export function labelKeyForColor(color: TagColor): TranslationKey {
+  return LABEL_KEY_BY_COLOR[color];
 }
 
-/** Les cinq couleurs de la palette, dans l'ordre de l'enum du contrat. */
-export const TAG_COLOR_OPTIONS: { value: TagColor; label: string }[] = Object.values(TagColor).map((value) => ({
-  value,
-  label: LABEL_BY_COLOR[value],
-}));
+/** Les cinq couleurs de la palette, dans l'ordre de l'enum du contrat ; leur nom se traduit avec `labelKeyForColor`. */
+export const TAG_COLORS: readonly TagColor[] = Object.values(TagColor);

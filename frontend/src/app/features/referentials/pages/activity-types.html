@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-6">
   <div class="flex items-center justify-between gap-4">
-    <h1 class="text-2xl font-semibold text-color">Types d'activité</h1>
-    <p-button type="button" label="Nouveau type" (onClick)="openCreate()" data-cy="btn-nouveau-type" />
+    <h1 class="text-2xl font-semibold text-color">{{ 'activityTypes.title' | t }}</h1>
+    <p-button type="button" [label]="'activityTypes.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-type" />
   </div>
 
   <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6">
@@ -10,8 +10,8 @@
     } @else if (!store.loaded()) {
       <app-loading-state [rows]="6" />
     } @else if (store.items().length === 0) {
-      <app-empty-state message="Aucun type d'activité à afficher.">
-        <p-button type="button" label="Nouveau type" (onClick)="openCreate()" data-cy="btn-nouveau-type-vide" />
+      <app-empty-state [message]="'activityTypes.empty' | t">
+        <p-button type="button" [label]="'activityTypes.new' | t" (onClick)="openCreate()" data-cy="btn-nouveau-type-vide" />
       </app-empty-state>
     } @else {
       <p-table
@@ -24,12 +24,12 @@
       >
         <ng-template #header>
           <tr>
-            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">Code</th>
-            <th scope="col">Libellé</th>
-            <th scope="col">Étiquette</th>
-            <th scope="col">Projet requis</th>
-            <th scope="col">Statut</th>
-            <th scope="col">Actions</th>
+            <th pFrozenColumn scope="col" class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ 'common.code' | t }}</th>
+            <th scope="col">{{ 'activityTypes.label' | t }}</th>
+            <th scope="col">{{ 'activityTypes.tag' | t }}</th>
+            <th scope="col">{{ 'activityTypes.projectRequired' | t }}</th>
+            <th scope="col">{{ 'common.status' | t }}</th>
+            <th scope="col">{{ 'common.actions' | t }}</th>
           </tr>
         </ng-template>
         <ng-template #body let-type>
@@ -37,10 +37,10 @@
             <td pFrozenColumn class="max-sm:w-40 max-sm:min-w-40 max-sm:max-w-40 max-sm:wrap-anywhere">{{ type.code }}</td>
             <td>{{ type.label }}</td>
             <td><app-activity-type-tag [label]="type.label" [color]="type.color" [code]="type.code" /></td>
-            <td [attr.data-cy]="'projet-requis-type-' + type.id">{{ type.projectRequired ? 'Oui' : 'Non' }}</td>
+            <td [attr.data-cy]="'projet-requis-type-' + type.id">{{ (type.projectRequired ? 'common.yes' : 'common.no') | t }}</td>
             <td>
               <p-tag
-                [value]="type.active ? 'Actif' : 'Inactif'"
+                [value]="(type.active ? 'common.active' : 'common.inactive') | t"
                 [severity]="type.active ? 'success' : 'secondary'"
                 [attr.data-cy]="'statut-type-' + type.id"
               />
@@ -48,22 +48,22 @@
             <td class="sm:whitespace-nowrap">
               <p-button
                 type="button"
-                label="Modifier"
+                [label]="'common.edit' | t"
                 [text]="true"
                 size="small"
                 severity="secondary"
-                [ariaLabel]="'Modifier le type ' + type.label"
+                [ariaLabel]="'activityTypes.editAria' | t: { label: type.label }"
                 (onClick)="openEdit(type)"
                 [attr.data-cy]="'btn-modifier-type-' + type.id"
               />
               @if (type.active) {
                 <p-button
                   type="button"
-                  label="Désactiver"
+                  [label]="'common.deactivate' | t"
                   [text]="true"
                   size="small"
                   severity="secondary"
-                  [ariaLabel]="'Désactiver le type ' + type.label"
+                  [ariaLabel]="'activityTypes.deactivateAria' | t: { label: type.label }"
                   [disabled]="store.pending.has(type.id)"
                   (onClick)="confirmDeactivate(type)"
                   [attr.data-cy]="'btn-desactiver-type-' + type.id"
@@ -71,11 +71,11 @@
               } @else {
                 <p-button
                   type="button"
-                  label="Réactiver"
+                  [label]="'common.reactivate' | t"
                   [text]="true"
                   size="small"
                   severity="secondary"
-                  [ariaLabel]="'Réactiver le type ' + type.label"
+                  [ariaLabel]="'activityTypes.reactivateAria' | t: { label: type.label }"
                   [disabled]="store.pending.has(type.id)"
                   (onClick)="reactivate(type)"
                   [attr.data-cy]="'btn-reactiver-type-' + type.id"

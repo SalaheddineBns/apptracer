@@ -1,8 +1,10 @@
+import { HttpErrorResponse } from '@angular/common/http';
+import { Provider } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { routes } from '../../app.routes';
 import {
   ActivityTypesService,
@@ -113,7 +115,7 @@ const USERS = [
 describe('SFD-08 : les écrans passés en anglais ne contiennent plus de français (CA-08-08)', () => {
   let harness: RouterTestingHarness;
 
-  async function start(role: Role | null, url: string): Promise<void> {
+  async function start(role: Role | null, url: string, overrides: Provider[] = []): Promise<void> {
     localStorage.clear();
     if (role !== null) {
       localStorage.setItem('accessToken', 'a');
@@ -230,6 +232,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
               }),
           },
         },
+        ...overrides,
       ],
     });
     // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
@@ -377,6 +380,159 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       await click('btn-supprimer-saisie-1');
       expect(document.body.textContent).toContain('Delete the time entry “Meeting” on 05/10 (1 h 30)?');
       expect(document.body.textContent).toContain('Delete time entry');
+      expectNoFrench();
+    });
+  });
+
+  describe('SFD-02 : types d’activité et projets', () => {
+    it('types d’activité : colonnes, oui/non, statuts, libellés lus par les lecteurs d’écran', async () => {
+      await start(Role.Admin, '/admin/activity-types');
+      const table = text('table-types-activite');
+      expect(table).toContain('Project required');
+      expect(table).toContain('Yes');
+      expect(table).toContain('No');
+      expect(table).toContain('Inactive');
+      expect(cy('btn-modifier-type-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Edit type Meeting');
+      expect(cy('btn-reactiver-type-2')?.querySelector('button')?.getAttribute('aria-label')).toBe('Reactivate type Project work');
+      expectNoFrench();
+    });
+
+    it('dialogue type : erreurs de champ et aperçu en anglais', async () => {
+      await start(Role.Admin, '/admin/activity-types');
+      await click('btn-nouveau-type');
+      await click('btn-enregistrer');
+      expect(text('erreur-champ-code-type')).toBe('The code is required.');
+      expect(text('erreur-champ-libelle-type')).toBe('The label is required.');
+      expect(text('apercu-type')).toBe('Preview');
+      expect(text('dialogue-type-activite')).toContain('Colour');
+      expectNoFrench();
+    });
+
+    it('confirmation de désactivation d’un type', async () => {
+      await start(Role.Admin, '/admin/activity-types');
+      await click('btn-desactiver-type-1');
+      expect(document.body.textContent).toContain('Deactivate the type “Meeting”? It will no longer be offered');
+      expectNoFrench();
+    });
+
+    it('projets : colonnes, statuts, dialogue et confirmation de désactivation', async () => {
+      await start(Role.Admin, '/admin/projects');
+      expect(text('table-projets')).toContain('Apollo');
+      expect(cy('btn-desactiver-projet-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Deactivate project Apollo');
+      expectNoFrench();
+      await click('btn-desactiver-projet-1');
+      expect(document.body.textContent).toContain('Deactivate the project “Apollo”?');
+      expectNoFrench();
+      await click('btn-annuler');
+      await click('btn-nouveau-projet');
+      await click('btn-enregistrer');
+      expect(text('erreur-champ-nom-projet')).toBe('The name is required.');
+      expectNoFrench();
+    });
+  });
+
+  describe('SFD-05 : équipes', () => {
+    it('liste : nombre de membres au singulier et au pluriel, boutons et libellés accessibles', async () => {
+      await start(Role.Admin, '/admin/teams');
+      expect(text('membres-equipe-1')).toBe('1 member');
+      expect(text('membres-equipe-2')).toBe('0 members');
+      expect(cy('btn-supprimer-equipe-1')?.querySelector('button')?.getAttribute('aria-label')).toBe('Delete team Platform');
+      expectNoFrench();
+    });
+
+    it('confirmation de suppression avec ses conséquences', async () => {
+      await start(Role.Admin, '/admin/teams');
+      await click('btn-supprimer-equipe-1');
+      expect(document.body.textContent).toContain(
+        'Delete the team “Platform”? Its member will be left without a team. This deletion is permanent.',
+      );
+      expectNoFrench();
+    });
+
+    it('dialogue équipe : aides, listes et erreurs de champ', async () => {
+      await start(Role.Admin, '/admin/teams');
+      await click('btn-nouvelle-equipe');
+      await click('btn-enregistrer');
+      const dialog = text('dialogue-equipe');
+      expect(dialog).toContain('2 to 100 characters, unique (case-insensitive).');
+      expect(dialog).toContain('Optional. The manager is not a member of their own team');
+      expect(text('erreur-champ-nom-equipe')).toBe('The name is required.');
+      expect(text('erreur-champ-manager')).toBe('The manager is required.');
+      expectNoFrench();
+      await click('btn-annuler-dialogue');
+      await click('btn-modifier-equipe-1');
+      expectNoFrench();
+    });
+  });
+
+  describe('SFD-06 : paramètres', () => {
+    it('journée standard, aide et dernière modification en anglais, heure de Paris', async () => {
+      await start(Role.Admin, '/admin/settings');
+      expect(text('aide-parametres')).toContain('In steps of 15 minutes, from 1 h to 24 h.');
+      expect(text('derniere-modification')).toBe('Last modified: Ada Martin, on 12/10/2026 at 14:05');
+      expect(document.body.textContent).toContain('Standard day');
+      expectNoFrench();
+    });
+
+    it('le même écran en français garde « le … à … »', async () => {
+      await start(Role.Admin, '/admin/settings');
+      TestBed.inject(I18n).setLang('fr');
+      await harness.fixture.whenStable();
+      expect(text('derniere-modification')).toBe('Dernière modification : Ada Martin, le 12/10/2026 à 14:05');
+    });
+  });
+
+  describe('SFD-04 : Mon équipe et journal d’un membre', () => {
+    const forbidden = new HttpErrorResponse({ status: 403, error: { detail: 'Forbidden' } });
+
+    it('Mon équipe : titre, sélecteur, colonnes, jours, membre inactif', async () => {
+      await start(Role.Manager, '/team?week=2026-10-05');
+      expect(text('titre-equipe')).toBe('My team');
+      expect(text('table-equipe-semaine')).toContain('Member');
+      expect(text('colonne-jour-2026-10-05')).toContain('Monday');
+      expect(text('colonne-jour-2026-10-11')).toContain('Sunday');
+      expect(text('tag-inactif-2')).toBe('Inactive');
+      expect(text('total-membre-2')).toBe('1.5 h');
+      expectNoFrench();
+    });
+
+    it('Mon équipe : manager sans équipe', async () => {
+      await start(Role.Manager, '/team?week=2026-10-05', [
+        { provide: TeamViewService, useValue: { listMyManagedTeams: () => of([]) } },
+      ]);
+      expect(text('message-aucune-equipe')).toBe('No team is assigned to you.');
+      expectNoFrench();
+    });
+
+    it('Mon équipe : équipe hors du périmètre (403)', async () => {
+      await start(Role.Manager, '/team?week=2026-10-05', [
+        {
+          provide: TeamViewService,
+          useValue: {
+            listMyManagedTeams: () => of([{ id: 1, name: 'Platform' }]),
+            getTeamWeekSummary: () => throwError(() => forbidden),
+          },
+        },
+      ]);
+      expect(text('message-equipe-interdite')).toContain('This team is not one of the teams you manage.');
+      expect(text('btn-afficher-mes-equipes')).toBe('Show my teams');
+      expectNoFrench();
+    });
+
+    it('journal d’un membre : titre, statut, retour, lecture seule', async () => {
+      await start(Role.Manager, '/team/members/2?week=2026-10-05&team=1');
+      expect(text('titre-journal-membre')).toContain('Bob Stone’s journal');
+      expect(text('tag-inactif-2')).toBe('Inactive');
+      expect(text('btn-retour-equipe')).toBe('Back to My team');
+      expectNoFrench();
+    });
+
+    it('journal d’un membre : compte hors périmètre (403)', async () => {
+      await start(Role.Manager, '/team/members/9?week=2026-10-05', [
+        { provide: TeamViewService, useValue: { listTeamMemberTimeEntries: () => throwError(() => forbidden) } },
+      ]);
+      expect(text('message-membre-interdit')).toBe('This account is not part of your teams.');
+      expect(text('titre-journal-membre')).toBe('Member’s journal');
       expectNoFrench();
     });
   });

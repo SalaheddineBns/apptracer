@@ -9,7 +9,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ActivityTypeResponse, TagColor } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
-import { TAG_COLOR_OPTIONS } from '../../../shared/activity-type.ui';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
+import { labelKeyForColor, TAG_COLORS } from '../../../shared/activity-type.ui';
 import { ActivityTypeTag } from '../../../shared/components/activity-type-tag';
 import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
@@ -24,13 +26,14 @@ export interface ActivityTypeSaved {
 /** SFD-02 E2 Dialogue type : création (type = null) ou modification d'un type d'activité existant. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, CheckboxModule, FieldError, ActivityTypeTag],
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, CheckboxModule, FieldError, ActivityTypeTag, TPipe],
   selector: 'app-activity-type-dialog',
   templateUrl: './activity-type-dialog.html',
 })
 export class ActivityTypeDialog {
   private readonly store = inject(ActivityTypesStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
   /** Type à modifier, ou `null` pour une création. */
@@ -41,7 +44,9 @@ export class ActivityTypeDialog {
 
   protected readonly submitting = signal(false);
   protected readonly isEdit = computed(() => this.type() !== null);
-  protected readonly colorOptions = TAG_COLOR_OPTIONS;
+  protected readonly colorOptions = computed(() =>
+    TAG_COLORS.map((value) => ({ value, label: this.i18n.t(labelKeyForColor(value)) })),
+  );
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     // RG-02-01 : format du code (le back reste la référence), immuable après la création.
@@ -57,7 +62,7 @@ export class ActivityTypeDialog {
   private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
   protected readonly preview = computed(() => {
     const value = { ...this.form.getRawValue(), ...this.value() };
-    return { label: value.label?.trim() || 'Aperçu', color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
+    return { label: value.label?.trim() || this.i18n.t('activityTypes.dialog.previewLabel'), color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
   });
 
   protected readonly codeExample = 'REUNION_CLIENT';
@@ -156,7 +161,7 @@ export class ActivityTypeDialog {
         const problem = toProblem(error);
         // RG-02-01 (code), RG-02-07 (projectRequired) : les errors[] s'affichent sous le champ, le dialogue reste ouvert.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
-          this.messages.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 });
+          this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
         // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
         if (type && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {

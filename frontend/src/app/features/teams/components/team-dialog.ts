@@ -11,6 +11,8 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { TeamResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
+import { I18n } from '../../../core/i18n/i18n.service';
+import { TPipe } from '../../../core/i18n/t.pipe';
 import { ErrorState } from '../../../shared/components/error-state';
 import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { LoadingState } from '../../../shared/components/loading-state';
@@ -37,13 +39,14 @@ export interface AccountOption {
 /** SFD-05 E2 Dialogue équipe : création (team = null) ou modification d'une équipe existante (nom, manager, membres). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, MessageModule, TagModule, FieldError, ErrorState, LoadingState],
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, MessageModule, TagModule, FieldError, ErrorState, LoadingState, TPipe],
   selector: 'app-team-dialog',
   templateUrl: './team-dialog.html',
 })
 export class TeamDialog {
   protected readonly store = inject(TeamsStore);
   private readonly messages = inject(MessageService);
+  private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
   /** Équipe à modifier, ou `null` pour une création. */
@@ -76,7 +79,11 @@ export class TeamDialog {
   /** Manager choisi (miroir du contrôle, pour filtrer les membres proposés). */
   private readonly selectedManagerId = signal<number | null>(null);
   /** Membre retiré de la sélection parce qu'il vient d'être choisi comme manager (RG-05-05), à signaler à l'utilisateur. */
-  protected readonly removedMemberName = signal<string | null>(null);
+  private readonly removedMember = signal<{ name: string | null } | null>(null);
+  protected readonly removedMemberName = computed(() => {
+    const removed = this.removedMember();
+    return removed === null ? null : (removed.name ?? this.i18n.t('teams.dialog.unknownAccount'));
+  });
 
   /** RG-05-02, CA-05-03 : l'API ne propose que des comptes actifs de rôle MANAGER. */
   protected readonly managerOptions = computed<AccountOption[]>(() =>
@@ -105,7 +112,7 @@ export class TeamDialog {
         // H10 : on ne signale pas l'équipe en cours de modification (le compte en est déjà membre).
         const currentTeam = c.currentTeam && c.currentTeam.id !== editedTeamId ? c.currentTeam : null;
         // Le libellé sert d'aria-label de l'option et de texte de la pastille : l'état et l'équipe actuelle y figurent.
-        const label = `${name}${c.active ? '' : ' (inactif)'}${currentTeam ? ` (équipe ${currentTeam.name})` : ''}`;
+        const label = `${name}${c.active ? '' : this.i18n.t('teams.dialog.inactiveSuffix')}${currentTeam ? this.i18n.t('teams.dialog.teamSuffix', { name: currentTeam.name }) : ''}`;
         return {
           id: c.id,
           label,
@@ -142,7 +149,7 @@ export class TeamDialog {
     const active = document.activeElement;
     this.originCy = active instanceof HTMLElement ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null) : null;
     this.submitting.set(false);
-    this.removedMemberName.set(null);
+    this.removedMember.set(null);
     const team = this.team();
     // Modification : valeurs de l'équipe (membres inactifs conservés, RG-05-11). Sans événement : RG-05-05 ne s'applique qu'à un choix.
     const managerId = team?.manager.id ?? null;
@@ -154,7 +161,7 @@ export class TeamDialog {
   /** RG-05-05 : le manager n'est pas membre. S'il était déjà coché comme membre, il est décoché et l'utilisateur en est informé. */
   private onManagerChange(managerId: number | null): void {
     this.selectedManagerId.set(managerId);
-    this.removedMemberName.set(null);
+    this.removedMember.set(null);
     if (managerId === null) {
       return;
     }
@@ -162,7 +169,7 @@ export class TeamDialog {
     if (members.includes(managerId)) {
       const removed = this.store.memberCandidates().find((c) => c.id === managerId);
       this.form.controls.memberIds.setValue(members.filter((id) => id !== managerId));
-      this.removedMemberName.set(removed ? `${removed.firstName} ${removed.lastName}` : 'Ce compte');
+      this.removedMember.set({ name: removed ? `${removed.firstName} ${removed.lastName}` : null });
     }
   }
 
@@ -223,7 +230,7 @@ export class TeamDialog {
         const problem = toProblem(error);
         // RG-05-01 (name), RG-05-02 (managerId), RG-05-03 / RG-05-04 / RG-05-05 (memberIds) : sous le champ, dialogue ouvert.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
-          this.messages.add({ severity: 'error', summary: 'Erreur', detail: e.message, life: 5000 });
+          this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
         // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
         if (edited && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
