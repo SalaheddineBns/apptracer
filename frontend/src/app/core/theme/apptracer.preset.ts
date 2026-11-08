@@ -44,6 +44,17 @@ export const AppTracerPreset = definePreset(Aura, {
         },
       },
     },
+    // Contraste AA du choix non sélectionné (jeton Aura `togglebutton.color` surface.500 en clair : 4,34:1 sur surface.100) :
+    // le clair part de surface.600, le sombre reste celui d'Aura. Le choix actif est de plus cerclé de la couleur primaire,
+    // pour qu'il se distingue sans comparer les couleurs de texte (WCAG 1.4.1).
+    togglebutton: {
+      root: { color: 'light-dark({surface.600}, {surface.400})' },
+      icon: { color: 'light-dark({surface.600}, {surface.400})' },
+      content: {
+        checkedShadow:
+          '0 0 0 1px {primary.color}, 0px 1px 2px 0px rgba(0, 0, 0, 0.02), 0px 1px 2px 0px rgba(0, 0, 0, 0.04)',
+      },
+    },
     // Contraste AA des titres de toast (jetons Aura `toast.success.color` green.600 et `toast.error.color` red.600 en clair).
     toast: {
       success: { color: 'light-dark({green.700}, {green.500})' },

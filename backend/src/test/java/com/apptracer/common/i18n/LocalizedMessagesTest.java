@@ -35,7 +35,7 @@ class LocalizedMessagesTest {
   private static final String FRENCH_OVERLAP =
       "Cette période chevauche une activité déjà déclarée le 05/10/2026.";
   private static final String ENGLISH_OVERLAP =
-      "This period overlaps an activity already declared on 05/10/2026.";
+      "This time entry overlaps one already declared on 05/10/2026.";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private UserRepository users;

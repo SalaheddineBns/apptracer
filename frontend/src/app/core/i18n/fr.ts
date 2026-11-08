@@ -95,6 +95,7 @@ export const fr = {
       timePlaceholder: 'hh:mm',
       startTime: 'Heure de début',
       endTime: 'Heure de fin',
+      chooseTime: 'Choisir une heure',
       activityType: 'Type d’activité',
       chooseType: 'Choisir un type',
       noType: 'Aucun type d’activité disponible.',
@@ -268,6 +269,8 @@ export const fr = {
     },
   },
   referentialCode: {
+    activityTypeExample: 'REUNION_CLIENT',
+    projectExample: 'PORTAIL_CLIENT',
     required: 'Le code est obligatoire.',
     pattern: 'Le code doit contenir de 2 à 30 caractères : majuscules, chiffres et _ (ex. {example}).',
   },
@@ -384,7 +387,7 @@ export const fr = {
     total: 'Total',
   },
   memberJournal: {
-    title: 'Journal de {name}',
+    title: 'Journal : {name}',
     titleUnknown: 'Journal d’un membre',
     back: 'Retour à Mon équipe',
     forbidden: 'Ce compte ne fait pas partie de vos équipes.',

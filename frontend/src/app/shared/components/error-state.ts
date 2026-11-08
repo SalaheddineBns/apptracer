@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal, output, untracked } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { I18n } from '../../core/i18n/i18n.service';
 import { TPipe } from '../../core/i18n/t.pipe';
@@ -20,6 +20,12 @@ export class ErrorState {
   /** Message à afficher ; par défaut, le message générique de chargement dans la langue en vigueur. */
   readonly message = input<string | null>(null);
   private readonly i18n = inject(I18n);
-  protected readonly text = computed(() => this.message() ?? this.i18n.t('common.loadError'));
+  // RG-08-04 : le message du serveur est dans la langue de la requête. Si la langue change tant qu'il est affiché, on le
+  // remplace par le message générique traduit ; « Réessayer » relance la requête, dont la réponse sera dans la nouvelle langue.
+  private readonly received = linkedSignal(() => ({ message: this.message(), lang: untracked(this.i18n.lang) }));
+  protected readonly text = computed(() => {
+    const { message, lang } = this.received();
+    return message !== null && lang === this.i18n.lang() ? message : this.i18n.t('common.loadError');
+  });
   readonly retry = output<void>();
 }

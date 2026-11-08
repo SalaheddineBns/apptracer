@@ -19,7 +19,6 @@ import { errorInterceptor } from './core/errors/error.interceptor';
 import { I18n } from './core/i18n/i18n.service';
 import { languageInterceptor } from './core/i18n/language.interceptor';
 import { AppTracerPreset } from './core/theme/apptracer.preset';
-import { PRIMENG_FR } from './core/theme/primeng-fr';
 import { routes } from './app.routes';
 
 registerLocaleData(localeFr);
@@ -41,7 +40,12 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useFactory: () => inject(I18n).lang() },
     providePrimeNG({
       license: PRIMEUI_LICENSE,
-      translation: PRIMENG_FR,
+      // Pas de `translation` ici : la traduction PrimeNG appartient au service `I18n`, qui la pose au démarrage et à chaque
+      // changement de langue (RG-08-05). Une valeur fixe écraserait la sienne après l'initialiseur.
+      // Le déclencheur de `p-select` porte un `aria-label="dropdown trigger"` codé en dur (anglais dans les deux langues).
+      // Il est redondant : le champ `combobox` voisin porte déjà le nom, l'état ouvert/fermé et la liste. On le masque donc
+      // aux lecteurs d'écran plutôt que de le traduire.
+      pt: { select: { dropdown: { 'aria-hidden': 'true' } } },
       theme: {
         preset: AppTracerPreset,
         options: {

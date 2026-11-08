@@ -120,7 +120,7 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     );
     await open();
     expect(listTeamMemberTimeEntries).toHaveBeenCalledWith(10, '2026-10-05', 'body', false, expect.anything());
-    expect(cy('titre-journal-membre')?.textContent).toContain('Journal de Ada Durand');
+    expect(cy('titre-journal-membre')?.textContent).toContain('Journal : Ada Durand');
     expect(cy('saisie-1')?.textContent).toContain('Réunion');
     expect(cy('saisie-1')?.textContent).toContain('1 h 30');
     expect(cy('saisie-1')?.querySelector('[data-cy="saisie-commentaire"]')?.textContent).toContain('Point hebdomadaire');

@@ -1,6 +1,7 @@
 import { Dictionary } from './fr';
 
 /**
+ * Spelling: British English (colour, organisation), consistent with the en-GB day names and dd/mm/yyyy dates (RG-08-08).
  * Vocabulary: time entry (saisie), activity type, project, team, standard day (journée standard), week.
  * Buttons use the imperative (Save, Delete). User data (labels, names, comments) is never translated (RG-08-07).
  */
@@ -95,6 +96,7 @@ export const en: Dictionary = {
       timePlaceholder: 'hh:mm',
       startTime: 'Start time',
       endTime: 'End time',
+      chooseTime: 'Choose a time',
       activityType: 'Activity type',
       chooseType: 'Choose a type',
       noType: 'No activity type available.',
@@ -268,6 +270,8 @@ export const en: Dictionary = {
     },
   },
   referentialCode: {
+    activityTypeExample: 'CLIENT_MEETING',
+    projectExample: 'CLIENT_PORTAL',
     required: 'The code is required.',
     pattern: 'The code must be 2 to 30 characters: uppercase letters, digits and _ (e.g. {example}).',
   },
@@ -367,8 +371,8 @@ export const en: Dictionary = {
     help: 'In steps of 15 minutes, from 1 h to 24 h. Existing time entries are not recalculated: the change only applies to time entries created or edited afterwards.',
     invalid: 'The standard day must be between 1 h and 24 h, in steps of 15 minutes.',
     neverModified: 'Never modified since installation.',
-    lastModified: 'Last modified: on {date} at {time}',
-    lastModifiedBy: 'Last modified: {author}, on {date} at {time}',
+    lastModified: 'Last modified on {date} at {time}',
+    lastModifiedBy: 'Last modified by {author} on {date} at {time}',
     saved: 'Settings saved',
     savedDetail: 'Standard day: {duration}.',
   },
@@ -384,8 +388,8 @@ export const en: Dictionary = {
     total: 'Total',
   },
   memberJournal: {
-    title: '{name}’s journal',
-    titleUnknown: 'Member’s journal',
+    title: 'Journal: {name}',
+    titleUnknown: 'Member journal',
     back: 'Back to My team',
     forbidden: 'This account is not part of your teams.',
   },

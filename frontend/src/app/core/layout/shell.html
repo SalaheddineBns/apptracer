@@ -109,21 +109,26 @@
         </p-button>
         <p-menu #menu [popup]="true" [model]="menuItems()" appendTo="body">
           <ng-template #submenuheader let-submenu>
-            <span class="text-xs font-medium text-muted-color" [attr.data-cy]="submenu.dataCy">{{ submenu.label }}</span>
+            <span id="user-menu-language-label" class="text-xs font-medium text-muted-color" [attr.data-cy]="submenu.dataCy">{{ submenu.label }}</span>
           </ng-template>
           <ng-template #item let-item>
-            <a
-              pRipple
-              class="flex items-center gap-2 px-3 py-2 text-sm text-color cursor-pointer no-underline"
-              [attr.data-cy]="item.dataCy"
-              [attr.lang]="item.lang"
-              [attr.aria-current]="item.current ? 'true' : null"
+            @if (item.lang) {
+              <!-- Choix de langue : l'état « coché » est porté par le <li> (role="menuitemradio"), voir MenuRadio. -->
+              <a
+                pRipple
+                appMenuRadio
+                [checked]="item.current"
+                [language]="item.lang"
+                groupLabelId="user-menu-language-label"
+                class="flex items-center gap-2 px-3 py-2 text-sm text-color cursor-pointer no-underline"
+                [attr.data-cy]="item.dataCy"
               >
-              @if (item.lang) {
                 <i class="pi pi-check text-xs" [class.invisible]="!item.current" aria-hidden="true"></i>
-              }
-              {{ item.label }}</a
-            >
+                {{ item.label }}</a
+              >
+            } @else {
+              <a pRipple class="flex items-center gap-2 px-3 py-2 text-sm text-color cursor-pointer no-underline" [attr.data-cy]="item.dataCy">{{ item.label }}</a>
+            }
           </ng-template>
         </p-menu>
       </div>

@@ -66,8 +66,32 @@ describe('SFD-08 E1 : sélecteur de langue dans le menu utilisateur', () => {
     expect(cy('menu-langue')).not.toBeNull();
     expect(cy('choix-langue-fr')?.textContent).toContain('Français');
     expect(cy('choix-langue-en')?.textContent).toContain('English');
-    expect(cy('choix-langue-fr')?.getAttribute('aria-current')).toBe('true');
-    expect(cy('choix-langue-en')?.getAttribute('aria-current')).toBeNull();
+  });
+
+  it('RG-08-04 : les deux langues sont des menuitemradio avec aria-checked, regroupées sous un groupe nommé par « Langue de l’interface »', async () => {
+    await start();
+    await openMenu();
+    const fr = cy('choix-langue-fr')?.closest('li') as HTMLElement;
+    const en = cy('choix-langue-en')?.closest('li') as HTMLElement;
+    expect(fr.getAttribute('role')).toBe('menuitemradio');
+    expect(en.getAttribute('role')).toBe('menuitemradio');
+    expect(fr.getAttribute('aria-checked')).toBe('true');
+    expect(en.getAttribute('aria-checked')).toBe('false');
+    expect(fr.getAttribute('lang')).toBe('fr');
+    expect(en.getAttribute('lang')).toBe('en');
+
+    const group = cy('menu-langue')?.closest('li') as HTMLElement;
+    expect(group.getAttribute('role')).toBe('group');
+    expect(document.getElementById(group.getAttribute('aria-labelledby') ?? '')?.textContent).toContain('Langue de l’interface');
+    expect(group.getAttribute('aria-owns')?.split(' ')).toEqual([fr.id, en.id]);
+
+    cy('choix-langue-en')?.click();
+    await harness.fixture.whenStable();
+    if (!cy('choix-langue-en')) {
+      await openMenu();
+    }
+    expect((cy('choix-langue-en')?.closest('li') as HTMLElement).getAttribute('aria-checked')).toBe('true');
+    expect((cy('choix-langue-fr')?.closest('li') as HTMLElement).getAttribute('aria-checked')).toBe('false');
   });
 
   it('CA-08-03 : choisir « English » traduit les jours et conserve la saisie du dialogue ouvert, sans rechargement', async () => {

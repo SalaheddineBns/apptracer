@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { of, throwError } from 'rxjs';
 import { AuthenticationService } from '../../../core/api/generated';
+import { I18n } from '../../../core/i18n/i18n.service';
 import { ChangePasswordPage } from './change-password';
 
 describe('ChangePasswordPage', () => {
@@ -62,6 +63,21 @@ describe('ChangePasswordPage', () => {
     expect(error('champ-ancien-mot-de-passe')?.textContent).toContain('L’ancien mot de passe est incorrect.');
     expect(add).not.toHaveBeenCalled();
     expect(input('champ-nouveau-mot-de-passe').value).toBe('nouveau-mdp-123');
+  });
+
+  it('RG-08-04 : changer de langue efface l’erreur du serveur sous le champ (elle était dans l’ancienne langue), le saisi reste', async () => {
+    changeMyPassword.mockReturnValue(
+      http(409, { status: 409, detail: 'x', code: 'RG-03-15', errors: [{ field: 'currentPassword', message: 'The current password is incorrect.' }] }),
+    );
+    await open();
+    await fill('mauvais', 'nouveau-mdp-123', 'nouveau-mdp-123');
+    await submit();
+    expect(error('champ-ancien-mot-de-passe')?.textContent).toContain('The current password is incorrect.');
+
+    TestBed.inject(I18n).setLang('en');
+    await whenStable();
+    expect(error('champ-ancien-mot-de-passe')).toBeNull();
+    expect(input('champ-ancien-mot-de-passe').value).toBe('mauvais');
   });
 
   it('refuse une confirmation différente du nouveau mot de passe, sans appel API', async () => {

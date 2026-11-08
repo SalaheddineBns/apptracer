@@ -12,11 +12,12 @@ import { I18n } from '../i18n/i18n.service';
 import { LANGS } from '../i18n/lang';
 import { TPipe } from '../i18n/t.pipe';
 import { FocusAnchor, FocusRestorer } from '../../shared/focus-restorer';
+import { MenuRadio } from './menu-radio';
 
 /** Coquille applicative (SFD-03 E2 En-tête) : enveloppe les pages protégées, `/login` reste en dehors. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarModule, ButtonModule, MenuModule, ConfirmDialogModule, TPipe],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarModule, ButtonModule, MenuModule, ConfirmDialogModule, MenuRadio, TPipe],
   selector: 'app-shell',
   templateUrl: './shell.html',
 })

@@ -469,7 +469,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
     it('journée standard, aide et dernière modification en anglais, heure de Paris', async () => {
       await start(Role.Admin, '/admin/settings');
       expect(text('aide-parametres')).toContain('In steps of 15 minutes, from 1 h to 24 h.');
-      expect(text('derniere-modification')).toBe('Last modified: Ada Martin, on 12/10/2026 at 14:05');
+      expect(text('derniere-modification')).toBe('Last modified by Ada Martin on 12/10/2026 at 14:05');
       expect(document.body.textContent).toContain('Standard day');
       expectNoFrench();
     });
@@ -521,7 +521,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
 
     it('journal d’un membre : titre, statut, retour, lecture seule', async () => {
       await start(Role.Manager, '/team/members/2?week=2026-10-05&team=1');
-      expect(text('titre-journal-membre')).toContain('Bob Stone’s journal');
+      expect(text('titre-journal-membre')).toContain('Journal: Bob Stone');
       expect(text('tag-inactif-2')).toBe('Inactive');
       expect(text('btn-retour-equipe')).toBe('Back to My team');
       expectNoFrench();
@@ -532,7 +532,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
         { provide: TeamViewService, useValue: { listTeamMemberTimeEntries: () => throwError(() => forbidden) } },
       ]);
       expect(text('message-membre-interdit')).toBe('This account is not part of your teams.');
-      expect(text('titre-journal-membre')).toBe('Member’s journal');
+      expect(text('titre-journal-membre')).toBe('Member journal');
       expectNoFrench();
     });
   });

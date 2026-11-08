@@ -65,8 +65,9 @@ export class ActivityTypeDialog {
     return { label: value.label?.trim() || this.i18n.t('activityTypes.dialog.previewLabel'), color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
   });
 
-  protected readonly codeExample = 'REUNION_CLIENT';
-  protected readonly codeMessages = referentialCodeMessages(this.codeExample);
+  // L'exemple est traduit (RG-08-05) : « REUNION_CLIENT » en français, « CLIENT_MEETING » en anglais.
+  protected readonly codeExample = computed(() => this.i18n.t('referentialCode.activityTypeExample'));
+  protected readonly codeMessages = computed(() => referentialCodeMessages(this.codeExample()));
   protected readonly labelMessages: FieldMessages = {
     required: 'activityTypes.dialog.errors.labelRequired',
     maxlength: 'activityTypes.dialog.errors.labelTooLong',

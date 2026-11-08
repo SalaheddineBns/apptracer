@@ -17,9 +17,9 @@
       @if (isEdit()) {
         <small class="text-xs text-muted-color">{{ 'common.codeImmutable' | t }}</small>
       } @else {
-        <small class="text-xs text-muted-color">{{ 'activityTypes.dialog.codeHint' | t: { example: codeExample } }}</small>
+        <small class="text-xs text-muted-color">{{ 'activityTypes.dialog.codeHint' | t: { example: codeExample() } }}</small>
       }
-      <app-field-error [control]="form.controls.code" [messages]="codeMessages" cy="erreur-champ-code-type" />
+      <app-field-error [control]="form.controls.code" [messages]="codeMessages()" cy="erreur-champ-code-type" />
     </div>
 
     <div class="flex flex-col gap-2">

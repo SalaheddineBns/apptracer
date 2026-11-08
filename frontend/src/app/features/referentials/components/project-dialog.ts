@@ -47,8 +47,9 @@ export class ProjectDialog {
     name: ['', [Validators.required, Validators.maxLength(100)]],
   });
 
-  protected readonly codeExample = 'PORTAIL_CLIENT';
-  protected readonly codeMessages = referentialCodeMessages(this.codeExample);
+  // L'exemple est traduit (RG-08-05) : « REUNION_CLIENT » en français, « CLIENT_MEETING » en anglais.
+  protected readonly codeExample = computed(() => this.i18n.t('referentialCode.projectExample'));
+  protected readonly codeMessages = computed(() => referentialCodeMessages(this.codeExample()));
   protected readonly nameMessages: FieldMessages = {
     required: 'projects.dialog.errors.nameRequired',
     maxlength: 'projects.dialog.errors.nameTooLong',

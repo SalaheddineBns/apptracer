@@ -83,6 +83,18 @@ describe('LoginPage', () => {
     expect((cy('champ-mot-de-passe') as HTMLInputElement).value).toBe('secret');
   });
 
+  it('RG-08-04, CA-08-02 : changer de langue efface le message « Identifiants invalides » du serveur, resté dans l’ancienne langue', async () => {
+    login.mockReturnValue(unauthorized());
+    await open();
+    await fill('a@b.fr', 'mauvais');
+    await submit();
+    expect(cy('message-erreur-connexion')?.textContent).toContain('Identifiants invalides');
+
+    cy('choix-langue-en')?.click();
+    await harness.fixture.whenStable();
+    expect(cy('message-erreur-connexion')).toBeNull();
+  });
+
   it('CA-03-01 : connexion réussie, arrivée sur « Mon journal » pour un USER', async () => {
     login.mockReturnValue(of(tokens(Role.User)));
     await open();

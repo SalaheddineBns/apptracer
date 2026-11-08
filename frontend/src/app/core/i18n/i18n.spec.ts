@@ -2,7 +2,9 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { ApplicationInitStatus } from '@angular/core';
 import { PrimeNG } from 'primeng/config';
+import { appConfig } from '../../app.config';
 import { formatWeekdayName } from '../../shared/dates/week';
 import { DICTIONARIES, I18n } from './i18n.service';
 import { languageInterceptor } from './language.interceptor';
@@ -75,6 +77,24 @@ describe('core/i18n', () => {
     i18n.setLang('fr');
     expect(document.documentElement.lang).toBe('fr');
     expect(TestBed.inject(PrimeNG).translation.dayNames?.[1]).toBe('lundi');
+  });
+
+  it('CA-08-01, RG-08-05 : au démarrage de l’application avec un navigateur anglais, PrimeNG est en anglais dès le premier rendu', async () => {
+    browser('en-GB');
+    TestBed.configureTestingModule({ providers: [...appConfig.providers, provideHttpClientTesting()] });
+    await TestBed.inject(ApplicationInitStatus).donePromise;
+    const translation = TestBed.inject(PrimeNG).translation;
+    expect(translation.today).toBe('Today');
+    expect(translation.monthNames?.[10]).toBe('November');
+    expect(translation.aria?.rowsPerPageLabel).toBe('Rows per page');
+    expect(translation.chooseDate).toBe('Choose date');
+  });
+
+  it('CA-08-04, RG-08-05 : au démarrage avec l’anglais mémorisé, PrimeNG reste en anglais', async () => {
+    localStorage.setItem('lang', 'en');
+    TestBed.configureTestingModule({ providers: [...appConfig.providers, provideHttpClientTesting()] });
+    await TestBed.inject(ApplicationInitStatus).donePromise;
+    expect(TestBed.inject(PrimeNG).translation.prevMonth).toBe('Previous month');
   });
 
   it('CA-08-08 : les dictionnaires fr et en ont exactement le même ensemble de clés', () => {
