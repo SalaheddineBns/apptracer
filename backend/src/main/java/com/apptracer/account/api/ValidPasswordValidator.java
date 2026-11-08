@@ -18,8 +18,7 @@ public class ValidPasswordValidator implements ConstraintValidator<ValidPassword
     }
     context.disableDefaultConstraintViolation();
     context
-        .buildConstraintViolationWithTemplate(
-            violations.get(0).replace("{", "\\{").replace("}", "\\}"))
+        .buildConstraintViolationWithTemplate("{" + violations.get(0) + "}")
         .addConstraintViolation();
     return false;
   }

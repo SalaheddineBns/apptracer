@@ -254,7 +254,8 @@ class TeamServiceTest {
             BusinessException.class,
             e -> {
               assertThat(e.getRgCode()).isEqualTo("RG-05-04");
-              assertThat(e.getMessage()).contains("Équipe A").contains("Uma User");
+              assertThat(e.getMessage()).isEqualTo("error.team.member-already-in-team");
+              assertThat(e.getArgs()).containsExactly("Uma User", "Équipe A");
               assertThat(e.getErrors()).extracting("field").containsExactly("memberIds");
             });
     verify(members, never()).saveAllAndFlush(any());

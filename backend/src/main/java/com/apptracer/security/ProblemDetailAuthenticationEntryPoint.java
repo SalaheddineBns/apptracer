@@ -1,11 +1,14 @@
 package com.apptracer.security;
 
 import com.apptracer.common.error.ProblemDetails;
+import com.apptracer.common.i18n.RequestLocaleResolver;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -17,9 +20,14 @@ import org.springframework.stereotype.Component;
 public class ProblemDetailAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
   private final ObjectMapper objectMapper;
+  private final MessageSource messages;
+  private final RequestLocaleResolver localeResolver;
 
-  public ProblemDetailAuthenticationEntryPoint(ObjectMapper objectMapper) {
+  public ProblemDetailAuthenticationEntryPoint(
+      ObjectMapper objectMapper, MessageSource messages, RequestLocaleResolver localeResolver) {
     this.objectMapper = objectMapper;
+    this.messages = messages;
+    this.localeResolver = localeResolver;
   }
 
   @Override
@@ -28,7 +36,8 @@ public class ProblemDetailAuthenticationEntryPoint implements AuthenticationEntr
       HttpServletResponse response,
       AuthenticationException authException)
       throws IOException {
-    // RG-03-09
+    // RG-03-09, RG-08-06 : message dans la langue de la requête
+    Locale locale = localeResolver.resolveLocale(request);
     response.setStatus(HttpStatus.UNAUTHORIZED.value());
     response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
     response.setCharacterEncoding("UTF-8");
@@ -37,8 +46,8 @@ public class ProblemDetailAuthenticationEntryPoint implements AuthenticationEntr
         ProblemDetails.of(
             HttpStatus.UNAUTHORIZED,
             "unauthenticated",
-            "Authentification requise",
-            "Authentification requise : connectez-vous pour accéder à cette ressource.",
+            messages.getMessage("error.title.unauthenticated", null, locale),
+            messages.getMessage("error.unauthenticated.detail", null, locale),
             "RG-03-09",
             List.of()));
   }

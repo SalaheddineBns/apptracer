@@ -220,7 +220,8 @@ class TeamUpdateServiceTest {
             BusinessException.class,
             e -> {
               assertThat(e.getRgCode()).isEqualTo("RG-05-04");
-              assertThat(e.getMessage()).contains("Technique");
+              assertThat(e.getMessage()).isEqualTo("error.team.member-already-in-team");
+              assertThat(e.getArgs()).contains("Technique");
             });
   }
 

@@ -1,7 +1,10 @@
 package com.apptracer.common.error;
 
 import java.util.List;
+import java.util.Locale;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,22 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
+  private final MessageSource messages;
+
+  public GlobalExceptionHandler(MessageSource messages) {
+    this.messages = messages;
+  }
+
+  /** RG-08-06 : message résolu dans la langue de la requête (Accept-Language). */
+  private String msg(String key, Object... args) {
+    Locale locale = LocaleContextHolder.getLocale();
+    return messages.getMessage(key, args, locale);
+  }
+
+  private List<ApiFieldError> localized(List<ApiFieldError> errors, Object[] args) {
+    return errors.stream().map(e -> new ApiFieldError(e.field(), msg(e.message(), args))).toList();
+  }
+
   /** Règle de gestion violée : 409 avec le code de la RG. */
   @ExceptionHandler(BusinessException.class)
   ResponseEntity<ProblemDetail> handleBusiness(BusinessException ex) {
@@ -31,10 +50,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetails.of(
             HttpStatus.CONFLICT,
             "business-rule",
-            "Règle de gestion violée",
-            ex.getMessage(),
+            msg("error.title.business-rule"),
+            msg(ex.getMessage(), ex.getArgs()),
             ex.getRgCode(),
-            ex.getErrors());
+            localized(ex.getErrors(), ex.getArgs()));
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
   }
 
@@ -45,8 +64,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetails.of(
             HttpStatus.UNAUTHORIZED,
             "invalid-credentials",
-            "Identifiants invalides",
-            ex.getMessage(),
+            msg("error.title.invalid-credentials"),
+            msg(ex.getMessage()),
             "RG-03-04",
             List.of());
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
@@ -59,8 +78,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetails.of(
             HttpStatus.FORBIDDEN,
             "forbidden",
-            "Accès refusé",
-            ex.getMessage(),
+            msg("error.title.forbidden"),
+            msg(ex.getMessage()),
             ex.getRgCode(),
             List.of());
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
@@ -72,8 +91,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetails.of(
             HttpStatus.NOT_FOUND,
             "not-found",
-            "Ressource introuvable",
-            ex.getMessage(),
+            msg("error.title.not-found"),
+            msg(ex.getMessage()),
             null,
             List.of());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(problem);
@@ -86,10 +105,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             ProblemDetails.of(
                 HttpStatus.BAD_REQUEST,
                 "validation",
-                "Requête invalide",
-                ex.getMessage(),
+                msg("error.title.validation"),
+                msg(ex.getMessage(), ex.getArgs()),
                 null,
-                ex.getErrors()));
+                localized(ex.getErrors(), ex.getArgs())));
   }
 
   /** Conflit de version ({@code @Version}) : 409 sans code de RG. */
@@ -100,8 +119,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetails.of(
             HttpStatus.CONFLICT,
             "concurrent-modification",
-            "Modification concurrente",
-            "Cet élément a été modifié par quelqu'un d'autre. Rechargez la page puis recommencez.",
+            msg("error.title.concurrent-modification"),
+            msg("error.concurrent-modification.detail"),
             null,
             List.of());
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
@@ -118,50 +137,40 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       return handleBusiness(
           BusinessException.onField(
               "RG-03-01",
-              "Un compte existe déjà avec cet e-mail.",
+              "error.account.email-duplicate",
               "email",
-              "Cet e-mail est déjà utilisé."));
+              "field.account.email-duplicate"));
     }
     if (violates(ex, "ux_activity_types_code")) {
       // RG-02-01
       return handleBusiness(
           BusinessException.onField(
-              "RG-02-01",
-              "Un type d'activité existe déjà avec ce code.",
-              "code",
-              "Ce code est déjà utilisé."));
+              "RG-02-01", "error.activity-type.code-duplicate", "code", "field.code-duplicate"));
     }
     if (violates(ex, "ux_projects_code")) {
       // RG-02-01
       return handleBusiness(
           BusinessException.onField(
-              "RG-02-01",
-              "Un projet existe déjà avec ce code.",
-              "code",
-              "Ce code est déjà utilisé."));
+              "RG-02-01", "error.project.code-duplicate", "code", "field.code-duplicate"));
     }
     if (violates(ex, "ex_time_entries_no_overlap")) {
       // RG-01-06 : deux requêtes simultanées ont passé le contrôle de service
-      return handleBusiness(
-          new BusinessException("RG-01-06", "Cette période chevauche une activité déjà déclarée."));
+      return handleBusiness(new BusinessException("RG-01-06", "error.time-entry.overlap.generic"));
     }
     if (violates(ex, "ux_teams_name_lower")) {
       // RG-05-01
       return handleBusiness(
           BusinessException.onField(
-              "RG-05-01",
-              "Une équipe existe déjà avec ce nom.",
-              "name",
-              "Ce nom d'équipe est déjà utilisé."));
+              "RG-05-01", "error.team.name-duplicate", "name", "field.team.name-duplicate"));
     }
     if (violates(ex, "pk_team_members")) {
       // RG-05-04 : deux requêtes simultanées ont rattaché le même compte
       return handleBusiness(
           BusinessException.onField(
               "RG-05-04",
-              "Un des comptes choisis est déjà membre d'une autre équipe.",
+              "error.team.member-concurrent",
               "memberIds",
-              "Un des comptes est déjà membre d'une autre équipe."));
+              "field.team.member-concurrent"));
     }
     throw ex;
   }
@@ -209,8 +218,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.badRequest()
         .body(
             validationProblem(
-                List.of(
-                    new ApiFieldError(ex.getParameterName(), "Ce paramètre est obligatoire."))));
+                List.of(new ApiFieldError(ex.getParameterName(), msg("field.param-required")))));
   }
 
   /** Paramètre de requête mal formé (par exemple une date illisible) : 400 sur ce paramètre. */
@@ -219,15 +227,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
       TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     String field = ex.getPropertyName() == null ? "request" : ex.getPropertyName();
     return ResponseEntity.badRequest()
-        .body(validationProblem(List.of(new ApiFieldError(field, "Valeur invalide."))));
+        .body(validationProblem(List.of(new ApiFieldError(field, msg("field.invalid-value")))));
   }
 
-  private static ProblemDetail validationProblem(List<ApiFieldError> errors) {
+  private ProblemDetail validationProblem(List<ApiFieldError> errors) {
     return ProblemDetails.of(
         HttpStatus.BAD_REQUEST,
         "validation",
-        "Requête invalide",
-        "La requête est invalide. Corrigez les champs signalés.",
+        msg("error.title.validation"),
+        msg("error.validation.detail"),
         null,
         errors);
   }

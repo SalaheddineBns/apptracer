@@ -36,9 +36,9 @@ public class PasswordChangeService {
     if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
       throw BusinessException.onField(
           "RG-03-15",
-          "L'ancien mot de passe est incorrect.",
+          "error.current-password.incorrect",
           "currentPassword",
-          "L'ancien mot de passe est incorrect.");
+          "error.current-password.incorrect");
     }
     // RG-03-03 : stocké haché en BCrypt ; RG-00-04 : updated_by = l'utilisateur lui-même
     user.setPasswordHash(passwordEncoder.encode(newPassword));

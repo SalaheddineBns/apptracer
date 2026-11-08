@@ -29,10 +29,7 @@ public class ActivityTypeService {
     // sa violation est traduite en 409 RG-02-01 par le handler global)
     if (types.existsByCode(code)) {
       throw BusinessException.onField(
-          "RG-02-01",
-          "Un type d'activité existe déjà avec ce code.",
-          "code",
-          "Ce code est déjà utilisé.");
+          "RG-02-01", "error.activity-type.code-duplicate", "code", "field.code-duplicate");
     }
     // RG-02-05 : actif à la création ; RG-00-04 : created_by / updated_by via l'audit JPA
     return types.saveAndFlush(new ActivityType(code, label.strip(), projectRequired, color));
@@ -42,7 +39,7 @@ public class ActivityTypeService {
   public ActivityType get(Long id) {
     return types
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Type d'activité introuvable."));
+        .orElseThrow(() -> new ResourceNotFoundException("error.activity-type.not-found"));
   }
 
   /** RG-02-01 : le code n'est pas modifiable. RG-02-08 : réservé à l'ADMIN. */
@@ -58,9 +55,9 @@ public class ActivityTypeService {
     if (type.isProjectRequired() != projectRequired && usageChecker.isUsed(id)) {
       throw BusinessException.onField(
           "RG-02-07",
-          "Ce type est utilisé par des saisies : « projet requis » n'est plus modifiable.",
+          "error.activity-type.project-required-locked",
           "projectRequired",
-          "Non modifiable : le type est déjà utilisé.");
+          "field.activity-type.project-required-locked");
     }
     type.setLabel(label.strip());
     type.setProjectRequired(projectRequired); // RG-02-03

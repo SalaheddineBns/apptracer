@@ -79,6 +79,7 @@ class TimeEntryOverlapTest {
   private ResultActions send(User u, String body) throws Exception {
     return mockMvc.perform(
         post("/api/v1/time-entries")
+            .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
             .header(
                 HttpHeaders.AUTHORIZATION,
                 "Bearer " + tokens.issue(u.getId(), u.getRole(), UUID.randomUUID()))

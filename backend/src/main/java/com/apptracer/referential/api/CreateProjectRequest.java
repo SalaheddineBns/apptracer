@@ -10,8 +10,6 @@ public record CreateProjectRequest(
     // RG-02-01 : contrôlé tel que saisi, jamais transformé (CA-02-04)
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[A-Z0-9_]{2,30}$")
         @NotNull
-        @Pattern(
-            regexp = "^[A-Z0-9_]{2,30}$",
-            message = "Le code doit contenir 2 à 30 majuscules, chiffres ou _.")
+        @Pattern(regexp = "^[A-Z0-9_]{2,30}$", message = "{validation.code.pattern}")
         String code,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String name) {}

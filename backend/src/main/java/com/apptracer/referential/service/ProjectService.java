@@ -26,7 +26,7 @@ public class ProjectService {
     // sa violation est traduite en 409 RG-02-01 par le handler global)
     if (projects.existsByCode(code)) {
       throw BusinessException.onField(
-          "RG-02-01", "Un projet existe déjà avec ce code.", "code", "Ce code est déjà utilisé.");
+          "RG-02-01", "error.project.code-duplicate", "code", "field.code-duplicate");
     }
     // RG-02-05 : actif à la création ; RG-00-04 : created_by / updated_by via l'audit JPA
     return projects.saveAndFlush(new Project(code, name.strip()));
@@ -36,7 +36,7 @@ public class ProjectService {
   public Project get(Long id) {
     return projects
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Projet introuvable."));
+        .orElseThrow(() -> new ResourceNotFoundException("error.project.not-found"));
   }
 
   /** RG-02-01 : le code n'est pas modifiable. RG-02-08 : réservé à l'ADMIN. */

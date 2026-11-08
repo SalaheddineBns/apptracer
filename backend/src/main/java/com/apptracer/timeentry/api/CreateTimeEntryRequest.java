@@ -36,5 +36,5 @@ public record CreateTimeEntryRequest(
     @Schema(description = "Requis ou interdit selon le type d'activité (RG-01-05)")
         String projectCode,
     // RG-01-09
-    @Schema(maxLength = 500) @Size(max = 500, message = "500 caractères au plus.") String comment)
+    @Schema(maxLength = 500) @Size(max = 500, message = "{validation.comment.max}") String comment)
     implements TimeEntryShape {}

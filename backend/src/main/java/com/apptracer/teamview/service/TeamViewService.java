@@ -92,8 +92,7 @@ public class TeamViewService {
   // RG-04-04 : la semaine va du lundi au dimanche
   private static void requireMonday(LocalDate weekStart) {
     if (weekStart.getDayOfWeek() != DayOfWeek.MONDAY) {
-      throw new InvalidRequestException(
-          "La semaine doit commencer un lundi.", "weekStart", "Doit être un lundi.");
+      throw new InvalidRequestException("error.week.not-monday", "weekStart", "field.not-monday");
     }
   }
 }

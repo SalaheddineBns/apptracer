@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,12 +44,12 @@ class ErrorHandlingTest {
     @GetMapping("/api/v1/probe/business")
     void business() {
       throw BusinessException.onField(
-          "RG-99-01", "Règle de test violée.", "endTime", "doit être après l'heure de début");
+          "RG-99-01", "error.project.required", "endTime", "field.hours.end-after-start");
     }
 
     @GetMapping("/api/v1/probe/business-no-field")
     void businessNoField() {
-      throw new BusinessException("RG-99-02", "Autre règle violée.");
+      throw new BusinessException("RG-99-02", "error.team.not-found");
     }
 
     @GetMapping("/api/v1/probe/version")
@@ -78,6 +79,7 @@ class ErrorHandlingTest {
     mockMvc
         .perform(
             post("/api/v1/probe/validation")
+                .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\"}"))
         .andExpect(status().isBadRequest())
@@ -96,6 +98,7 @@ class ErrorHandlingTest {
     mockMvc
         .perform(
             post("/api/v1/probe/validation")
+                .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{not json"))
         .andExpect(status().isBadRequest())
@@ -108,14 +111,14 @@ class ErrorHandlingTest {
   @DisplayName("BusinessException : 409 avec le code de la RG et errors[]")
   void businessExceptionReturns409WithCode() throws Exception {
     mockMvc
-        .perform(get("/api/v1/probe/business"))
+        .perform(get("/api/v1/probe/business").header(HttpHeaders.ACCEPT_LANGUAGE, "fr"))
         .andExpect(status().isConflict())
         .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
         .andExpect(jsonPath("$.status").value(409))
         .andExpect(jsonPath("$.code").value("RG-99-01"))
-        .andExpect(jsonPath("$.detail").value("Règle de test violée."))
+        .andExpect(jsonPath("$.detail").value("Le projet est obligatoire pour ce type d'activité."))
         .andExpect(jsonPath("$.errors[0].field").value("endTime"))
-        .andExpect(jsonPath("$.errors[0].message").value("doit être après l'heure de début"));
+        .andExpect(jsonPath("$.errors[0].message").value("Doit être après l'heure de début."));
   }
 
   @Test

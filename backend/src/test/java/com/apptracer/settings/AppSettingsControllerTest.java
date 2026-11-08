@@ -122,6 +122,7 @@ class AppSettingsControllerTest {
       throws Exception {
     return mockMvc.perform(
         put(URL)
+            .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
             .header(HttpHeaders.AUTHORIZATION, bearer(u))
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));

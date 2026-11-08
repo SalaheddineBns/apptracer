@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ManagedScope {
 
   static final String RG = "RG-04-02";
-  static final String DENIED = "Vous n'avez pas accès à cette équipe ou à ce compte.";
+  static final String DENIED = "error.team-view.access-denied";
 
   private final TeamRepository teams;
   private final TeamMemberRepository members;

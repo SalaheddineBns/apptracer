@@ -162,7 +162,8 @@ class UserManagementServiceTest {
             BusinessException.class,
             e -> {
               assertThat(e.getRgCode()).isEqualTo("RG-05-10");
-              assertThat(e.getMessage()).contains("« Produit »");
+              assertThat(e.getMessage()).isEqualTo("error.account.manager-of-team.deactivate");
+              assertThat(e.getArgs()).containsExactly("« Produit »");
               assertThat(e.getErrors()).isEmpty();
             });
     assertThat(u.isActive()).isTrue();
@@ -179,7 +180,10 @@ class UserManagementServiceTest {
     assertThatThrownBy(() -> service.deactivate(ADMIN_ID, USER_ID))
         .isInstanceOfSatisfying(
             BusinessException.class,
-            e -> assertThat(e.getMessage()).contains("« Produit »").contains("« Technique »"));
+            e -> {
+              assertThat(e.getMessage()).isEqualTo("error.account.manager-of-teams.deactivate");
+              assertThat(e.getArgs()).containsExactly("« Produit », « Technique »");
+            });
   }
 
   @Test

@@ -57,6 +57,6 @@ class PasswordPolicyTest {
     assertThat(validator.validate(new Form("abcdefghijk1"))).isEmpty();
     var violations = validator.validate(new Form("court1"));
     assertThat(violations).hasSize(1);
-    assertThat(violations.iterator().next().getMessage()).contains("au moins 12 caractères");
+    assertThat(violations.iterator().next().getMessage()).contains("password.min-length");
   }
 }

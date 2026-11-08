@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPassword {
 
-  String message() default "Mot de passe invalide";
+  String message() default "{password.invalid}";
 
   Class<?>[] groups() default {};
 

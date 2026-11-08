@@ -97,6 +97,7 @@ class TimeEntryUpdateTest {
   private ResultActions update(User u, long id, String body) throws Exception {
     return mockMvc.perform(
         put(URL + "/" + id)
+            .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
             .header(HttpHeaders.AUTHORIZATION, bearer(u))
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));

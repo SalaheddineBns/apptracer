@@ -7,6 +7,6 @@ package com.apptracer.common.error;
 public class InvalidCredentialsException extends RuntimeException {
 
   public InvalidCredentialsException() {
-    super("Identifiants invalides");
+    super("error.invalid-credentials.detail");
   }
 }

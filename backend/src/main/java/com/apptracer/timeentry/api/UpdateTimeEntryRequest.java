@@ -38,5 +38,5 @@ public record UpdateTimeEntryRequest(
         String projectCode,
     // RG-01-09
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull Long version,
-    @Schema(maxLength = 500) @Size(max = 500, message = "500 caractères au plus.") String comment)
+    @Schema(maxLength = 500) @Size(max = 500, message = "{validation.comment.max}") String comment)
     implements TimeEntryShape {}

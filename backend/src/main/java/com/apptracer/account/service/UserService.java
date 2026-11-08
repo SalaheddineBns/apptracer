@@ -53,10 +53,7 @@ public class UserService {
     // concurrentes ; sa violation est traduite en 409 RG-03-01 par le handler global)
     if (users.existsByEmail(normalizedEmail)) {
       throw BusinessException.onField(
-          "RG-03-01",
-          "Un compte existe déjà avec cet e-mail.",
-          "email",
-          "Cet e-mail est déjà utilisé.");
+          "RG-03-01", "error.account.email-duplicate", "email", "field.account.email-duplicate");
     }
     // RG-03-12 : mot de passe initial défini par l'ADMIN ; RG-03-03 : stocké haché en BCrypt
     // RG-03-10 : exactement un rôle ; RG-03-05 : actif à la création
@@ -76,7 +73,7 @@ public class UserService {
     for (Sort.Order order : pageable.getSort()) {
       if (!SORTABLE.contains(order.getProperty())) {
         throw new InvalidRequestException(
-            "Paramètre de tri invalide.", "sort", "Tri non autorisé : " + order.getProperty());
+            "error.sort.invalid", "sort", "field.sort.invalid", order.getProperty());
       }
     }
     return users.findAll(
@@ -87,24 +84,19 @@ public class UserService {
   public User get(Long id) {
     return users
         .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable."));
+        .orElseThrow(() -> new ResourceNotFoundException("error.account.not-found"));
   }
 
   /** Compte chargé avec un verrou exclusif ({@code FOR UPDATE}), pour update et deactivate. */
   private User getForUpdate(Long id) {
     return users
         .findByIdForUpdate(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable."));
+        .orElseThrow(() -> new ResourceNotFoundException("error.account.not-found"));
   }
 
-  /** RG-05-10 : message nommant la ou les équipes dont le compte est manager. */
-  private static String managerOfMessage(List<String> teamNames, String action) {
-    String names = teamNames.stream().map(n -> "« " + n + " »").collect(Collectors.joining(", "));
-    return teamNames.size() == 1
-        ? "Ce compte est manager de l'équipe %s. Désignez un autre manager ou supprimez l'équipe avant de %s."
-            .formatted(names, action)
-        : "Ce compte est manager des équipes %s. Désignez un autre manager ou supprimez ces équipes avant de %s."
-            .formatted(names, action);
+  /** RG-05-10 : noms des équipes gérées, entre guillemets, séparés par des virgules. */
+  private static String quotedNames(List<String> teamNames) {
+    return teamNames.stream().map(n -> "« " + n + " »").collect(Collectors.joining(", "));
   }
 
   /**
@@ -123,10 +115,7 @@ public class UserService {
     // RG-03-13 : un ADMIN ne peut pas retirer son propre rôle ADMIN
     if (actorId.equals(id) && user.getRole() == Role.ADMIN && role != Role.ADMIN) {
       throw BusinessException.onField(
-          "RG-03-13",
-          "Vous ne pouvez pas retirer votre propre rôle ADMIN.",
-          "role",
-          "Votre propre rôle ADMIN ne peut pas être retiré.");
+          "RG-03-13", "error.account.self-demote", "role", "field.account.self-demote");
     }
     // RG-05-10 : le rôle MANAGER ne se retire pas tant que le compte manage une équipe
     if (user.getRole() == Role.MANAGER && role != Role.MANAGER) {
@@ -134,9 +123,12 @@ public class UserService {
       if (!managed.isEmpty()) {
         throw BusinessException.onField(
             "RG-05-10",
-            managerOfMessage(managed, "lui retirer le rôle MANAGER"),
+            managed.size() == 1
+                ? "error.account.manager-of-team.demote"
+                : "error.account.manager-of-teams.demote",
             "role",
-            "Le rôle MANAGER ne peut pas être retiré : le compte est manager d'une équipe.");
+            "field.account.manager-of-team.demote",
+            quotedNames(managed));
       }
     }
     Role previousRole = user.getRole();
@@ -165,7 +157,7 @@ public class UserService {
     User user = getForUpdate(id);
     // RG-03-13 : un ADMIN ne peut pas désactiver son propre compte
     if (actorId.equals(id)) {
-      throw new BusinessException("RG-03-13", "Vous ne pouvez pas désactiver votre propre compte.");
+      throw new BusinessException("RG-03-13", "error.account.self-deactivate");
     }
     if (!user.isActive()) {
       return user;
@@ -173,7 +165,12 @@ public class UserService {
     // RG-05-10 : un manager d'équipe ne se désactive pas
     List<String> managed = teamLinks.managedTeamNames(id);
     if (!managed.isEmpty()) {
-      throw new BusinessException("RG-05-10", managerOfMessage(managed, "le désactiver"));
+      throw new BusinessException(
+          "RG-05-10",
+          managed.size() == 1
+              ? "error.account.manager-of-team.deactivate"
+              : "error.account.manager-of-teams.deactivate",
+          quotedNames(managed));
     }
     // RG-03-05 : un compte inactif ne peut ni se connecter ni renouveler sa session
     user.setActive(false);

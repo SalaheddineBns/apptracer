@@ -86,6 +86,7 @@ class RefreshAndLogoutTest {
     return mockMvc
         .perform(
             post("/api/v1/auth/" + path)
+                .header(HttpHeaders.ACCEPT_LANGUAGE, "fr")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"refreshToken\":\"" + refreshToken + "\"}"))
         .andReturn();

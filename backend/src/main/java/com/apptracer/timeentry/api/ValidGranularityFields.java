@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidGranularityFields {
 
-  String message() default "Champs incohérents avec la granularité.";
+  String message() default "{validation.granularity-fields}";
 
   Class<?>[] groups() default {};
 

@@ -153,8 +153,7 @@ public class TimeEntryService {
   public WeeklyTimeEntries listWeek(Long userId, LocalDate weekStart) {
     // le paramètre doit être un lundi (architecture §4.5) : 400 sur le champ weekStart
     if (weekStart.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
-      throw new InvalidRequestException(
-          "La semaine doit commencer un lundi.", "weekStart", "Doit être un lundi.");
+      throw new InvalidRequestException("error.week.not-monday", "weekStart", "field.not-monday");
     }
     List<TimeEntry> week = weeklyReader.read(userId, weekStart);
     var totals = weeklyCalculator.compute(week, weekStart);
@@ -169,11 +168,10 @@ public class TimeEntryService {
     TimeEntry entry =
         entries
             .findActiveById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Saisie introuvable."));
+            .orElseThrow(() -> new ResourceNotFoundException("error.time-entry.not-found"));
     // RG-01-10
     if (!entry.getUserId().equals(userId)) {
-      throw new ForbiddenOperationException(
-          "RG-01-10", "Vous ne pouvez accéder qu'à vos propres saisies.");
+      throw new ForbiddenOperationException("RG-01-10", "error.time-entry.not-owner");
     }
     return entry;
   }
@@ -199,10 +197,7 @@ public class TimeEntryService {
         .ifPresent(
             day -> {
               throw new BusinessException(
-                  "RG-01-06",
-                  "Cette période chevauche une activité déjà déclarée le "
-                      + FRENCH_DATE.format(LocalDate.parse(day))
-                      + ".");
+                  "RG-01-06", "error.time-entry.overlap", FRENCH_DATE.format(LocalDate.parse(day)));
             });
   }
 
@@ -220,25 +215,16 @@ public class TimeEntryService {
     // RG-01-01 : pas de 15 minutes
     if (!isQuarter(start)) {
       throw BusinessException.onField(
-          "RG-01-01",
-          "Les heures doivent être des multiples de 15 minutes.",
-          "startTime",
-          "Doit être un multiple de 15 minutes.");
+          "RG-01-01", "error.hours.quarter", "startTime", "field.hours.quarter");
     }
     if (!isQuarter(end)) {
       throw BusinessException.onField(
-          "RG-01-01",
-          "Les heures doivent être des multiples de 15 minutes.",
-          "endTime",
-          "Doit être un multiple de 15 minutes.");
+          "RG-01-01", "error.hours.quarter", "endTime", "field.hours.quarter");
     }
     // RG-01-01 : même jour, fin strictement après le début
     if (!end.isAfter(start)) {
       throw BusinessException.onField(
-          "RG-01-01",
-          "L'heure de fin doit être après l'heure de début.",
-          "endTime",
-          "Doit être après l'heure de début.");
+          "RG-01-01", "error.hours.end-after-start", "endTime", "field.hours.end-after-start");
     }
   }
 
@@ -250,18 +236,12 @@ public class TimeEntryService {
     // RG-01-03 : fin strictement après le début
     if (!end.isAfter(start)) {
       throw BusinessException.onField(
-          "RG-01-03",
-          "La date de fin doit être après la date de début.",
-          "endDate",
-          "Doit être après la date de début.");
+          "RG-01-03", "error.range.end-after-start", "endDate", "field.range.end-after-start");
     }
     // RG-01-03 : 31 jours calendaires au plus, bornes incluses
     if (ChronoUnit.DAYS.between(start, end) > MAX_RANGE_GAP_DAYS) {
       throw BusinessException.onField(
-          "RG-01-03",
-          "Une plage ne peut pas dépasser 31 jours.",
-          "endDate",
-          "La plage ne peut pas dépasser 31 jours.");
+          "RG-01-03", "error.range.max-days", "endDate", "field.range.max-days");
     }
   }
 
@@ -269,10 +249,7 @@ public class TimeEntryService {
     // RG-01-07, RG-00-01 : seule la date de début est contrôlée, à la date du jour Europe/Paris
     if (startDate.isAfter(LocalDate.now(clock))) {
       throw BusinessException.onField(
-          "RG-01-07",
-          "La date de début ne peut pas être dans le futur.",
-          "startDate",
-          "Ne peut pas être dans le futur.");
+          "RG-01-07", "error.start-date.future", "startDate", "field.start-date.future");
     }
   }
 
@@ -285,27 +262,21 @@ public class TimeEntryService {
             () ->
                 BusinessException.onField(
                     "RG-01-04",
-                    "Le type d'activité est inconnu ou inactif.",
+                    "error.activity-type.unknown-or-inactive",
                     "activityTypeCode",
-                    "Choisissez un type d'activité actif."));
+                    "field.activity-type.unknown-or-inactive"));
   }
 
   private Project resolveProject(ActivityType type, String projectCode) {
     // RG-01-05 : projet obligatoire si le type l'exige, interdit sinon
     if (type.isProjectRequired() && projectCode == null) {
       throw BusinessException.onField(
-          "RG-01-05",
-          "Le projet est obligatoire pour ce type d'activité.",
-          "projectCode",
-          "Le projet est obligatoire.");
+          "RG-01-05", "error.project.required", "projectCode", "field.project.required");
     }
     if (!type.isProjectRequired()) {
       if (projectCode != null) {
         throw BusinessException.onField(
-            "RG-01-05",
-            "Ce type d'activité n'accepte pas de projet.",
-            "projectCode",
-            "Le projet n'est pas autorisé pour ce type.");
+            "RG-01-05", "error.project.not-allowed", "projectCode", "field.project.not-allowed");
       }
       return null;
     }
@@ -317,8 +288,8 @@ public class TimeEntryService {
             () ->
                 BusinessException.onField(
                     "RG-02-06",
-                    "Le projet est inconnu ou inactif.",
+                    "error.project.unknown-or-inactive",
                     "projectCode",
-                    "Choisissez un projet actif."));
+                    "field.project.unknown-or-inactive"));
   }
 }

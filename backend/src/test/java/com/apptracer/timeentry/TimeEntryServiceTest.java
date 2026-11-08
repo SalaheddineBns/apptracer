@@ -283,7 +283,8 @@ class TimeEntryServiceTest {
             BusinessException.class,
             e -> {
               assertThat(e.getRgCode()).isEqualTo("RG-01-06");
-              assertThat(e.getMessage()).contains("05/10/2026").contains("chevauche");
+              assertThat(e.getMessage()).isEqualTo("error.time-entry.overlap");
+              assertThat(e.getArgs()).containsExactly("05/10/2026");
             });
     verify(entries, never()).saveAndFlush(any());
   }

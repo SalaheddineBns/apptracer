@@ -96,7 +96,7 @@ public class TeamService {
     Team team =
         teams
             .findActiveById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+            .orElseThrow(() -> new ResourceNotFoundException("error.team.not-found"));
     // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
     if (team.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(Team.class, id);
@@ -139,7 +139,7 @@ public class TeamService {
     Team team =
         teams
             .findActiveById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+            .orElseThrow(() -> new ResourceNotFoundException("error.team.not-found"));
     members.deleteByTeamId(id);
     team.markDeleted(actorId, Instant.now(clock));
     teams.saveAndFlush(team);
@@ -151,7 +151,7 @@ public class TeamService {
     Team team =
         teams
             .findActiveById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Équipe introuvable."));
+            .orElseThrow(() -> new ResourceNotFoundException("error.team.not-found"));
     List<User> teamMembers =
         members.findByTeamIdsSorted(List.of(id)).stream().map(TeamMember::getUser).toList();
     return new TeamDetails(team, teamMembers);
@@ -202,9 +202,7 @@ public class TeamService {
     String stripped = name == null ? "" : name.strip();
     if (stripped.length() < NAME_MIN || stripped.length() > NAME_MAX) {
       throw new InvalidRequestException(
-          "La requête est invalide. Corrigez les champs signalés.",
-          "name",
-          "Le nom doit contenir de 2 à 100 caractères.");
+          "error.validation.detail", "name", "validation.team.name.size");
     }
     return stripped;
   }
@@ -213,10 +211,7 @@ public class TeamService {
   private void checkNameAvailable(String name, Long currentTeamId) {
     if (teams.existsActiveByName(name, currentTeamId)) {
       throw BusinessException.onField(
-          "RG-05-01",
-          "Une équipe existe déjà avec ce nom.",
-          "name",
-          "Ce nom d'équipe est déjà utilisé.");
+          "RG-05-01", "error.team.name-duplicate", "name", "field.team.name-duplicate");
     }
   }
 
@@ -239,9 +234,9 @@ public class TeamService {
     if (manager == null || !manager.isActive() || manager.getRole() != Role.MANAGER) {
       throw BusinessException.onField(
           "RG-05-02",
-          "Le manager d'une équipe doit être un compte actif de rôle MANAGER.",
+          "error.team.manager-eligibility",
           "managerId",
-          "Choisissez un compte actif de rôle MANAGER.");
+          "field.team.manager-eligibility");
     }
 
     // RG-05-03 : membres USER ou MANAGER, jamais ADMIN (un identifiant inconnu n'est pas éligible)
@@ -251,9 +246,9 @@ public class TeamService {
       if (member == null || member.getRole() == Role.ADMIN) {
         throw BusinessException.onField(
             "RG-05-03",
-            "Un ADMIN ou un compte inconnu ne peut pas être membre d'une équipe.",
+            "error.team.member-eligibility",
             "memberIds",
-            "Les membres doivent être des comptes de rôle USER ou MANAGER.");
+            "field.team.member-eligibility");
       }
       memberAccounts.add(member);
     }
@@ -262,9 +257,9 @@ public class TeamService {
     if (memberIds.contains(managerId)) {
       throw BusinessException.onField(
           "RG-05-05",
-          "Le manager d'une équipe n'en est pas membre.",
+          "error.team.manager-not-member",
           "memberIds",
-          "Le manager ne peut pas être membre de sa propre équipe.");
+          "field.team.manager-not-member");
     }
 
     // RG-05-04 : au plus une équipe par compte, pas de transfert implicite (H10)
@@ -277,11 +272,11 @@ public class TeamService {
         if (link != null && !link.getTeamId().equals(currentTeamId)) {
           throw BusinessException.onField(
               "RG-05-04",
-              "Le compte « %s » est déjà membre de l'équipe « %s »."
-                  .formatted(fullName(member), link.getTeam().getName()),
+              "error.team.member-already-in-team",
               "memberIds",
-              "%s est déjà membre de l'équipe « %s »."
-                  .formatted(fullName(member), link.getTeam().getName()));
+              "field.team.member-already-in-team",
+              fullName(member),
+              link.getTeam().getName());
         }
       }
     }

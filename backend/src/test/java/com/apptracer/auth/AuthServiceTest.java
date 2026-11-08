@@ -106,7 +106,7 @@ class AuthServiceTest {
     when(users.findByEmail("jean@example.com")).thenReturn(Optional.of(user(false, Role.USER)));
     assertThatThrownBy(() -> service.login("jean@example.com", "Motdepasse12345"))
         .isInstanceOf(InvalidCredentialsException.class)
-        .hasMessage("Identifiants invalides");
+        .hasMessage("error.invalid-credentials.detail");
     verify(refreshRepo, never()).save(any());
   }
 

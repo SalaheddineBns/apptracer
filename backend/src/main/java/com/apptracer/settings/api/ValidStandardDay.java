@@ -17,8 +17,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidStandardDay {
 
-  String message() default
-      "La journée standard doit être comprise entre 1 h et 24 h, par pas de 15 minutes.";
+  String message() default "{validation.standard-day}";
 
   Class<?>[] groups() default {};
 
