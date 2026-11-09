@@ -35,12 +35,28 @@ at a glance.**
 ## Architecture
 
 ```mermaid
-flowchart LR
-    B["Browser<br/>Angular 22 · PrimeNG"] -->|"/api/v1 + JWT"| S["Spring Boot 3 · Java 21<br/>REST API + static Angular app"]
-    S --> D[("PostgreSQL 16<br/>Flyway migrations")]
-    S -.->|exports| C[["OpenAPI contract"]]
-    C -.->|generates the TypeScript client| B
+flowchart TB
+    user(["User's browser"])
+
+    subgraph render["Render · one Docker container"]
+        direction TB
+        spa["Angular 22 app<br/>PrimeNG · Tailwind<br/>(static files)"]
+        api["Spring Boot 3 · Java 21<br/>REST API /api/v1<br/>JWT · roles · business rules"]
+    end
+
+    db[("PostgreSQL 16 on Neon<br/>Flyway migrations")]
+    reset["GitHub Actions<br/>nightly demo reset"]
+
+    user -->|"1 · loads the app"| spa
+    user -->|"2 · JSON calls + JWT"| api
+    api -->|"3 · JPA"| db
+    reset -.->|"empties the database"| db
+    reset -.->|"redeploys"| render
 ```
+
+The browser loads the Angular app and then calls the API on the same address. The API is the only part that talks
+to the database. Its OpenAPI contract is exported to [`docs/api/openapi.json`](docs/api/openapi.json), and the
+Angular TypeScript client is generated from it.
 
 | Layer | Technology |
 |---|---|
