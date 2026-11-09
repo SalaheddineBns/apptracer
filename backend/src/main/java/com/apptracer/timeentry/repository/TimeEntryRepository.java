@@ -52,6 +52,8 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
    */
   boolean existsByActivityTypeId(Long activityTypeId);
 
+  boolean existsByUserId(Long userId);
+
   /**
    * RG-01-11, RG-01-13 : saisies non supprimées d'un compte dont la période coupe {@code
    * [weekStart, weekEnd]} (une PLAGE à cheval est donc incluse). Type et projet chargés dans la

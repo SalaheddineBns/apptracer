@@ -1,0 +1,31 @@
+# Nightly reset of the public demo: empty the database, then redeploy on Render.
+# At start-up, Flyway rebuilds the schema and the app recreates the ADMIN, the demo accounts, their team and a
+# sample of entries. Secrets: DEMO_DATABASE_URL (Neon connection string) and RENDER_DEPLOY_HOOK_URL.
+name: Demo reset
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # every night at 03:00 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    env:
+      DEMO_DATABASE_URL: ${{ secrets.DEMO_DATABASE_URL }}
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+    steps:
+      - name: Check secrets
+        run: |
+          if [ -z "$DEMO_DATABASE_URL" ] || [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::Set the DEMO_DATABASE_URL and RENDER_DEPLOY_HOOK_URL repository secrets."
+            exit 1
+          fi
+      - name: Install the PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client
+      - name: Empty the demo database
+        run: psql "$DEMO_DATABASE_URL" -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+      - name: Redeploy the demo
+        run: curl -fsS -X POST "$RENDER_DEPLOY_HOOK_URL" > /dev/null

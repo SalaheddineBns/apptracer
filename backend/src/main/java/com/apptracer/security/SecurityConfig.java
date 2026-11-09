@@ -42,8 +42,11 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout")
                     .permitAll()
+                    .requestMatchers("/api/**")
+                    .authenticated()
+                    // Application Angular servie par l'API (fichiers statiques et routes du front)
                     .anyRequest()
-                    .authenticated())
+                    .permitAll())
         .oauth2ResourceServer(
             o ->
                 o.jwt(j -> j.jwtAuthenticationConverter(jwtAuthenticationConverter))

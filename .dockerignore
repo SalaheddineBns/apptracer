@@ -1,0 +1,14 @@
+.git
+.env
+.claude
+CLAUDE.md
+docs/sfd
+docs/recette
+**/node_modules
+**/target
+**/dist
+**/.angular
+frontend/cypress/screenshots
+frontend/cypress/videos
+frontend/cypress.env.json
+frontend/src/environments/primeui-license.ts

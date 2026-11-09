@@ -1,0 +1,43 @@
+# Render Blueprint for the public demo: one free web service built from the Dockerfile.
+# The database is a free Neon PostgreSQL; values marked sync: false are asked for when the Blueprint is created.
+services:
+  - type: web
+    name: apptracer-demo
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      # Neon connection (Dashboard > Connection details)
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        sync: false
+      - key: POSTGRES_USER
+        sync: false
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: DB_SSLMODE
+        value: require
+      - key: JWT_SECRET
+        generateValue: true
+      # Initial ADMIN: keep this password private, it is not published in the README
+      - key: ADMIN_EMAIL
+        value: admin@apptracer.local
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_FIRST_NAME
+        value: Ada
+      - key: ADMIN_LAST_NAME
+        value: Admin
+      # Shared password of the published demo accounts (manager, dev, qa)
+      - key: DEMO_PASSWORD
+        sync: false
+      # Used by the Angular build inside the Dockerfile
+      - key: PRIMEUI_LICENSE
+        sync: false

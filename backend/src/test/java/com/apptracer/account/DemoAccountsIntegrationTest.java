@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.apptracer.TestcontainersConfiguration;
 import com.apptracer.account.repository.UserRepository;
 import com.apptracer.account.service.DemoAccountsInitializer;
+import com.apptracer.account.service.DemoWeekSeeder;
 import com.apptracer.account.service.InitialAdminInitializer;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +32,7 @@ class DemoAccountsIntegrationTest {
 
   @Autowired private InitialAdminInitializer adminInitializer;
   @Autowired private DemoAccountsInitializer initializer;
+  @Autowired private DemoWeekSeeder weekSeeder;
   @Autowired private UserRepository users;
   @Autowired private JdbcTemplate jdbc;
   @Autowired private MockMvc mockMvc;
@@ -43,7 +45,41 @@ class DemoAccountsIntegrationTest {
     jdbc.execute("DELETE FROM teams");
     jdbc.execute("DELETE FROM refresh_tokens");
     jdbc.execute("UPDATE app_settings SET updated_by = NULL");
+    jdbc.update("DELETE FROM projects WHERE code = ?", DemoWeekSeeder.PROJECT_CODE);
     jdbc.execute("DELETE FROM users");
+  }
+
+  @Test
+  void seedsTheTenPreviousWorkingDaysForTheDeveloperAndTheQaOnce() {
+    adminInitializer.createIfAbsent();
+    initializer.createMissing();
+
+    int created = weekSeeder.seed();
+
+    // 10 jours ouvrés : le dev a 4 créneaux par jour (3 le vendredi), le QA 4
+    assertThat(created).isBetween(74, 80);
+    Long devId = users.findByEmail("dev@apptracer.local").orElseThrow().getId();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(DISTINCT start_date) FROM time_entries WHERE user_id = ?",
+                Integer.class,
+                devId))
+        .isEqualTo(10);
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM time_entries WHERE user_id = ? AND created_by <> user_id",
+                Integer.class,
+                devId))
+        .isZero();
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM time_entries WHERE start_date >= CURRENT_DATE"
+                    + " OR extract(isodow FROM start_date) > 5",
+                Integer.class))
+        .isZero();
+    assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+
+    assertThat(weekSeeder.seed()).isZero();
   }
 
   @Test

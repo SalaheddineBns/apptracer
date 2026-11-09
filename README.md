@@ -158,6 +158,26 @@ Configuration is read from environment variables, among them:
 
 The full list, with defaults, is in [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml).
 
+## Demo deployment
+
+The public demo runs as **one free container**: the [`Dockerfile`](Dockerfile) builds the Angular app and serves it
+from the Spring Boot API, so there is one URL and no CORS. It is described for Render in [`render.yaml`](render.yaml),
+with a free PostgreSQL database on Neon.
+
+1. **Database**: create a free project on [Neon](https://neon.tech) (region Frankfurt) and note its host, database,
+   user and password.
+2. **App**: on [Render](https://render.com), choose *New > Blueprint*, select this repository, then fill in the values
+   it asks for: the Neon connection, `ADMIN_PASSWORD` (kept private), `DEMO_PASSWORD` (published with the demo
+   accounts) and `PRIMEUI_LICENSE`. Render builds the image and deploys it on every push to `main`.
+3. **Nightly reset**: in Render, copy the service's *Deploy Hook* URL. In GitHub, add two repository secrets:
+   `RENDER_DEPLOY_HOOK_URL` and `DEMO_DATABASE_URL` (the Neon connection string). The
+   [`Demo reset`](.github/workflows/demo-reset.yml) workflow then empties the database every night and redeploys;
+   it can also be run by hand from the *Actions* tab.
+
+At start-up the app creates the ADMIN, the demo manager, developer and QA, the team **Demo team**, the project
+**AppTracer** and the ten previous working days of entries for the developer and the QA. A free Render service
+sleeps when idle: the first visit after a quiet period can take up to a minute.
+
 ## Documentation
 
 | Document | Content |
