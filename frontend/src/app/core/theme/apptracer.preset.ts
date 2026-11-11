@@ -1,7 +1,7 @@
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 
-/** Preset PrimeNG AppTracer : Aura avec la couleur primaire indigo (design system). */
+/** AppTracer PrimeNG preset: Aura with the indigo primary colour (design system). */
 export const AppTracerPreset = definePreset(Aura, {
   semantic: {
     primary: {

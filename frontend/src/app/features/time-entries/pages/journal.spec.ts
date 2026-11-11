@@ -49,7 +49,7 @@ const week = (
   weekStart = '2026-10-05',
 ): WeeklyTimeEntriesResponse => ({ weekStart, weekEnd: '2026-10-11', totalMinutes, days: [], entries });
 
-/** Semaine du 05/10/2026 avec les totaux par jour de l'API (lundi → dimanche), à 0 par défaut. */
+/** Week of 05/10/2026 with the API's per-day totals (Monday to Sunday), 0 by default. */
 const weekWithDays = (
   entries: TimeEntryResponse[],
   minutesByDate: Record<string, number>,

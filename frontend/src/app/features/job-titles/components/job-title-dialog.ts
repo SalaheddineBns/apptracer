@@ -18,7 +18,7 @@ export interface JobTitleSaved {
   readonly jobTitle: JobTitleResponse;
 }
 
-/** SFD-09 E2 Dialogue fonction : création (jobTitle = null) ou modification d'une fonction existante. */
+/** SFD-09 E2 Job title dialog: creation (jobTitle = null) or update of an existing job title. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, FieldError, TPipe],
@@ -31,10 +31,10 @@ export class JobTitleDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Fonction à modifier, ou `null` pour une création. */
+  /** Job title to update, or `null` for a creation. */
   readonly jobTitle = input<JobTitleResponse | null>(null);
   readonly saved = output<JobTitleSaved>();
-  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  /** Concurrent change detected: the caller reloads the list. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
@@ -87,7 +87,7 @@ export class JobTitleDialog {
     }
   }
 
-  /** Focus initial sur le premier champ modifiable (le code en création, le libellé en modification). */
+  /** Initial focus on the first editable field (the code on creation, the label on update). */
   protected focusFirstField(form: HTMLFormElement): void {
     const first = form.querySelector<HTMLInputElement>('input:not(:disabled)');
     const active = document.activeElement;
@@ -101,7 +101,7 @@ export class JobTitleDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la ligne a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the row may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {

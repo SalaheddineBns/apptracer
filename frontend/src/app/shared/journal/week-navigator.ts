@@ -4,7 +4,7 @@ import { I18n } from '../../core/i18n/i18n.service';
 import { TPipe } from '../../core/i18n/t.pipe';
 import { addDays, formatDate } from '../dates/week';
 
-/** Navigation de semaine en semaine (SFD-01 E1, SFD-04 E1 et E2). `weekStart` est un lundi, `YYYY-MM-DD`. */
+/** Week-to-week navigation (SFD-01 E1, SFD-04 E1 and E2). `weekStart` is a Monday, `YYYY-MM-DD`. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ButtonModule, TPipe],

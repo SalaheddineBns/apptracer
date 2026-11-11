@@ -4,14 +4,14 @@ import { Role } from '../api/generated';
 import { AuthStore } from './auth.store';
 import { homeUrlFor } from './roles';
 
-/** CA-03-05 : sans session, redirection vers `/login` en mémorisant la page demandée (`returnUrl`). */
+/** CA-03-05: without a session, redirect to `/login`, remembering the requested page (`returnUrl`). */
 export const authGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
   return auth.isAuthenticated() || router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
 
-/** Rôle insuffisant (hiérarchie RG-03-10) : redirection vers l'accueil du rôle. Le back reste la référence. */
+/** Insufficient role (RG-03-10 hierarchy): redirect to the role's home page. The back end remains the reference. */
 export const roleGuard =
   (required: Role): CanActivateFn =>
   (_route, state) => {
@@ -24,7 +24,7 @@ export const roleGuard =
     return auth.hasRole(required) || router.createUrlTree([homeUrlFor(user.role)]);
   };
 
-/** Déjà connecté : `/login` renvoie vers l'accueil du rôle. */
+/** Already signed in: `/login` sends back to the role's home page. */
 export const guestGuard: CanActivateFn = () => {
   const auth = inject(AuthStore);
   const router = inject(Router);
@@ -32,7 +32,7 @@ export const guestGuard: CanActivateFn = () => {
   return user ? router.createUrlTree([homeUrlFor(user.role)]) : true;
 };
 
-/** Route `/` : redirection vers l'accueil du rôle (sous `authGuard`, l'utilisateur est connu). */
+/** Route `/`: redirect to the role's home page (under `authGuard`, the user is known). */
 export const homeRedirectGuard: CanActivateFn = () => {
   const auth = inject(AuthStore);
   const router = inject(Router);

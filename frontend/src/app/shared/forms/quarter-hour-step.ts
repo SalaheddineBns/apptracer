@@ -2,10 +2,10 @@ import { Directive, ElementRef, inject, input, OnInit, DestroyRef } from '@angul
 import { NgControl } from '@angular/forms';
 
 /**
- * Flèches d'un `p-inputnumber` de minutes : uniquement des multiples du pas (15) entre 0 et `max` (45), jamais 60 ou 59.
- * PrimeNG ne le permet pas seul : `max` rogne aussi la valeur tapée (50 deviendrait 45 en silence), alors que
- * sans `max` la flèche haut passe à 60. Les flèches du clavier et les boutons sont donc pris en charge ici, et le
- * composant garde ses bornes ouvertes : une valeur tapée reste telle que tapée, le validateur du formulaire la juge.
+ * Arrows of a minutes `p-inputnumber`: only multiples of the step (15) between 0 and `max` (45), never 60 or 59.
+ * PrimeNG cannot do this alone: `max` also clips the typed value (50 would silently become 45), while
+ * without `max` the up arrow goes to 60. Keyboard arrows and buttons are therefore handled here, and the
+ * component keeps its bounds open: a typed value stays as typed, and the form's validator judges it.
  */
 @Directive({ selector: 'p-inputnumber[appQuarterHourStep]' })
 export class QuarterHourStep implements OnInit {
@@ -15,7 +15,7 @@ export class QuarterHourStep implements OnInit {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly control = inject(NgControl);
   private readonly destroyRef = inject(DestroyRef);
-  /** Dernière valeur posée par une flèche : l'affichage de PrimeNG est mis à jour avec un léger différé. */
+  /** Last value set by an arrow: PrimeNG updates its display with a slight delay. */
   private pending: number | null = null;
 
   ngOnInit(): void {

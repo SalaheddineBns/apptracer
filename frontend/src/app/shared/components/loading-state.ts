@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { SkeletonModule } from 'primeng/skeleton';
 import { TPipe } from '../../core/i18n/t.pipe';
 
-/** État de chargement : lignes `p-skeleton` qui reproduisent la forme du contenu. */
+/** Loading state: `p-skeleton` rows that reproduce the shape of the content. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [SkeletonModule, TPipe],

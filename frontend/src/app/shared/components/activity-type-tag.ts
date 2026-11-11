@@ -4,8 +4,8 @@ import { TagColor } from '../../core/api/generated';
 import { iconForCode, severityForColor } from '../activity-type.ui';
 
 /**
- * Tag d'un type d'activité (RG-02-04). Sans dépendance à un store : reçoit les données du type en entrée.
- * Le libellé est toujours affiché, la couleur ne porte jamais l'information seule.
+ * Tag of an activity type (RG-02-04). No dependency on a store: receives the type's data as input.
+ * The label is always shown; colour never carries the information alone.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

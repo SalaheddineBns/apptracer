@@ -1,8 +1,8 @@
 /**
- * Dictionnaire français : référence des clés. `en.ts` est typé par `Dictionary` : une clé manquante ou en trop
- * casse la compilation (RG-08-05). Les paramètres s'écrivent `{nom}`.
- * Pluriels : une paire `….one` / `….other` se lit avec `I18n.plural` (règle de pluriel de la langue, RG-08-08).
- * Ne sont jamais traduits (RG-08-07) : libellés de types, noms de projets, d'équipes et de comptes, commentaires, codes de RG.
+ * French dictionary: the reference for the keys. `en.ts` is typed by `Dictionary`: a missing or extra key
+ * breaks the build (RG-08-05). Parameters are written `{name}`.
+ * Plurals: a `….one` / `….other` pair is read with `I18n.plural` (the language's plural rule, RG-08-08).
+ * Never translated (RG-08-07): activity type labels, project, team and account names, comments, rule codes.
  */
 export const fr = {
   app: {

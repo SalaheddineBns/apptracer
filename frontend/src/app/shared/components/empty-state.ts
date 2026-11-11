@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-/** État vide : icône, phrase utile et action projetée (ex. bouton « Nouvelle saisie »). */
+/** Empty state: icon, helpful sentence and projected action (e.g. a New time entry button). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-empty-state',

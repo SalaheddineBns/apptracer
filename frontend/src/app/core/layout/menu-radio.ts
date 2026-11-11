@@ -1,20 +1,20 @@
 import { Directive, effect, ElementRef, inject, input } from '@angular/core';
 
 /**
- * Choix exclusif dans un `p-menu` (sélecteur de langue du menu utilisateur, SFD-08 E1).
+ * Exclusive choice in a `p-menu` (language selector of the user menu, SFD-08 E1).
  *
- * `p-menu` pose en dur `role="menuitem"` sur chaque `<li>` et `role="none"` sur le titre d'un sous-menu, sans option pour
- * changer l'un ou l'autre. Cette directive, posée sur le contenu du gabarit `#item`, corrige le `<li>` parent :
- * - `role="menuitemradio"` et `aria-checked` : le lecteur d'écran annonce le choix et son état (coché ou non) ;
- * - `lang` : le nom est prononcé dans sa propre langue ;
- * - le titre qui précède devient un `role="group"` nommé par son texte (`aria-labelledby`) qui possède (`aria-owns`) les choix.
- * Le clavier reste celui de `p-menu` (flèches, Entrée, Échap).
+ * `p-menu` hard-codes `role="menuitem"` on each `<li>` and `role="none"` on a submenu's title, with no option to
+ * change either. This directive, placed on the content of the `#item` template, fixes the parent `<li>`:
+ * - `role="menuitemradio"` and `aria-checked`: the screen reader announces the option and its state (checked or not);
+ * - `lang`: the name is pronounced in its own language;
+ * - the preceding title becomes a `role="group"` named by its text (`aria-labelledby`) that owns (`aria-owns`) the options.
+ * The keyboard behaviour stays that of `p-menu` (arrows, Enter, Escape).
  */
 @Directive({ selector: '[appMenuRadio]' })
 export class MenuRadio {
   readonly checked = input.required<boolean>();
   readonly language = input<string>();
-  /** `id` du texte du titre du groupe. */
+  /** `id` of the group title's text. */
   readonly groupLabelId = input.required<string>();
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

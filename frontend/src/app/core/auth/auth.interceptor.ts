@@ -11,9 +11,9 @@ function withToken(req: HttpRequest<unknown>, token: string | null): HttpRequest
 }
 
 /**
- * Ajoute l'access token ; sur 401, un seul renouvellement partagé (RG-03-07) puis rejeu (CA-03-06).
- * Si le renouvellement échoue : déconnexion locale et redirection vers `/login` (CA-03-13).
- * À déclarer APRÈS `errorInterceptor` dans `withInterceptors`.
+ * Adds the access token; on 401, a single shared renewal (RG-03-07), then a replay (CA-03-06).
+ * If the renewal fails: local sign-out and redirect to `/login` (CA-03-13).
+ * To be declared AFTER `errorInterceptor` in `withInterceptors`.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next: HttpHandlerFn) => {
   if (PUBLIC_PATHS.some((path) => req.url.endsWith(path))) {

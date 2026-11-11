@@ -8,13 +8,13 @@ const DECIMAL_HOURS: Record<Lang, Intl.NumberFormat> = {
   en: new Intl.NumberFormat(INTL_LOCALE.en, { maximumFractionDigits: 2, useGrouping: false }),
 };
 
-/** Durée d'une saisie en heures et minutes : « 1 h 30 », « 7 h 00 », identique dans les deux langues (RG-08-08). */
+/** Duration of a time entry in hours and minutes: '1 h 30', '7 h 00', identical in both languages (RG-08-08). */
 export function formatDuration(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60);
   return `${hours} h ${String(totalMinutes % 60).padStart(2, '0')}`;
 }
 
-/** Total en heures décimales : « 8,5 h » en français, « 8.5 h » en anglais (CA-01-09, RG-08-08). */
+/** Total in decimal hours: '8,5 h' in French, '8.5 h' in English (CA-01-09, RG-08-08). */
 export function formatDecimalHours(totalMinutes: number, lang: Lang = 'fr'): string {
   return `${DECIMAL_HOURS[lang].format(totalMinutes / 60)} h`;
 }
@@ -26,7 +26,7 @@ export class DurationPipe implements PipeTransform {
   }
 }
 
-/** Impur : suit le signal de langue (RG-08-04). */
+/** Impure: follows the language signal (RG-08-04). */
 @Pipe({ name: 'decimalHours', pure: false })
 export class DecimalHoursPipe implements PipeTransform {
   private readonly i18n = inject(I18n);

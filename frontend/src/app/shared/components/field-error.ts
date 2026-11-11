@@ -6,13 +6,13 @@ import { I18n } from '../../core/i18n/i18n.service';
 import { TranslationKey, TranslationParams } from '../../core/i18n/keys';
 import { SERVER_ERROR_KEY } from '../forms/apply-field-errors';
 
-/** Message d'un validateur : une clé du dictionnaire, ou une clé avec ses paramètres (RG-08-05). */
+/** A validator's message: a dictionary key, or a key with its parameters (RG-08-05). */
 export type MessageSpec = TranslationKey | { readonly key: TranslationKey; readonly params: TranslationParams };
 export type FieldMessages = Record<string, MessageSpec>;
 
 /**
- * Message d'erreur sous un champ, affiché après le premier blur (ou immédiatement pour une erreur serveur).
- * `messages` associe une clé d'erreur de validateur à son message (clé du dictionnaire, traduite dans la langue en vigueur).
+ * Error message under a field, shown after the first blur (or immediately for a server error).
+ * `messages` maps a validator's error key to its message (a dictionary key, translated into the language in force).
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +27,7 @@ export class FieldError {
   readonly control = input.required<AbstractControl | null>();
   readonly messages = input<FieldMessages>({});
   private readonly i18n = inject(I18n);
-  /** `data-cy` du message (par défaut `field-error`). */
+  /** `data-cy` of the message (`field-error` by default). */
   readonly cy = input('field-error');
 
   private readonly state = toSignal(

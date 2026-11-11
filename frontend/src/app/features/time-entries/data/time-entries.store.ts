@@ -13,25 +13,25 @@ import { toProblem } from '../../../core/errors/problem';
 import { PendingIds } from '../../../shared/pending-ids';
 
 /**
- * Mes saisies d'une semaine (SFD-01 E1). RG-00-03 : le back ne renvoie que les saisies du compte connecté.
- * RG-01-13 : le total de la semaine vient de l'API (`totalMinutes`), il n'est jamais recalculé ici.
+ * My time entries for one week (SFD-01 E1). RG-00-03: the back end returns only the signed-in account's entries.
+ * RG-01-13: the week total comes from the API (`totalMinutes`); it is never recomputed here.
  */
 @Injectable({ providedIn: 'root' })
 export class TimeEntriesStore {
   private readonly api = inject(TimeEntriesService);
   private requestId = 0;
 
-  /** Suppressions en attente de réponse : une seule requête à la fois par saisie. */
+  /** Deletions waiting for a response: one request at a time per time entry. */
   readonly pending = new PendingIds();
 
-  /** Lundi de la semaine demandée (`YYYY-MM-DD`), null tant qu'aucune semaine n'a été demandée. */
+  /** Monday of the requested week (`YYYY-MM-DD`), null until a week has been requested. */
   readonly weekStart = signal<string | null>(null);
-  /** Semaine affichée ; null pendant le premier chargement d'une semaine ou après une erreur. */
+  /** Displayed week; null during the first load of a week or after an error. */
   readonly week = signal<WeeklyTimeEntriesResponse | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
 
-  /** Charge la semaine qui commence le lundi donné (la réponse la plus récente l'emporte). */
+  /** Loads the week starting on the given Monday (the most recent response wins). */
   load(weekStart: string): void {
     if (weekStart !== this.weekStart()) {
       // Changement de semaine : les saisies de l'ancienne ne restent pas affichées sous le nouveau libellé.
@@ -62,7 +62,7 @@ export class TimeEntriesStore {
     });
   }
 
-  /** Recharge la semaine affichée (saisies et total). */
+  /** Reloads the displayed week (time entries and total). */
   reload(): void {
     const weekStart = this.weekStart();
     if (weekStart !== null) {
@@ -70,17 +70,17 @@ export class TimeEntriesStore {
     }
   }
 
-  /** RG-01-01 à RG-01-09 : création. La semaine est rechargée : le total vient du back (RG-01-13). */
+  /** RG-01-01 to RG-01-09: creation. The week is reloaded: the total comes from the back end (RG-01-13). */
   create(request: CreateTimeEntryRequest): Observable<TimeEntryResponse> {
     return this.api.createTimeEntry(request).pipe(tap(() => this.reload()));
   }
 
-  /** RG-01-12 : modification, avec la version lue. */
+  /** RG-01-12: update, with the version read. */
   update(id: number, request: UpdateTimeEntryRequest): Observable<TimeEntryResponse> {
     return this.api.updateTimeEntry(id, request).pipe(tap(() => this.reload()));
   }
 
-  /** RG-01-10, RG-01-11 : suppression (logique côté back) ; la saisie sort du journal et du total. */
+  /** RG-01-10, RG-01-11: deletion (logical on the back end); the entry leaves the journal and the total. */
   remove(id: number): Observable<unknown> {
     return this.pending.guard(id, () =>
       this.api.deleteTimeEntry(id).pipe(tap(() => this.reload())),

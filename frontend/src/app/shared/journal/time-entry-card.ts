@@ -8,8 +8,8 @@ import { DurationPipe } from '../pipes/duration';
 import { datesLabel, periodLabel } from './time-entry.ui';
 
 /**
- * Une saisie dans le journal (SFD-01 E1, réutilisée en lecture seule par SFD-04 E2). Sans dépendance à un store.
- * RG-02-05, CA-02-07 : le type et le projet viennent de la saisie, ils s'affichent même désactivés.
+ * A time entry in the journal (SFD-01 E1, reused read-only by SFD-04 E2). No dependency on a store.
+ * RG-02-05, CA-02-07: the type and the project come from the entry; they are shown even when deactivated.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -78,13 +78,13 @@ import { datesLabel, periodLabel } from './time-entry.ui';
 })
 export class TimeEntryCard {
   readonly entry = input.required<TimeEntryResponse>();
-  /** RG-01-10 : « Modifier » et « Supprimer » ne sont rendus que sur son propre journal. */
+  /** RG-01-10: Edit and Delete are rendered only in one's own journal. */
   readonly editable = input(true);
-  /** Commentaire de la saisie : « Mon journal » (SFD-01 E1) et journal d'un membre (SFD-04 E2). */
+  /** Comment of the time entry: My journal (SFD-01 E1) and a member's journal (SFD-04 E2). */
   readonly showComment = input(false);
-  /** SFD-04 E2 affiche la durée enregistrée ; « Mon journal » (SFD-01 E1) affiche le commentaire à sa place. */
+  /** SFD-04 E2 shows the recorded duration; My journal (SFD-01 E1) shows the comment instead. */
   readonly showDuration = input(true);
-  /** Commentaire limité à 3 lignes (cartes étroites de « Mon journal »). */
+  /** Comment limited to 3 lines (narrow cards of My journal). */
   readonly clampComment = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();

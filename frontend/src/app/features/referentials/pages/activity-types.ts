@@ -15,7 +15,7 @@ import { FocusRestorer } from '../../../shared/focus-restorer';
 import { ActivityTypeDialog, ActivityTypeSaved } from '../components/activity-type-dialog';
 import { ActivityTypesStore } from '../data/activity-types.store';
 
-/** SFD-02 E1 Types d'activité (ADMIN) et E5 confirmation de désactivation. */
+/** SFD-02 E1 Activity types (ADMIN) and E5 deactivation confirmation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TableModule, TagModule, ButtonModule, ActivityTypeTag, EmptyState, ErrorState, LoadingState, ActivityTypeDialog, TPipe],
@@ -30,7 +30,7 @@ export class ActivityTypesPage {
   private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
-  /** Type en cours de modification ; `null` pour une création. */
+  /** Type being edited; `null` for a creation. */
   protected readonly editing = signal<ActivityTypeResponse | null>(null);
 
   constructor() {
@@ -56,7 +56,7 @@ export class ActivityTypesPage {
     );
   }
 
-  /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
+  /** E5, RG-02-05, RG-02-06: confirmation before deactivating. */
   protected confirmDeactivate(type: ActivityTypeResponse): void {
     this.confirmation.confirm({
       header: this.i18n.t('activityTypes.deactivate.header'),
@@ -69,7 +69,7 @@ export class ActivityTypesPage {
     });
   }
 
-  /** RG-02-05 : réversible, sans confirmation. */
+  /** RG-02-05: reversible, without confirmation. */
   protected reactivate(type: ActivityTypeResponse): void {
     // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
     const anchor = this.focus.capture();

@@ -31,7 +31,7 @@ import {
   toMinutes,
 } from '../standard-day';
 
-/** SFD-06 E1 Paramètres (ADMIN) : durée de la journée standard, saisie en heures et minutes (RG-00-02). */
+/** SFD-06 E1 Settings (ADMIN): length of the standard day, entered in hours and minutes (RG-00-02). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -70,9 +70,9 @@ export class SettingsPage {
     ),
     { initialValue: null },
   );
-  /** RG-06-06 : enregistrer la valeur en vigueur est sans effet, le bouton reste inactif tant qu'elle n'a pas changé. */
+  /** RG-06-06: saving the value in force has no effect; the button stays disabled until it changes. */
   protected readonly unchanged = () => this.total() === this.store.standardDayMinutes();
-  /** Champs marqués en erreur (même condition d'affichage que le message : après interaction ou erreur serveur). */
+  /** Fields flagged in error (same display condition as the message: after interaction or a server error). */
   protected readonly invalid = toSignal(
     this.form.events.pipe(
       startWith(null),
@@ -93,14 +93,16 @@ export class SettingsPage {
     this.store.load();
   }
 
-  /** Après un 409, une relecture en échec ne doit pas laisser croire que le formulaire montre la valeur actuelle. */
+  /** After a 409, a failed re-read must not suggest that the form shows the current value. */
   protected readonly loadErrorMessage = computed(() =>
     this.conflict()
       ? this.i18n.t('settings.conflictReloadFailed')
       : (this.store.error() ?? ''),
   );
 
-  /** RG-06-05 : « Prénom Nom, le dd/MM/yyyy à HH:mm » ou « Prénom Nom, on dd/MM/yyyy at HH:mm » (heure de Paris), ou la mention « jamais modifiée ». */
+  /**
+   * RG-06-05: 'First Last, le dd/MM/yyyy à HH:mm' or 'First Last, on dd/MM/yyyy at HH:mm' (Paris time), or the 'never changed' mention.
+   */
   protected lastModifiedText(): string {
     const at = this.store.lastModifiedAt();
     if (!at) {

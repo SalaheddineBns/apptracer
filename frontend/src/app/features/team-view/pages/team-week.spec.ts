@@ -15,7 +15,7 @@ import { TeamWeekPage } from './team-week';
 const alpha: ManagedTeamResponse = { id: 1, name: 'Alpha' };
 const beta: ManagedTeamResponse = { id: 2, name: 'Beta' };
 
-/** Ligne du tableau telle que l'API la renvoie : `minutes` par jour, du lundi au dimanche. */
+/** Table row as returned by the API: `minutes` per day, Monday to Sunday. */
 const member = (
   id: number,
   lastName: string,

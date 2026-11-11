@@ -19,8 +19,8 @@ import { DecimalHoursPipe } from '../../../shared/pipes/duration';
 import { TeamViewStore } from '../data/team-view.store';
 
 /**
- * SFD-04 E1 Mon équipe (MANAGER) : l'équipe et la semaine affichées sont dans l'URL (`?team=<id>&week=YYYY-MM-DD`).
- * RG-04-05 : durées par jour et totaux viennent de l'API, jamais recalculés ici.
+ * SFD-04 E1 My team (MANAGER): the displayed team and week are in the URL (`?team=<id>&week=YYYY-MM-DD`).
+ * RG-04-05: per-day durations and totals come from the API, never recomputed here.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -53,12 +53,14 @@ export class TeamWeekPage {
   private readonly params = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
   });
-  /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
+  /** Monday of the displayed week: the URL's, otherwise the current week in Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
     const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
-  /** Équipe affichée : celle de l'URL, sinon la première par ordre alphabétique, déjà en tête de la réponse (RG-04-08). */
+  /**
+   * Displayed team: the URL's, otherwise the first in alphabetical order, already at the top of the response (RG-04-08).
+   */
   protected readonly teamId = computed<number | null>(() => {
     const requested = Number(this.params().get('team'));
     if (Number.isInteger(requested) && requested > 0) {
@@ -91,7 +93,7 @@ export class TeamWeekPage {
     });
   }
 
-  /** CA-04-10 : changer d'équipe garde la même semaine. */
+  /** CA-04-10: changing team keeps the same week. */
   protected selectTeam(teamId: number): void {
     void this.router.navigate([], {
       relativeTo: this.route,
@@ -99,7 +101,7 @@ export class TeamWeekPage {
     });
   }
 
-  /** RG-04-02 : après un refus, retour à la première équipe du MANAGER, même semaine. */
+  /** RG-04-02: after a refusal, back to the MANAGER's first team, same week. */
   protected async showMyTeams(): Promise<void> {
     await this.router.navigate([], {
       relativeTo: this.route,

@@ -14,7 +14,7 @@ import { FocusRestorer } from '../../../shared/focus-restorer';
 import { JobTitleDialog, JobTitleSaved } from '../components/job-title-dialog';
 import { JobTitlesStore } from '../data/job-titles.store';
 
-/** SFD-09 E1 Fonctions (ADMIN) et E3 confirmation de désactivation. */
+/** SFD-09 E1 Job titles (ADMIN) and E3 deactivation confirmation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, JobTitleDialog, TPipe],
@@ -29,7 +29,7 @@ export class JobTitlesPage {
   private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
-  /** Fonction en cours de modification ; `null` pour une création. */
+  /** Job title being edited; `null` for a creation. */
   protected readonly editing = signal<JobTitleResponse | null>(null);
 
   constructor() {
@@ -55,7 +55,7 @@ export class JobTitlesPage {
     );
   }
 
-  /** E3, RG-09-06 : confirmation avant de désactiver. */
+  /** E3, RG-09-06: confirmation before deactivating. */
   protected confirmDeactivate(jobTitle: JobTitleResponse): void {
     this.confirmation.confirm({
       header: this.i18n.t('jobTitles.deactivate.header'),
@@ -71,7 +71,7 @@ export class JobTitlesPage {
     });
   }
 
-  /** RG-09-06 : réversible, sans confirmation. */
+  /** RG-09-06: reversible, without confirmation. */
   protected reactivate(jobTitle: JobTitleResponse): void {
     // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
     const anchor = this.focus.capture();

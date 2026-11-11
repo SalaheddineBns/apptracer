@@ -7,8 +7,8 @@ import { LANGS, Lang } from './lang';
 import { TPipe } from './t.pipe';
 
 /**
- * SFD-08 E1 Sélecteur de langue (page de connexion). « Français » et « English » sont écrits dans leur propre langue
- * (RG-08-10 : ouvert à tous, avant la connexion) ; la langue en vigueur est le choix sélectionné.
+ * SFD-08 E1 Language selector (sign-in page). 'Français' and 'English' are written in their own language
+ * (RG-08-10: open to everyone, before signing in); the language in force is the selected option.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -40,8 +40,8 @@ export class LanguageSelector {
   protected readonly options = computed(() => LANGS.map((lang) => ({ lang, label: this.i18n.t(`language.${lang}`) })));
 
   /**
-   * `lang` sur le bouton lui-même (son nom vient de `aria-label`, donc d'un texte que le `<span>` intérieur ne couvre pas) :
-   * le lecteur d'écran prononce « Français » en français et « English » en anglais, quelle que soit la langue de la page.
+   * `lang` on the button itself (its name comes from `aria-label`, so from text the inner `<span>` does not cover):
+   * the screen reader pronounces 'Français' in French and 'English' in English, whatever the page's language.
    */
   protected readonly pt = {
     pcToggleButton: {

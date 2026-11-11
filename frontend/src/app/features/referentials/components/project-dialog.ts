@@ -21,7 +21,7 @@ export interface ProjectSaved {
   readonly project: ProjectResponse;
 }
 
-/** SFD-02 E4 Dialogue projet : création (project = null) ou modification d'un projet existant. */
+/** SFD-02 E4 Project dialog: creation (project = null) or update of an existing project. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, MessageModule, SelectModule, FieldError, TPipe],
@@ -35,10 +35,10 @@ export class ProjectDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Projet à modifier, ou `null` pour une création. */
+  /** Project to update, or `null` for a creation. */
   readonly project = input<ProjectResponse | null>(null);
   readonly saved = output<ProjectSaved>();
-  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  /** Concurrent change detected: the caller reloads the list. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
@@ -53,8 +53,8 @@ export class ProjectDialog {
   });
 
   /**
-   * RG-10-01 : équipe facultative du projet (champ `teamId`, nommé comme `errors[].field`) ; vide, le projet est commun.
-   * RG-10-09 : équipes existantes, dans l'ordre du back (nom alphabétique, RG-05-13).
+   * RG-10-01: optional team of the project (field `teamId`, named like `errors[].field`); when empty, the project is shared.
+   * RG-10-09: existing teams, in the back end's order (alphabetical by name, RG-05-13).
    */
   protected readonly teamOptions = computed(() => this.teams.items().map((team) => ({ label: team.name, value: team.id })));
   protected readonly teamsError = computed(() => this.teams.error());
@@ -102,8 +102,8 @@ export class ProjectDialog {
   }
 
   /**
-   * Focus initial sur le premier champ modifiable (le code en création, le nom en modification). `onShow` arrive à la fin de
-   * l'animation d'ouverture : si l'utilisateur saisit déjà dans le formulaire, on ne lui reprend pas le focus.
+   * Initial focus on the first editable field (the code on creation, the name on update). `onShow` fires at the end of
+   * the opening animation: if the user is already typing in the form, focus is not taken back.
    */
   protected focusFirstField(form: HTMLFormElement): void {
     const first = form.querySelector<HTMLInputElement>('input:not(:disabled)');
@@ -118,7 +118,7 @@ export class ProjectDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la ligne a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the row may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {
@@ -126,12 +126,12 @@ export class ProjectDialog {
     }
   }
 
-  /** Relance le chargement des équipes après une erreur. */
+  /** Reloads the teams after an error. */
   protected reloadTeams(): void {
     this.teams.load();
   }
 
-  /** Enregistre le projet. RG-10-02 : à la modification, une équipe absente retire l'équipe du projet. */
+  /** Saves the project. RG-10-02: on update, a missing team removes the project's team. */
   protected submit(): void {
     if (this.submitting()) {
       return;

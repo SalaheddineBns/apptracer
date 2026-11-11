@@ -42,7 +42,7 @@ export class AccountsPage {
   protected readonly rowsPerPage = [10, 20, 50];
 
   protected readonly dialogVisible = signal(false);
-  /** Compte en cours de modification ; `null` pour une création. */
+  /** Account being edited; `null` for a creation. */
   protected readonly editing = signal<UserResponse | null>(null);
 
   constructor() {
@@ -93,7 +93,7 @@ export class AccountsPage {
     return `${user.firstName} ${user.lastName}`;
   }
 
-  /** Désactivation : confirmation préalable (RG-03-14 : ses sessions sont révoquées). */
+  /** Deactivation: confirmation first (RG-03-14: its sessions are revoked). */
   protected confirmDeactivate(user: UserResponse): void {
     this.confirmation.confirm({
       header: this.i18n.t('accounts.deactivate.header'),
@@ -112,7 +112,7 @@ export class AccountsPage {
     });
   }
 
-  /** Réactivation : réversible, sans confirmation. */
+  /** Reactivation: reversible, without confirmation. */
   protected reactivate(user: UserResponse): void {
     // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
     const anchor = this.focus.capture();

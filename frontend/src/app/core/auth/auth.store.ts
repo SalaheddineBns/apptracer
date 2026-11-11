@@ -30,13 +30,13 @@ export class AuthStore {
     return localStorage.getItem(REFRESH_TOKEN_KEY);
   }
 
-  /** RG-03-10 : vrai si le rôle de l'utilisateur satisfait le rôle requis (hiérarchie incluse). */
+  /** RG-03-10: true if the user's role satisfies the required role (hierarchy included). */
   hasRole(required: Role): boolean {
     const user = this.currentUser();
     return user !== null && roleSatisfies(user.role, required);
   }
 
-  /** Au démarrage : recharge l'utilisateur à partir du jeton présent (ne rejette jamais). */
+  /** At start-up: reloads the user from the token in storage (never rejects). */
   init(): Promise<void> {
     const load$ = this.accessToken
       ? this.api.getCurrentUser().pipe(
@@ -62,14 +62,16 @@ export class AuthStore {
   }
 
   /**
-   * RG-03-15 : change le mot de passe de l'utilisateur connecté (ancien mot de passe exigé). La session
-   * courante reste valide, seules les autres sessions sont révoquées par le back.
+   * RG-03-15: changes the signed-in user's password (the old password is required). The current session
+   * stays valid; only the other sessions are revoked by the back end.
    */
   changePassword(currentPassword: string, newPassword: string): Observable<void> {
     return this.api.changeMyPassword({ currentPassword, newPassword }).pipe(map(() => undefined));
   }
 
-  /** RG-03-08 : révoque le refresh token côté serveur, puis purge locale et retour à `/login` (CA-03-08). */
+  /**
+   * RG-03-08: revokes the refresh token on the server, then clears local state and goes back to `/login` (CA-03-08).
+   */
   logout(): Observable<void> {
     const refreshToken = this.refreshToken;
     const revoke$ = refreshToken
@@ -86,8 +88,8 @@ export class AuthStore {
   }
 
   /**
-   * RG-03-07 : un seul renouvellement à la fois, partagé par toutes les requêtes en attente
-   * (le refresh token n'est utilisable qu'une fois). Émet le nouvel access token.
+   * RG-03-07: a single renewal at a time, shared by all pending requests
+   * (the refresh token can only be used once). Emits the new access token.
    */
   refreshSession(): Observable<string> {
     if (!this.refresh$) {
@@ -105,7 +107,7 @@ export class AuthStore {
     return this.refresh$;
   }
 
-  /** Session irrécupérable (renouvellement refusé, CA-03-13) : purge locale puis redirection vers `/login`. */
+  /** Unrecoverable session (renewal refused, CA-03-13): clears local state, then redirects to `/login`. */
   expireSession(): void {
     this.clearSession();
     if (this.ready) {

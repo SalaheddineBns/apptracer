@@ -11,7 +11,7 @@ import { LoadingState } from '../../../shared/components/loading-state';
 import { TeamDialog, TeamSaved } from '../components/team-dialog';
 import { TeamsStore } from '../data/teams.store';
 
-/** SFD-05 E1 Équipes (ADMIN). */
+/** SFD-05 E1 Teams (ADMIN). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TableModule, ButtonModule, EmptyState, ErrorState, LoadingState, TeamDialog, TPipe],
@@ -25,7 +25,7 @@ export class TeamsPage {
   private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
-  /** Équipe en cours de modification ; `null` pour une création. */
+  /** Team being edited; `null` for a creation. */
   protected readonly editing = signal<TeamResponse | null>(null);
 
   constructor() {
@@ -57,12 +57,12 @@ export class TeamsPage {
     return `${account.firstName} ${account.lastName}`;
   }
 
-  /** CA-05-01 : « 2 membres » ; singulier à 0 et 1 en français, singulier à 1 seulement en anglais (RG-08-08). */
+  /** CA-05-01: '2 members'; singular at 0 and 1 in French, singular at 1 only in English (RG-08-08). */
   protected memberCountLabel(count: number): string {
     return this.i18n.plural('teams.memberCount', count);
   }
 
-  /** E3, RG-05-09 : confirmation citant le nom de l'équipe et le nombre de membres concernés. */
+  /** E3, RG-05-09: confirmation quoting the team's name and the number of members concerned. */
   protected confirmRemove(team: TeamResponse): void {
     this.confirmation.confirm({
       header: this.i18n.t('teams.delete.header'),

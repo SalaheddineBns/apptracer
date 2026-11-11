@@ -1,6 +1,6 @@
 /**
- * Ne retient que les chemins internes à l'application : jamais d'URL absolue, de schéma ni d'URL
- * relative au protocole (`//hôte`), et jamais `/login` lui-même. Retourne `null` sinon.
+ * Keeps only paths inside the application: never an absolute URL, a scheme or a protocol-relative
+ * URL (`//host`), and never `/login` itself. Returns `null` otherwise.
  */
 export function safeReturnUrl(value: unknown): string | null {
   if (typeof value !== 'string' || !value.startsWith('/') || value.startsWith('//') || value.includes('\\')) {

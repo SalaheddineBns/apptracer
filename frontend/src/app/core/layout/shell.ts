@@ -14,7 +14,7 @@ import { TPipe } from '../i18n/t.pipe';
 import { FocusAnchor, FocusRestorer } from '../../shared/focus-restorer';
 import { MenuRadio } from './menu-radio';
 
-/** Coquille applicative (SFD-03 E2 En-tête) : enveloppe les pages protégées, `/login` reste en dehors. */
+/** Application shell (SFD-03 E2 Header): wraps the protected pages; `/login` stays outside. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarModule, ButtonModule, MenuModule, ConfirmDialogModule, MenuRadio, TPipe],
@@ -36,8 +36,8 @@ export class Shell {
   }
 
   /**
-   * Fermeture de la confirmation (Échap, « Annuler », action confirmée, croix) : le focus revient au déclencheur,
-   * ou au bouton qui le remplace une fois l'action terminée (« Désactiver » devient « Réactiver »).
+   * Closing the confirmation (Escape, Cancel, confirmed action, close button): focus returns to the trigger,
+   * or to the button that replaces it once the action is done (Deactivate becomes Reactivate).
    */
   protected restoreFocus(): void {
     const anchor = this.anchor;
@@ -92,7 +92,7 @@ export class Shell {
     ];
   });
 
-  /** RG-03-08 / CA-03-08 : révoque le refresh token puis redirige vers `/login` (géré par le store). */
+  /** RG-03-08 / CA-03-08: revokes the refresh token, then redirects to `/login` (handled by the store). */
   protected logout(): void {
     this.auth.logout().subscribe();
   }

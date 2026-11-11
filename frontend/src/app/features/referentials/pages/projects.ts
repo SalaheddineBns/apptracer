@@ -14,7 +14,7 @@ import { FocusRestorer } from '../../../shared/focus-restorer';
 import { ProjectDialog, ProjectSaved } from '../components/project-dialog';
 import { ProjectsStore } from '../data/projects.store';
 
-/** SFD-02 E3 Projets (ADMIN) et E5 confirmation de désactivation. */
+/** SFD-02 E3 Projects (ADMIN) and E5 deactivation confirmation. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TableModule, TagModule, ButtonModule, EmptyState, ErrorState, LoadingState, ProjectDialog, TPipe],
@@ -29,7 +29,7 @@ export class ProjectsPage {
   private readonly i18n = inject(I18n);
 
   protected readonly dialogVisible = signal(false);
-  /** Projet en cours de modification ; `null` pour une création. */
+  /** Project being edited; `null` for a creation. */
   protected readonly editing = signal<ProjectResponse | null>(null);
 
   constructor() {
@@ -55,7 +55,7 @@ export class ProjectsPage {
     );
   }
 
-  /** E5, RG-02-05, RG-02-06 : confirmation avant de désactiver. */
+  /** E5, RG-02-05, RG-02-06: confirmation before deactivating. */
   protected confirmDeactivate(project: ProjectResponse): void {
     this.confirmation.confirm({
       header: this.i18n.t('projects.deactivate.header'),
@@ -68,7 +68,7 @@ export class ProjectsPage {
     });
   }
 
-  /** RG-02-05 : réversible, sans confirmation. */
+  /** RG-02-05: reversible, without confirmation. */
   protected reactivate(project: ProjectResponse): void {
     // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
     const anchor = this.focus.capture();

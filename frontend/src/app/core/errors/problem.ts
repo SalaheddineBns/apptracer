@@ -6,17 +6,17 @@ export interface FieldError {
   readonly message: string;
 }
 
-/** Lecture normalisée d'un ProblemDetail renvoyé par l'API (champs `code` et `errors` à plat dans le corps). */
+/** Normalised reading of a ProblemDetail returned by the API (fields `code` and `errors` flat in the body). */
 export interface Problem {
   readonly status: number;
   readonly detail: string;
   readonly code: string | null;
-  /** URI du type de problème (ex. `.../concurrent-modification`). */
+  /** URI of the problem type (e.g. `.../concurrent-modification`). */
   readonly type: string | null;
   readonly fieldErrors: readonly FieldError[];
 }
 
-/** Messages génériques (RG-08-05) : dans la langue en vigueur au moment de l'erreur. */
+/** Generic messages (RG-08-05): in the language in force when the error occurs. */
 const networkErrorMessage = (): string => translateNow('errors.network');
 const defaultErrorMessage = (): string => translateNow('errors.generic');
 

@@ -37,7 +37,7 @@ export interface AccountSaved {
   readonly user: UserResponse;
 }
 
-/** SFD-03 E5 Dialogue compte : création (account = null) ou modification d'un compte existant. */
+/** SFD-03 E5 Account dialog: creation (account = null) or update of an existing account. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -62,15 +62,15 @@ export class AccountDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Compte à modifier, ou `null` pour une création. */
+  /** Account to update, or `null` for a creation. */
   readonly account = input<UserResponse | null>(null);
   readonly saved = output<AccountSaved>();
-  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  /** Concurrent change detected: the caller reloads the list. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
   protected readonly isEdit = computed(() => this.account() !== null);
-  /** RG-03-13 : un ADMIN ne retire pas son propre rôle ADMIN, le champ est verrouillé sur son propre compte. */
+  /** RG-03-13: an ADMIN cannot remove their own ADMIN role; the field is locked on their own account. */
   protected readonly isSelf = computed(() => {
     const account = this.account();
     return account !== null && account.id === this.auth.user()?.id;
@@ -92,14 +92,14 @@ export class AccountDialog {
     initialPassword: ['', [Validators.required, passwordPolicyValidator]],
   });
 
-  /** Rôle choisi (suit le formulaire, y compris le rôle verrouillé de son propre compte). */
+  /** Selected role (follows the form, including the locked role of one's own account). */
   private readonly selectedRole = signal<Role>(Role.User);
-  /** RG-09-02 : un compte ADMIN n'a pas de fonction, la liste n'est proposée que pour USER et MANAGER. */
+  /** RG-09-02: an ADMIN account has no job title; the list is offered for USER and MANAGER only. */
   protected readonly jobTitleVisible = computed(() => this.selectedRole() !== Role.Admin);
 
   /**
-   * RG-09-06 : les fonctions actives, plus la fonction inactive déjà portée par le compte (signalée « Inactive »).
-   * Les libellés sont des données, jamais traduits (RG-09-10).
+   * RG-09-06: the active job titles, plus the inactive one the account already has (flagged 'Inactive').
+   * Labels are data, never translated (RG-09-10).
    */
   protected readonly jobTitleOptions = computed(() => {
     const options = this.jobTitles.activeItems().map((item) => ({ label: item.label, value: item.code, sortKey: item.label }));
@@ -198,8 +198,8 @@ export class AccountDialog {
   }
 
   /**
-   * Focus initial sur le premier champ. `onShow` arrive à la fin de l'animation d'ouverture :
-   * si l'utilisateur saisit déjà dans le formulaire, on ne lui reprend pas le focus.
+   * Initial focus on the first field. `onShow` fires at the end of the opening animation:
+   * if the user is already typing in the form, focus is not taken back.
    */
   protected focusFirstField(firstField: HTMLInputElement): void {
     const active = document.activeElement;
@@ -217,7 +217,7 @@ export class AccountDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la ligne a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the row may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {

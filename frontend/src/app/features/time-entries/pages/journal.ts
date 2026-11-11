@@ -25,7 +25,7 @@ import { formatDuration } from '../../../shared/pipes/duration';
 import { TimeEntryDialog, TimeEntrySaved } from '../components/time-entry-dialog';
 import { TimeEntriesStore } from '../data/time-entries.store';
 
-/** SFD-01 E1 Mon journal (USER et MANAGER, RG-01-14) : la semaine affichée est dans l'URL (`?week=YYYY-MM-DD`). */
+/** SFD-01 E1 My journal (USER and MANAGER, RG-01-14): the displayed week is in the URL (`?week=YYYY-MM-DD`). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -52,16 +52,16 @@ export class JournalPage {
   private readonly params = toSignal(this.route.queryParamMap, {
     initialValue: this.route.snapshot.queryParamMap,
   });
-  /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
+  /** Monday of the displayed week: the URL's, otherwise the current week in Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
     const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
   protected readonly skeletonDays = [0, 1, 2, 3, 4, 5, 6];
   protected readonly dialogVisible = signal(false);
-  /** Saisie en cours de modification ; `null` pour une création. */
+  /** Time entry being edited; `null` for a creation. */
   protected readonly editing = signal<TimeEntryResponse | null>(null);
-  /** Date de début proposée à la création, quand elle vient du « + » d'un jour. */
+  /** Start date offered on creation, when it comes from a day's +. */
   protected readonly initialDate = signal<string | null>(null);
 
   constructor() {
@@ -71,20 +71,20 @@ export class JournalPage {
     });
   }
 
-  /** `day` : date du « + » d'un jour du journal ; sans elle (bouton « Nouvelle saisie »), la date du jour est proposée. */
+  /** `day`: date of a journal day's +; without it (New time entry button), today's date is offered. */
   protected openCreate(day: string | null = null): void {
     this.initialDate.set(day);
     this.editing.set(null);
     this.dialogVisible.set(true);
   }
 
-  /** RG-01-10, RG-01-12 : le journal ne montre que ses propres saisies, toutes modifiables. */
+  /** RG-01-10, RG-01-12: the journal shows only one's own time entries, all editable. */
   protected openEdit(entry: TimeEntryResponse): void {
     this.editing.set(entry);
     this.dialogVisible.set(true);
   }
 
-  /** E3, RG-01-10, RG-01-11 : confirmation explicite avant de supprimer ; la saisie sort du journal et du total. */
+  /** E3, RG-01-10, RG-01-11: explicit confirmation before deleting; the entry leaves the journal and the total. */
   protected confirmRemove(entry: TimeEntryResponse): void {
     const name = `${entry.activityType.label} ${datesLabel(entry, this.i18n)}`;
     this.confirmation.confirm({
@@ -110,7 +110,7 @@ export class JournalPage {
     });
   }
 
-  /** CA-01-01 : la saisie enregistrée apparaît dans le journal, qui se place sur sa semaine. */
+  /** CA-01-01: the saved time entry appears in the journal, which moves to its week. */
   protected onSaved(event: TimeEntrySaved): void {
     const { entry } = event;
     this.messages.add({

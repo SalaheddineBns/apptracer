@@ -77,7 +77,7 @@ describe('TeamDialog', () => {
     el('btn-enregistrer')?.querySelector('button')?.click();
     await fixture.whenStable();
   }
-  /** Ouvre la liste déroulante (le panneau est rendu dans le body) puis clique une option par son data-cy. */
+  /** Opens the dropdown (the panel is rendered in the body), then clicks an option by its data-cy. */
   async function pick(field: 'champ-manager' | 'champ-membres', optionCy: string): Promise<void> {
     if (!el(optionCy)) {
       el(field)?.click();

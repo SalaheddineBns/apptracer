@@ -10,22 +10,22 @@ import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
 
 /**
- * Vue équipe (SFD-04, MANAGER). RG-04-08 : le back renvoie les équipes triées par nom, l'ordre reçu fait foi et la première
- * est l'équipe par défaut ; il n'est jamais retrié ici. RG-04-05 : les durées et totaux viennent de l'API, jamais recalculés.
+ * Team view (SFD-04, MANAGER). RG-04-08: the back end returns the teams sorted by name; the order received is kept and the first
+ * is the default team; it is never re-sorted here. RG-04-05: durations and totals come from the API, never recomputed.
  */
 @Injectable({ providedIn: 'root' })
 export class TeamViewStore {
   private readonly api = inject(TeamViewService);
   private teamsRequestId = 0;
 
-  /** Équipes dont le MANAGER connecté est manager (RG-04-01, RG-04-06). */
+  /** Teams managed by the signed-in MANAGER (RG-04-01, RG-04-06). */
   readonly teams = signal<ManagedTeamResponse[]>([]);
   readonly teamsLoading = signal(false);
-  /** Vrai dès qu'une première réponse est arrivée (distingue le chargement initial des rechargements). */
+  /** True as soon as a first response has arrived (tells the initial load apart from reloads). */
   readonly teamsLoaded = signal(false);
   readonly teamsError = signal<string | null>(null);
 
-  /** Recharge les équipes gérées (la réponse la plus récente l'emporte). */
+  /** Reloads the managed teams (the most recent response wins). */
   loadTeams(): void {
     const id = ++this.teamsRequestId;
     this.teamsLoading.set(true);
@@ -51,15 +51,15 @@ export class TeamViewStore {
     });
   }
 
-  /** Semaine d'une équipe (membres × sept jours) ; null pendant le premier chargement ou après une erreur. */
+  /** A team's week (members × seven days); null during the first load or after an error. */
   readonly summary = signal<TeamWeekSummaryResponse | null>(null);
   readonly summaryError = signal<string | null>(null);
-  /** RG-04-02 : 403, équipe hors du périmètre du MANAGER (lien périmé ou équipe retirée) ; pas de « Réessayer » possible. */
+  /** RG-04-02: 403, team outside the MANAGER's scope (stale link or removed team); no Retry possible. */
   readonly summaryForbidden = signal(false);
   private summaryKey: { teamId: number; weekStart: string } | null = null;
   private summaryRequestId = 0;
 
-  /** Charge la semaine `weekStart` (un lundi) de l'équipe (la réponse la plus récente l'emporte). */
+  /** Loads the week `weekStart` (a Monday) of the team (the most recent response wins). */
   loadSummary(teamId: number, weekStart: string): void {
     this.summaryKey = { teamId, weekStart };
     // Changement d'équipe ou de semaine : l'ancien tableau ne reste pas affiché sous le nouveau libellé.
@@ -85,22 +85,22 @@ export class TeamViewStore {
     });
   }
 
-  /** Recharge l'équipe et la semaine affichées. */
+  /** Reloads the displayed team and week. */
   reloadSummary(): void {
     if (this.summaryKey) {
       this.loadSummary(this.summaryKey.teamId, this.summaryKey.weekStart);
     }
   }
 
-  /** Journal d'un membre (E2) ; null pendant le premier chargement ou après une erreur. */
+  /** A member's journal (E2); null during the first load or after an error. */
   readonly memberJournal = signal<MemberWeeklyTimeEntriesResponse | null>(null);
   readonly memberError = signal<string | null>(null);
-  /** RG-04-02 : 403, compte hors du périmètre du MANAGER (membre retiré, lien périmé) ; pas de « Réessayer » possible. */
+  /** RG-04-02: 403, account outside the MANAGER's scope (removed member, stale link); no Retry possible. */
   readonly memberForbidden = signal(false);
   private memberKey: { userId: number; weekStart: string } | null = null;
   private memberRequestId = 0;
 
-  /** Charge la semaine `weekStart` (un lundi) du membre (la réponse la plus récente l'emporte). */
+  /** Loads the week `weekStart` (a Monday) of the member (the most recent response wins). */
   loadMemberJournal(userId: number, weekStart: string): void {
     this.memberKey = { userId, weekStart };
     // Changement de membre ou de semaine : l'ancien journal ne reste pas affiché sous le nouveau libellé.
@@ -126,7 +126,7 @@ export class TeamViewStore {
     });
   }
 
-  /** Recharge le membre et la semaine affichés. */
+  /** Reloads the displayed member and week. */
   reloadMemberJournal(): void {
     if (this.memberKey) {
       this.loadMemberJournal(this.memberKey.userId, this.memberKey.weekStart);

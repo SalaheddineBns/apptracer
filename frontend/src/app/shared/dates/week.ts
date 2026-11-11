@@ -1,8 +1,8 @@
 import { INTL_LOCALE, Lang } from '../../core/i18n/lang';
 
 /**
- * Dates de saisie : toujours des jours civils `YYYY-MM-DD`, sans heure ni fuseau (comme le `LocalDate` du back).
- * Les calculs passent par UTC pour qu'un changement d'heure ne décale jamais un jour.
+ * Time entry dates: always calendar days `YYYY-MM-DD`, without time or time zone (like the back end's `LocalDate`).
+ * Computations go through UTC so that a daylight saving change never shifts a day.
  */
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const DAY_MS = 86_400_000;
@@ -41,7 +41,7 @@ export function isIsoDate(value: unknown): value is string {
   return typeof value === 'string' && toUtc(value) !== null;
 }
 
-/** RG-00-01 : date du jour à Paris. */
+/** RG-00-01: today's date in Paris. */
 export function todayInParis(now: Date = new Date()): string {
   return PARIS_TODAY.format(now);
 }
@@ -50,7 +50,7 @@ export function addDays(iso: string, days: number): string {
   return fromUtc((toUtc(iso) ?? 0) + days * DAY_MS);
 }
 
-/** Nombre de jours de `from` à `to` (négatif si `to` précède `from`). */
+/** Number of days from `from` to `to` (negative if `to` comes before `from`). */
 export function daysBetween(from: string, to: string): number {
   return Math.round(((toUtc(to) ?? 0) - (toUtc(from) ?? 0)) / DAY_MS);
 }
@@ -60,22 +60,22 @@ function weekdayIndex(iso: string): number {
   return (new Date(toUtc(iso) ?? 0).getUTCDay() + 6) % 7;
 }
 
-/** SFD-01 E1 : lundi de la semaine (lundi → dimanche) qui contient la date. */
+/** SFD-01 E1: Monday of the week (Monday to Sunday) that contains the date. */
 export function mondayOf(iso: string): string {
   return addDays(iso, -weekdayIndex(iso));
 }
 
-/** Les sept jours de la semaine, du lundi au dimanche. */
+/** The seven days of the week, Monday to Sunday. */
 export function weekDays(weekStart: string): string[] {
   return Array.from({ length: 7 }, (_, index) => addDays(weekStart, index));
 }
 
-/** RG-01-08 : jour ouvré = du lundi au vendredi (les jours fériés comptent comme ouvrés en v1). */
+/** RG-01-08: working day = Monday to Friday (public holidays count as working days in v1). */
 export function isWeekday(iso: string): boolean {
   return weekdayIndex(iso) < 5;
 }
 
-/** RG-01-08 : nombre de jours ouvrés de `start` à `end`, bornes incluses (0 si `end` précède `start`). */
+/** RG-01-08: number of working days from `start` to `end`, bounds included (0 if `end` comes before `start`). */
 export function countWeekdays(start: string, end: string): number {
   let count = 0;
   for (let day = start; daysBetween(day, end) >= 0; day = addDays(day, 1)) {
@@ -86,7 +86,7 @@ export function countWeekdays(start: string, end: string): number {
   return count;
 }
 
-/** « 05/10/2026 » : jour/mois/année dans les deux langues (RG-08-08). */
+/** '05/10/2026': day/month/year in both languages (RG-08-08). */
 export function formatDate(iso: string): string {
   const [year, month, day] = iso.split('-');
   return `${day}/${month}/${year}`;
@@ -103,14 +103,14 @@ export function formatWeekdayName(iso: string, lang: Lang = 'fr'): string {
   return WEEKDAY[lang].format(new Date(toUtc(iso) ?? 0));
 }
 
-/** Date locale d'un `p-datepicker` (minuit, fuseau du navigateur) vers jour civil. */
+/** Local date of a `p-datepicker` (midnight, browser time zone) to a calendar day. */
 export function localDateToIso(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${date.getFullYear()}-${month}-${day}`;
 }
 
-/** Jour civil vers date locale pour un `p-datepicker`. */
+/** Calendar day to a local date for a `p-datepicker`. */
 export function isoToLocalDate(iso: string): Date {
   const [year, month, day] = iso.split('-').map(Number);
   return new Date(year, month - 1, day);

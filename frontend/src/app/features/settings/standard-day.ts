@@ -5,7 +5,7 @@ export interface HoursMinutes {
   readonly minutes: number | null;
 }
 
-/** Heures et minutes saisies vers minutes ; null si une des deux valeurs manque. */
+/** Entered hours and minutes converted to minutes; null if either value is missing. */
 export function toMinutes({ hours, minutes }: HoursMinutes): number | null {
   return hours === null || minutes === null ? null : hours * 60 + minutes;
 }
@@ -14,7 +14,7 @@ export function fromMinutes(total: number): { hours: number; minutes: number } {
   return { hours: Math.floor(total / 60), minutes: total % 60 };
 }
 
-/** RG-06-02 : de 60 à 1 440 minutes, par pas de 15 (le back reste la référence). */
+/** RG-06-02: from 60 to 1,440 minutes, in steps of 15 (the back end remains the reference). */
 export function standardDayValidator(group: AbstractControl): ValidationErrors | null {
   const value = group.value as HoursMinutes;
   const total = toMinutes(value);
@@ -30,7 +30,7 @@ export function standardDayValidator(group: AbstractControl): ValidationErrors |
   return valid ? null : { standardDay: true };
 }
 
-/** « 7 h 30 », « 7 h 00 » (minutes à deux chiffres, comme le design system). */
+/** '7 h 30', '7 h 00' (two-digit minutes, as in the design system). */
 export function formatDuration(total: number): string {
   const { hours, minutes } = fromMinutes(total);
   return `${hours} h ${String(minutes).padStart(2, '0')}`;

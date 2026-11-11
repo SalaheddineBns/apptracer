@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { inject, Injectable } from '@angular/core';
 
-/** Où se trouvait le focus : l'élément, et sa position dans sa ligne de tableau s'il en a une. */
+/** Where the focus was: the element, and its position in its table row if it has one. */
 export interface FocusAnchor {
   readonly element: HTMLElement;
   readonly row: string | null;
@@ -13,16 +13,16 @@ const GIVE_UP_AFTER_MS = 5000;
 const TOAST_GRACE_MS = 500;
 
 /**
- * Rend le focus au bouton d'origine après une action, sans le laisser tomber sur `<body>`.
- * Le bouton est désactivé pendant l'appel puis, pour une désactivation / réactivation, remplacé par son
- * contraire : on attend donc qu'un bouton utilisable existe à la même place de la même ligne.
- * On renonce si l'utilisateur a déplacé le focus ailleurs entre-temps.
+ * Returns focus to the original button after an action, without letting it fall onto `<body>`.
+ * The button is disabled during the call and then, for a deactivation / reactivation, replaced by its
+ * opposite: so we wait until a usable button exists at the same place in the same row.
+ * We give up if the user has moved the focus elsewhere in the meantime.
  */
 @Injectable({ providedIn: 'root' })
 export class FocusRestorer {
   private readonly document = inject(DOCUMENT);
 
-  /** À appeler quand l'action est déclenchée (le focus est encore sur son bouton). */
+  /** To be called when the action is triggered (the focus is still on its button). */
   capture(): FocusAnchor | null {
     const element = this.document.activeElement;
     if (!(element instanceof HTMLElement) || element === this.document.body) {
@@ -61,7 +61,7 @@ export class FocusRestorer {
     });
   }
 
-  /** Vrai quand il n'y a plus rien à faire : focus rendu, ou focus déplacé volontairement. */
+  /** True when there is nothing left to do: focus returned, or focus moved on purpose. */
   private tryFocus(anchor: FocusAnchor): boolean {
     const active = this.document.activeElement;
     const moved =
@@ -82,8 +82,8 @@ export class FocusRestorer {
   }
 
   /**
-   * Le bouton de fermeture d'un toast porte `autofocus` (PrimeNG) : le premier toast affiché dans la page prend le
-   * focus. Le toast de succès arrive juste après l'action, on reprend donc le focus s'il le vole.
+   * A toast's close button has `autofocus` (PrimeNG): the first toast shown in the page takes the
+   * focus. The success toast arrives right after the action, so the focus is taken back if it steals it.
    */
   private keepAgainstToast(target: HTMLElement): void {
     const onFocusIn = (event: FocusEvent) => {

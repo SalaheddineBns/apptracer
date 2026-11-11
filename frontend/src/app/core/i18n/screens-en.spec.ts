@@ -26,10 +26,10 @@ import { toProblem } from '../errors/problem';
 import { DICTIONARIES, I18n } from './i18n.service';
 
 /**
- * RG-08-05, CA-08-08 : l'interface passée en anglais ne contient plus de français. Chaque écran de chaque SFD est rendu en
- * anglais avec des données sans accent ni mot français (RG-08-07 : les données saisies ne se traduisent pas), puis tous les
- * textes affichés ou lus par les lecteurs d'écran sont comparés au vocabulaire français de l'application : un texte
- * oublié dans un gabarit ou dans le code est détecté ici.
+ * RG-08-05, CA-08-08: once switched to English, the interface no longer contains French. Every screen of every spec is
+ * rendered in English with data that has no accent or French word (RG-08-07: entered data is not translated), then every
+ * text displayed or read by screen readers is compared with the application's French vocabulary: a text forgotten in a
+ * template or in the code is caught here.
  */
 const FRENCH_WORDS = [
   'le', 'la', 'les', 'des', 'du', 'un', 'une', 'et', 'ou', 'pour', 'sur', 'dans', 'aucun', 'aucune', 'nouveau',
@@ -42,7 +42,7 @@ const FRENCH_WORDS = [
 ];
 const FRENCH = new RegExp(`[àâçéèêëîïôûùüœ]|\\b(${FRENCH_WORDS.join('|')})\\b`, 'i');
 
-/** Tout ce qu'un utilisateur ou un lecteur d'écran reçoit : texte, `aria-label`, `placeholder`, `title`. */
+/** Everything a user or a screen reader receives: text, `aria-label`, `placeholder`, `title`. */
 function shownTexts(): string[] {
   const texts: string[] = [];
   // Les noms des langues (« Français », « English ») sont écrits dans leur propre langue (marqués `lang`) : hors contrôle.

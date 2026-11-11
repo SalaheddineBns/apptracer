@@ -2,9 +2,9 @@ import { signal } from '@angular/core';
 import { defer, EMPTY, finalize, Observable } from 'rxjs';
 
 /**
- * Identifiants dont une action (désactiver, réactiver) attend la réponse de l'API.
- * `guard` n'envoie qu'une requête à la fois par identifiant : un appel pendant l'attente est ignoré, quel que soit
- * le nombre d'appuis. L'écran s'en sert aussi pour désactiver le bouton (`has`).
+ * Identifiers whose action (deactivate, reactivate) is waiting for the API's response.
+ * `guard` sends only one request at a time per identifier: a call while waiting is ignored, however many
+ * times the button is pressed. The screen also uses it to disable the button (`has`).
  */
 export class PendingIds {
   private readonly current = signal<ReadonlySet<number>>(new Set());
@@ -13,7 +13,7 @@ export class PendingIds {
     return this.current().has(id);
   }
 
-  /** Paresseux : l'identifiant n'est réservé qu'à la souscription, et libéré à la réponse, l'erreur ou l'abandon. */
+  /** Lazy: the identifier is reserved only on subscription, and released on response, error or cancellation. */
   guard<T>(id: number, call: () => Observable<T>): Observable<T> {
     return defer(() => {
       if (this.has(id)) {

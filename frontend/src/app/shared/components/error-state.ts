@@ -3,7 +3,7 @@ import { ButtonModule } from 'primeng/button';
 import { I18n } from '../../core/i18n/i18n.service';
 import { TPipe } from '../../core/i18n/t.pipe';
 
-/** État d'erreur : message compréhensible et bouton « Réessayer ». */
+/** Error state: an understandable message and a Retry button. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ButtonModule, TPipe],
@@ -17,7 +17,7 @@ import { TPipe } from '../../core/i18n/t.pipe';
   `,
 })
 export class ErrorState {
-  /** Message à afficher ; par défaut, le message générique de chargement dans la langue en vigueur. */
+  /** Message to show; by default, the generic loading message in the language in force. */
   readonly message = input<string | null>(null);
   private readonly i18n = inject(I18n);
   // RG-08-04 : le message du serveur est dans la langue de la requête. Si la langue change tant qu'il est affiché, on le

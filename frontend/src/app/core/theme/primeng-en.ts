@@ -1,6 +1,6 @@
 import { Translation } from 'primeng/api';
 
-/** Libellés anglais des composants PrimeNG ; la semaine commence le lundi et la date s'écrit jj/mm/aaaa (RG-08-08). */
+/** English labels of the PrimeNG components; the week starts on Monday and dates are written dd/mm/yyyy (RG-08-08). */
 export const PRIMENG_EN: Translation = {
   firstDayOfWeek: 1,
   dateFormat: 'dd/mm/yy',

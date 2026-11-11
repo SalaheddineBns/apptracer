@@ -13,8 +13,8 @@ const TIME = new Intl.DateTimeFormat('fr-FR', {
 });
 
 /**
- * Instant ISO 8601 en heure de Paris : date « 12/10/2026 » et heure « 14:05 », identiques dans les deux langues (RG-08-08).
- * Le mot qui les relie (« à » / « at ») appartient au dictionnaire. Null si la date est illisible.
+ * ISO 8601 instant in Paris time: date '12/10/2026' and time '14:05', identical in both languages (RG-08-08).
+ * The word linking them ('à' / 'at') belongs to the dictionary. Null if the date is unreadable.
  */
 export function parisDateTimeParts(iso: string): { date: string; time: string } | null {
   const date = new Date(iso);

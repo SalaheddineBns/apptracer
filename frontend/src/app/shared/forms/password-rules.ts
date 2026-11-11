@@ -11,7 +11,7 @@ export const PASSWORD_MESSAGES: FieldMessages = {
   passwordTooLong: 'password.errors.tooLong',
 };
 
-/** RG-03-02 : au moins 12 caractères, au moins une lettre et un chiffre (le back reste la référence). */
+/** RG-03-02: at least 12 characters, at least one letter and one digit (the back end remains the reference). */
 export const passwordPolicyValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
   const value: unknown = control.value;
   if (typeof value !== 'string' || value === '') {
@@ -33,7 +33,7 @@ export const passwordPolicyValidator: ValidatorFn = (control: AbstractControl): 
   return Object.keys(errors).length > 0 ? errors : null;
 };
 
-/** La valeur doit être identique à celle du contrôle frère `otherName`. */
+/** The value must be identical to that of the sibling control `otherName`. */
 export function sameAs(otherName: string): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const other = control.parent?.get(otherName);

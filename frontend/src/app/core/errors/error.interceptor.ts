@@ -6,16 +6,16 @@ import { I18n } from '../i18n/i18n.service';
 import { toProblem } from './problem';
 
 /**
- * À passer à `true` dans le `HttpContext` d'une requête dont l'appelant affiche lui-même l'erreur
- * (ex. message sous un champ, message générique de la connexion).
+ * Set to `true` in the `HttpContext` of a request whose caller displays the error itself
+ * (e.g. a message under a field, the generic sign-in message).
  */
 export const SKIP_ERROR_TOAST = new HttpContextToken<boolean>(() => false);
 
 /**
- * Affiche le `detail` du ProblemDetail dans le p-toast, puis relaie l'erreur à l'appelant.
- * - 401 : laissé à l'intercepteur JWT (T-03-13), qui doit être déclaré APRÈS celui-ci dans
- *   `withInterceptors([...])` afin de renouveler / rejouer avant que l'erreur ne remonte ici.
- * - réponses avec `errors[]` : destinées aux formulaires (affichage sous les champs), pas de toast.
+ * Shows the ProblemDetail `detail` in the p-toast, then passes the error on to the caller.
+ * - 401: left to the JWT interceptor (T-03-13), which must be declared AFTER this one in
+ *   `withInterceptors([...])` so that it renews / replays before the error comes back here.
+ * - responses with `errors[]`: meant for forms (shown under the fields), no toast.
  */
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const messages = inject(MessageService);

@@ -14,24 +14,24 @@ import { toProblem } from '../../../core/errors/problem';
 import { PendingIds } from '../../../shared/pending-ids';
 
 /**
- * Équipes (SFD-05, ADMIN). RG-05-13 : le back renvoie les équipes triées par nom et les membres triés par nom puis prénom,
- * l'ordre reçu fait foi et n'est jamais retrié ici.
+ * Teams (SFD-05, ADMIN). RG-05-13: the back end returns the teams sorted by name and the members sorted by last name then
+ * first name; the order received is kept and never re-sorted here.
  */
 @Injectable({ providedIn: 'root' })
 export class TeamsStore {
   private readonly api = inject(TeamsService);
   private requestId = 0;
 
-  /** Suppressions en attente de réponse : une seule requête à la fois par équipe. */
+  /** Deletions waiting for a response: one request at a time per team. */
   readonly pending = new PendingIds();
 
   readonly items = signal<TeamResponse[]>([]);
   readonly loading = signal(false);
-  /** Vrai dès qu'une première réponse est arrivée (distingue le chargement initial des rechargements). */
+  /** True as soon as a first response has arrived (tells the initial load apart from reloads). */
   readonly loaded = signal(false);
   readonly error = signal<string | null>(null);
 
-  /** Recharge la liste (la réponse la plus récente l'emporte). */
+  /** Reloads the list (the most recent response wins). */
   load(): void {
     const id = ++this.requestId;
     this.loading.set(true);
@@ -57,15 +57,15 @@ export class TeamsStore {
     });
   }
 
-  /** RG-05-02 : comptes actifs de rôle MANAGER proposés comme manager (triés par le back). */
+  /** RG-05-02: active accounts with the MANAGER role offered as manager (sorted by the back end). */
   readonly managerCandidates = signal<TeamAccountSummary[]>([]);
-  /** RG-05-03, RG-05-04, RG-05-11 : comptes USER ou MANAGER proposés comme membres, avec leur équipe actuelle. */
+  /** RG-05-03, RG-05-04, RG-05-11: USER or MANAGER accounts offered as members, with their current team. */
   readonly memberCandidates = signal<TeamMemberCandidateResponse[]>([]);
   readonly candidatesLoading = signal(false);
   readonly candidatesError = signal<string | null>(null);
   private candidatesRequestId = 0;
 
-  /** Charge les deux listes de candidats du dialogue E2 (relues à chaque ouverture : les comptes évoluent). */
+  /** Loads both candidate lists of the E2 dialog (re-read on each opening: accounts change). */
   loadCandidates(): void {
     const id = ++this.candidatesRequestId;
     this.candidatesLoading.set(true);
@@ -93,19 +93,19 @@ export class TeamsStore {
     });
   }
 
-  /** RG-05-01 à RG-05-08 : création. La liste est rechargée pour respecter l'ordre du back (RG-05-13). */
+  /** RG-05-01 to RG-05-08: creation. The list is reloaded to follow the back end's order (RG-05-13). */
   create(request: CreateTeamRequest): Observable<TeamResponse> {
     return this.api.createTeam(request).pipe(tap(() => this.load()));
   }
 
-  /** RG-05-01 à RG-05-08 : modification d'un bloc (nom, manager, liste complète des membres) avec la version reçue. */
+  /** RG-05-01 to RG-05-08: update in one go (name, manager, full list of members) with the version received. */
   update(id: number, request: UpdateTeamRequest): Observable<TeamResponse> {
     return this.api.updateTeam(id, request).pipe(tap(() => this.load()));
   }
 
   /**
-   * RG-05-09 : suppression définitive. Les membres se retrouvent sans équipe côté back ; la ligne quitte la liste sans la recharger.
-   * Les erreurs (ex. 404, équipe déjà supprimée) sont affichées par l'intercepteur d'erreurs.
+   * RG-05-09: permanent deletion. The members end up without a team on the back end; the row leaves the list without a reload.
+   * Errors (e.g. 404, team already deleted) are shown by the error interceptor.
    */
   remove(id: number): Observable<unknown> {
     return this.pending.guard(id, () => this.api.deleteTeam(id).pipe(tap(() => this.items.update((list) => list.filter((team) => team.id !== id)))));

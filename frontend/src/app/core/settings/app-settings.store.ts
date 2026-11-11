@@ -8,9 +8,9 @@ import { toProblem } from '../errors/problem';
 import { I18n } from '../i18n/i18n.service';
 
 /**
- * Paramètres de l'application (SFD-06), lus par tous les rôles (RG-06-03) : écran « Paramètres » (ADMIN) et
- * durée calculée en direct du dialogue de saisie (SFD-01). RG-06-05 : `lastModifiedAt` / `lastModifiedBy`
- * ne sont renseignés par le back que pour l'ADMIN, et seulement si la valeur a déjà été modifiée.
+ * Application settings (SFD-06), read by every role (RG-06-03): the Settings screen (ADMIN) and the
+ * duration computed live in the time entry dialog (SFD-01). RG-06-05: `lastModifiedAt` / `lastModifiedBy`
+ * are filled in by the back end only for the ADMIN, and only if the value has already been changed.
  */
 @Injectable({ providedIn: 'root' })
 export class AppSettingsStore {
@@ -23,25 +23,27 @@ export class AppSettingsStore {
   readonly loading = signal(false);
   readonly loaded = signal(false);
   readonly error = signal<string | null>(null);
-  /** Modification en attente de réponse : une seule requête à la fois. */
+  /** Change waiting for a response: one request at a time. */
   readonly saving = signal(false);
 
-  /** RG-00-02 : journée standard en minutes, utilisable directement pour un calcul de durée (null tant que non chargée). */
+  /** RG-00-02: standard day in minutes, usable directly for a duration computation (null until loaded). */
   readonly standardDayMinutes = computed(() => this.settings()?.standardDayMinutes ?? null);
-  /** RG-06-05 : null si jamais modifiée ou si l'appelant n'est pas ADMIN (le back renvoie null ou omet le champ). */
+  /**
+   * RG-06-05: null if never changed or if the caller is not an ADMIN (the back end returns null or omits the field).
+   */
   readonly lastModifiedAt = computed<string | null>(() => this.settings()?.lastModifiedAt ?? null);
   readonly lastModifiedBy = computed<SettingsAuthor | null>(
     () => this.settings()?.lastModifiedBy ?? null,
   );
 
-  /** Charge une seule fois : sans effet si la valeur est chargée ou en cours de chargement. */
+  /** Loads once: no effect if the value is loaded or loading. */
   ensureLoaded(): void {
     if (!this.loaded() && !this.loading()) {
       this.load();
     }
   }
 
-  /** Force un rechargement (la réponse la plus récente l'emporte). */
+  /** Forces a reload (the most recent response wins). */
   load(): void {
     const id = ++this.requestId;
     this.loading.set(true);
@@ -68,10 +70,10 @@ export class AppSettingsStore {
   }
 
   /**
-   * RG-06-02, RG-06-03 : modification (ADMIN), avec la version reçue. Une seule requête à la fois : un appel
-   * pendant l'attente, ou avant le premier chargement, est ignoré. Les erreurs sont relayées à l'appelant sans
-   * toast pour 400 (champ) et 409 (modification concurrente : le store se recharge alors pour porter l'état réel) ;
-   * les autres erreurs (403, 5xx, réseau) sont notifiées ici par un toast, puis relayées.
+   * RG-06-02, RG-06-03: change (ADMIN), with the version received. One request at a time: a call
+   * while waiting, or before the first load, is ignored. Errors are passed on to the caller without a
+   * toast for 400 (field) and 409 (concurrent change: the store then reloads to reflect the real state);
+   * other errors (403, 5xx, network) are notified here with a toast, then passed on.
    */
   update(standardDayMinutes: number): Observable<AppSettingsResponse> {
     return defer(() => {

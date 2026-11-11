@@ -12,32 +12,32 @@ import { toProblem } from '../../../core/errors/problem';
 import { PendingIds } from '../../../shared/pending-ids';
 
 /**
- * Projets (SFD-02). RG-02-09 : le back renvoie les actifs seuls pour USER et MANAGER, tous pour ADMIN.
- * RG-02-10 : l'ordre renvoyé (nom alphabétique) fait foi, il n'est jamais retrié ici.
+ * Projects (SFD-02). RG-02-09: the back end returns only the active ones for USER and MANAGER, all for ADMIN.
+ * RG-02-10: the order returned (alphabetical by name) is kept; it is never re-sorted here.
  */
 @Injectable({ providedIn: 'root' })
 export class ProjectsStore {
   private readonly api = inject(ProjectsService);
   private requestId = 0;
 
-  /** Désactivations / réactivations en attente de réponse : une seule requête à la fois par ligne. */
+  /** Deactivations / reactivations waiting for a response: one request at a time per row. */
   readonly pending = new PendingIds();
 
   readonly items = signal<ProjectResponse[]>([]);
   readonly loading = signal(false);
   readonly loaded = signal(false);
   readonly error = signal<string | null>(null);
-  /** RG-02-06 : seuls les projets actifs sont proposés pour une saisie (même ordre que la liste). */
+  /** RG-02-06: only active projects are offered for a time entry (same order as the list). */
   readonly activeItems = computed(() => this.items().filter((item) => item.active));
 
-  /** Charge la liste une seule fois : sans effet si elle est chargée ou en cours de chargement. */
+  /** Loads the list once: no effect if it is loaded or loading. */
   ensureLoaded(): void {
     if (!this.loaded() && !this.loading()) {
       this.load();
     }
   }
 
-  /** Recharge la liste (la réponse la plus récente l'emporte). */
+  /** Reloads the list (the most recent response wins). */
   load(): void {
     const id = ++this.requestId;
     this.loading.set(true);
@@ -63,17 +63,17 @@ export class ProjectsStore {
     });
   }
 
-  /** RG-02-01, RG-02-08 : création. La liste est rechargée pour respecter l'ordre du back (RG-02-10). */
+  /** RG-02-01, RG-02-08: creation. The list is reloaded to follow the back end's order (RG-02-10). */
   create(request: CreateProjectRequest): Observable<ProjectResponse> {
     return this.api.createProject(request).pipe(tap(() => this.load()));
   }
 
-  /** Modification : le nom peut changer l'ordre, la liste est rechargée (RG-02-10). */
+  /** Update: the name may change the order, so the list is reloaded (RG-02-10). */
   update(id: number, request: UpdateProjectRequest): Observable<ProjectResponse> {
     return this.api.updateProject(id, request).pipe(tap(() => this.load()));
   }
 
-  /** RG-02-05 : désactivation (jamais de suppression). L'ordre ne change pas : remplacement en place. */
+  /** RG-02-05: deactivation (never deletion). The order does not change: replaced in place. */
   deactivate(id: number): Observable<ProjectResponse> {
     return this.pending.guard(id, () => this.api.deactivateProject(id).pipe(tap((item) => this.replace(item))));
   }

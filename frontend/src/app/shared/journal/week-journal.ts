@@ -9,9 +9,9 @@ import { TimeEntryCard } from './time-entry-card';
 import { coversDay } from './time-entry.ui';
 
 /**
- * Vue semaine du journal, du lundi au dimanche (SFD-01 E1, réutilisée en lecture seule par SFD-04 E2).
- * Sans dépendance à un store. RG-01-13 : une PLAGE est répétée sur chaque jour couvert ; le total affiché est
- * celui de l'API (`totalMinutes`), jamais recalculé ici.
+ * Week view of the journal, Monday to Sunday (SFD-01 E1, reused read-only by SFD-04 E2).
+ * No dependency on a store. RG-01-13: a RANGE is repeated on each day it covers; the total shown is
+ * the API's (`totalMinutes`), never recomputed here.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -91,21 +91,23 @@ import { coversDay } from './time-entry.ui';
 })
 export class WeekJournal {
   readonly week = input.required<WeeklyTimeEntriesResponse>();
-  /** RG-01-10, RG-04-03 : faux pour le journal d'un autre compte : ni « + », ni « Modifier », ni « Supprimer ». */
+  /** RG-01-10, RG-04-03: false for another account's journal: no +, no Edit, no Delete. */
   readonly editable = input(true);
-  /** Affiche le commentaire de chaque saisie. */
+  /** Shows the comment of each time entry. */
   readonly showComment = input(false);
-  /** Durée enregistrée sur chaque carte (SFD-04 E2) ; « Mon journal » affiche le commentaire à la place. */
+  /** Recorded duration on each card (SFD-04 E2); My journal shows the comment instead. */
   readonly showDuration = input(true);
-  /** Commentaire limité à 3 lignes. */
+  /** Comment limited to 3 lines. */
   readonly clampComment = input(false);
-  /** SFD-07 E1 : total du jour dans l'en-tête, tiré de `week.days` (RG-07-02, aucun recalcul) ; faux hors « Mon journal ». */
+  /**
+   * SFD-07 E1: the day's total in the header, taken from `week.days` (RG-07-02, no recomputation); false outside My journal.
+   */
   readonly showDayTotals = input(false);
   readonly edit = output<TimeEntryResponse>();
   readonly remove = output<TimeEntryResponse>();
-  /** Date du jour (`YYYY-MM-DD`), à Paris par défaut (RG-00-01) : borne des jours où l'on peut saisir. */
+  /** Today's date (`YYYY-MM-DD`), in Paris by default (RG-00-01): the limit of the days on which one can enter time. */
   readonly today = input(todayInParis());
-  /** SFD-01 E1 : « + » d'un jour, avec sa date (`YYYY-MM-DD`). */
+  /** SFD-01 E1: a day's +, with its date (`YYYY-MM-DD`). */
   readonly add = output<string>();
 
   private readonly i18n = inject(I18n);

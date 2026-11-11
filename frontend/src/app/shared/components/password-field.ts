@@ -6,8 +6,8 @@ import { TPipe } from '../../core/i18n/t.pipe';
 import { FieldError, FieldMessages } from './field-error';
 
 /**
- * Champ mot de passe : libellé, bouton « Afficher / Masquer » (focalisable, nom accessible), saisie,
- * texte d'aide et erreur sous le champ. Partagé par la connexion et le changement de mot de passe.
+ * Password field: label, Show / Hide button (focusable, accessible name), input,
+ * help text and error under the field. Shared by sign-in and password change.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +54,7 @@ export class PasswordField {
   readonly toggleCy = input.required<string>();
   readonly messages = input<FieldMessages>({});
   readonly hint = input<string | null>(null);
-  /** Complément (déjà traduit) du libellé accessible du bouton : « Afficher le mot de passe ». */
+  /** Complement (already translated) of the button's accessible label: 'Show the password'. */
   readonly subject = input.required<string>();
 
   protected readonly visible = signal(false);

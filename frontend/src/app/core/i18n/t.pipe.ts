@@ -3,8 +3,8 @@ import { I18n } from './i18n.service';
 import { TranslationKey, TranslationParams } from './keys';
 
 /**
- * `{{ 'language.label' | t }}` ou `{{ 'cle' | t: { nom: valeur } }}`.
- * Impur : la langue est un signal, le texte doit suivre son changement même si la clé ne change pas.
+ * `{{ 'language.label' | t }}` or `{{ 'key' | t: { name: value } }}`.
+ * Impure: the language is a signal, and the text must follow its change even when the key does not change.
  */
 @Pipe({ name: 't', pure: false })
 export class TPipe implements PipeTransform {

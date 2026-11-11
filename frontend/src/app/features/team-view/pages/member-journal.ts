@@ -14,8 +14,8 @@ import { WeekNavigator } from '../../../shared/journal/week-navigator';
 import { TeamViewStore } from '../data/team-view.store';
 
 /**
- * SFD-04 E2 Journal d'un membre (MANAGER), en lecture seule (RG-04-03) : le membre est dans le chemin, la semaine dans l'URL
- * (`/team/members/:userId?week=YYYY-MM-DD`). RG-04-05 : le total vient de l'API, jamais recalculé ici.
+ * SFD-04 E2 A member's journal (MANAGER), read-only (RG-04-03): the member is in the path, the week in the URL
+ * (`/team/members/:userId?week=YYYY-MM-DD`). RG-04-05: the total comes from the API, never recomputed here.
  */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -32,12 +32,14 @@ export class MemberJournalPage {
     initialValue: this.route.snapshot.queryParamMap,
   });
   private readonly path = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
-  /** Lundi de la semaine affichée : celle de l'URL, sinon la semaine courante à Paris (RG-00-01). */
+  /** Monday of the displayed week: the URL's, otherwise the current week in Paris (RG-00-01). */
   protected readonly weekStart = computed(() => {
     const requested = this.params().get('week');
     return mondayOf(isIsoDate(requested) ? requested : todayInParis());
   });
-  /** Compte du chemin ; null s'il n'est pas un identifiant (aucun appel, même message que pour un compte hors périmètre). */
+  /**
+   * Account from the path; null if it is not an identifier (no call, same message as for an account outside the scope).
+   */
   protected readonly userId = computed<number | null>(() => {
     const id = Number(this.path().get('userId'));
     return Number.isInteger(id) && id > 0 ? id : null;
@@ -48,7 +50,7 @@ export class MemberJournalPage {
     const member = this.store.memberJournal()?.member;
     return member ? `${member.firstName} ${member.lastName}`.trim() : null;
   });
-  /** Retour vers E1 en conservant la semaine et, une fois connue, l'équipe du membre (RG-04-04). */
+  /** Back to E1, keeping the week and, once known, the member's team (RG-04-04). */
   protected readonly backParams = computed(() => {
     // L'équipe renvoyée par l'API prime ; sinon celle d'origine, portée par l'URL du lien de membre.
     const requested = Number(this.params().get('team'));

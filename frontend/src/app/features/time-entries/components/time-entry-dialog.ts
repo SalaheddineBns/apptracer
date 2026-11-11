@@ -53,7 +53,7 @@ export interface TimeEntrySaved {
   readonly entry: TimeEntryResponse;
 }
 
-/** SFD-01 E2 Dialogue de saisie : création (entry = null) ou modification d'une saisie existante (RG-01-12). */
+/** SFD-01 E2 Time entry dialog: creation (entry = null) or update of an existing time entry (RG-01-12). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -80,19 +80,19 @@ export class TimeEntryDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Saisie à modifier, ou `null` pour une création. */
+  /** Time entry to update, or `null` for a creation. */
   readonly entry = input<TimeEntryResponse | null>(null);
-  /** Date de début proposée pour une création (`YYYY-MM-DD`, « + » d'un jour du journal) ; la date du jour sinon. */
+  /** Start date offered for a creation (`YYYY-MM-DD`, from the + of a journal day); today's date otherwise. */
   readonly initialDate = input<string | null>(null);
   readonly saved = output<TimeEntrySaved>();
-  /** Modification concurrente détectée : l'appelant recharge la semaine. */
+  /** Concurrent change detected: the caller reloads the week. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
   protected readonly isEdit = computed(() => this.entry() !== null);
   /**
-   * RG-10-03 : projets autorisés pour la saisie (filtrés par le back). RG-10-05 : en modification, le projet déjà porté
-   * par la saisie reste proposé s'il est actif, même s'il n'est plus autorisé. RG-10-09 : ordre alphabétique des noms.
+   * RG-10-03: projects allowed for the time entry (filtered by the back end). RG-10-05: on update, the project already on
+   * the entry is still offered if it is active, even if it is no longer allowed. RG-10-09: alphabetical order of the names.
    */
   protected readonly projectOptions = computed(() => {
     const options = this.projects.activeItems().map(({ code, name }) => ({ code, name }));
@@ -110,7 +110,7 @@ export class TimeEntryDialog {
     { label: this.i18n.t('timeEntry.dialog.day'), value: Granularity.Day },
     { label: this.i18n.t('timeEntry.dialog.rangeOption'), value: Granularity.Range },
   ]);
-  /** RG-01-07 : dernier jour proposé pour la date de début (date du jour à Paris). */
+  /** RG-01-07: last day offered for the start date (today in Paris). */
   protected readonly today = signal(isoToLocalDate(todayInParis()));
 
   // Les contrôles portent le nom des champs de l'API : ses `errors[]` s'affichent sous le champ concerné.
@@ -140,14 +140,14 @@ export class TimeEntryDialog {
   );
   protected readonly granularity = computed(() => this.value().granularity);
 
-  /** RG-01-01 : heure de l'ouverture du dialogue, arrondie au quart d'heure inférieur. */
+  /** RG-01-01: time the dialog was opened, rounded down to the quarter hour. */
   private readonly openedAt = signal(quarterHourFloor(new Date()));
-  /** Heure proposée par le sélecteur de début quand il est vide : toujours un multiple de 15 minutes. */
+  /** Time offered by the start picker when it is empty: always a multiple of 15 minutes. */
   protected readonly defaultStartTime = computed(() => this.openedAt());
   /**
-   * Sélecteur de fin vide : il part de l'heure de début saisie (alignée), sinon de la même heure que le début.
-   * PrimeNG réinitialise son panneau à chaque nouvelle `defaultDate` : la valeur ne doit changer que si l'heure
-   * proposée change, jamais à chaque saisie (sinon le panneau revient sans cesse à l'heure de début).
+   * Empty end picker: it starts from the entered start time (aligned), otherwise from the same time as the start.
+   * PrimeNG resets its panel on each new `defaultDate`: the value must only change when the offered time changes,
+   * never on each keystroke (otherwise the panel keeps jumping back to the start time).
    */
   protected readonly defaultEndTime = computed(
     () => {
@@ -157,13 +157,13 @@ export class TimeEntryDialog {
     { equal: (a, b) => a.getTime() === b.getTime() },
   );
 
-  /** RG-01-05, RG-02-03 : le projet n'est demandé que si le type choisi l'exige (CA-01-06). */
+  /** RG-01-05, RG-02-03: the project is asked for only if the selected type requires it (CA-01-06). */
   protected readonly projectRequired = computed(() => {
     const code = this.value().activityTypeCode;
     return this.types.activeItems().find((type) => type.code === code)?.projectRequired ?? false;
   });
 
-  /** RG-01-08 : durée calculée en direct, avec la journée standard en vigueur (RG-00-02, CA-06-03). */
+  /** RG-01-08: duration computed live, with the standard day in force (RG-00-02, CA-06-03). */
   protected readonly durationText = computed(() => {
     const duration = liveDuration(this.value(), this.settings.standardDayMinutes());
     if (duration === null) {
@@ -292,7 +292,7 @@ export class TimeEntryDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la carte a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the card may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {
@@ -361,7 +361,7 @@ export class TimeEntryDialog {
     };
   }
 
-  /** Les `errors[]` de l'API s'affichent sous leur champ ; celles d'un champ absent de l'écran, en toast. */
+  /** The API's `errors[]` are shown under their field; those of a field not on the screen, in a toast. */
   private showFieldErrors(errors: readonly ApiFieldError[]): void {
     const shown = errors.filter((error) => this.form.get(error.field)?.enabled);
     const hidden = errors.filter((error) => !shown.includes(error));

@@ -1,6 +1,6 @@
 import { Translation } from 'primeng/api';
 
-/** Libellés français du sélecteur de date de PrimeNG ; la semaine commence le lundi (SFD-01 E1). */
+/** French labels of the PrimeNG date picker; the week starts on Monday (SFD-01 E1). */
 export const PRIMENG_FR: Translation = {
   firstDayOfWeek: 1,
   dateFormat: 'dd/mm/yy',

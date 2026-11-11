@@ -1,7 +1,7 @@
 import { Role } from '../api/generated';
 import { TranslationKey } from '../i18n/keys';
 
-/** Libellé de chaque rôle (RG-08-05) : « Utilisateur », « Manager », « Administrateur » / « User », « Manager », « Administrator ». */
+/** Label of each role (RG-08-05): 'Utilisateur', 'Manager', 'Administrateur' / 'User', 'Manager', 'Administrator'. */
 export const ROLE_LABEL_KEYS: Record<Role, TranslationKey> = {
   [Role.User]: 'roles.user',
   [Role.Manager]: 'roles.manager',
@@ -19,7 +19,7 @@ export function roleSatisfies(actual: Role, required: Role): boolean {
   return GRANTED[actual].includes(required);
 }
 
-/** Page d'accueil du rôle (architecture §7.2, H1). */
+/** Home page of the role (architecture §7.2, H1). */
 export function homeUrlFor(role: Role): string {
   return role === Role.Admin ? '/admin/accounts' : '/journal';
 }

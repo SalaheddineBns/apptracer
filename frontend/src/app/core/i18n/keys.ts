@@ -1,14 +1,14 @@
 import { Dictionary } from './fr';
 
-/** Chemins pointés de toutes les feuilles d'un dictionnaire : `'language.fr'`, `'app.title'`… */
+/** Dotted paths of every leaf of a dictionary: `'language.fr'`, `'app.title'`… */
 type Paths<T> = {
   [K in keyof T & string]: T[K] extends object ? `${K}.${Paths<T[K]>}` : K;
 }[keyof T & string];
 
-/** Clé de traduction valide : une clé inconnue est refusée à la compilation. */
+/** Valid translation key: an unknown key is refused at compile time. */
 export type TranslationKey = Paths<Dictionary>;
 
 export type TranslationParams = Record<string, string | number>;
 
-/** Base d'une paire de pluriels : `'teams.memberCount'` pour `teams.memberCount.one` et `teams.memberCount.other`. */
+/** Base of a plural pair: `'teams.memberCount'` for `teams.memberCount.one` and `teams.memberCount.other`. */
 export type PluralKey = { [K in TranslationKey]: K extends `${infer Base}.one` ? Base : never }[TranslationKey];

@@ -23,7 +23,7 @@ export interface ActivityTypeSaved {
   readonly type: ActivityTypeResponse;
 }
 
-/** SFD-02 E2 Dialogue type : création (type = null) ou modification d'un type d'activité existant. */
+/** SFD-02 E2 Type dialog: creation (type = null) or update of an existing activity type. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, CheckboxModule, FieldError, ActivityTypeTag, TPipe],
@@ -36,10 +36,10 @@ export class ActivityTypeDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Type à modifier, ou `null` pour une création. */
+  /** Type to update, or `null` for a creation. */
   readonly type = input<ActivityTypeResponse | null>(null);
   readonly saved = output<ActivityTypeSaved>();
-  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  /** Concurrent change detected: the caller reloads the list. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
@@ -113,8 +113,8 @@ export class ActivityTypeDialog {
   }
 
   /**
-   * Focus initial sur le premier champ modifiable (le code en création, le libellé en modification). `onShow` arrive à la fin de
-   * l'animation d'ouverture : si l'utilisateur saisit déjà dans le formulaire, on ne lui reprend pas le focus.
+   * Initial focus on the first editable field (the code on creation, the label on update). `onShow` fires at the end of
+   * the opening animation: if the user is already typing in the form, focus is not taken back.
    */
   protected focusFirstField(form: HTMLFormElement): void {
     const first = form.querySelector<HTMLInputElement>('input:not(:disabled)');
@@ -129,7 +129,7 @@ export class ActivityTypeDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la ligne a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the row may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {

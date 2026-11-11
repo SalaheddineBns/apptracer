@@ -6,7 +6,7 @@ import { SKIP_ERROR_TOAST } from '../../../core/errors/error.interceptor';
 import { toProblem } from '../../../core/errors/problem';
 import { PendingIds } from '../../../shared/pending-ids';
 
-/** Seuls champs de tri acceptés par le back (toute autre valeur donne 400). */
+/** Only sort fields accepted by the back end (any other value gives 400). */
 export const ACCOUNT_SORT_FIELDS = ['lastName', 'firstName', 'email', 'role', 'active'] as const;
 export type AccountSortField = (typeof ACCOUNT_SORT_FIELDS)[number];
 
@@ -14,19 +14,19 @@ export function isAccountSortField(value: unknown): value is AccountSortField {
   return typeof value === 'string' && (ACCOUNT_SORT_FIELDS as readonly string[]).includes(value);
 }
 
-/** État de l'écran Comptes (SFD-03 E4) : liste paginée et triée côté serveur. */
+/** State of the Accounts screen (SFD-03 E4): list paginated and sorted on the server. */
 @Injectable({ providedIn: 'root' })
 export class AccountsStore {
   private readonly api = inject(UsersService);
   private requestId = 0;
 
-  /** Désactivations / réactivations en attente de réponse : une seule requête à la fois par ligne. */
+  /** Deactivations / reactivations waiting for a response: one request at a time per row. */
   readonly pending = new PendingIds();
 
   readonly users = signal<UserResponse[]>([]);
   readonly total = signal(0);
   readonly loading = signal(false);
-  /** Vrai dès qu'une première réponse est arrivée (distingue le chargement initial des rechargements). */
+  /** True as soon as a first response has arrived (tells the initial load apart from reloads). */
   readonly loaded = signal(false);
   readonly error = signal<string | null>(null);
 
@@ -35,7 +35,7 @@ export class AccountsStore {
   readonly sortField = signal<AccountSortField>('lastName');
   readonly sortOrder = signal<1 | -1>(1);
 
-  /** Recharge la liste avec les paramètres courants. */
+  /** Reloads the list with the current parameters. */
   load(): void {
     const id = ++this.requestId;
     this.loading.set(true);
@@ -63,7 +63,9 @@ export class AccountsStore {
     });
   }
 
-  /** Charge une page / un tri. Sans effet si les paramètres sont ceux de l'état courant (p-table réémet son état à l'initialisation). */
+  /**
+   * Loads a page / a sort. No effect if the parameters match the current state (p-table re-emits its state on initialisation).
+   */
   query(page: number, size: number, field: AccountSortField, order: 1 | -1): void {
     if (page === this.page() && size === this.size() && field === this.sortField() && order === this.sortOrder()) {
       return;
@@ -75,17 +77,17 @@ export class AccountsStore {
     this.load();
   }
 
-  /** RG-03-11, RG-03-12 : création par un ADMIN. La liste est rechargée (pagination et tri côté serveur). */
+  /** RG-03-11, RG-03-12: creation by an ADMIN. The list is reloaded (pagination and sorting on the server). */
   create(request: CreateUserRequest): Observable<UserResponse> {
     return this.api.createUser(request).pipe(tap(() => this.load()));
   }
 
-  /** RG-03-11, RG-03-13 : modification (prénom, nom, rôle) avec la version reçue. */
+  /** RG-03-11, RG-03-13: update (first name, last name, role) with the version received. */
   update(id: number, request: UpdateUserRequest): Observable<UserResponse> {
     return this.api.updateUser(id, request).pipe(tap((user) => this.replace(user)));
   }
 
-  /** RG-03-11 / RG-03-14. Les erreurs (ex. 409 RG-03-13) sont affichées par l'intercepteur d'erreurs. */
+  /** RG-03-11 / RG-03-14. Errors (e.g. 409 RG-03-13) are shown by the error interceptor. */
   deactivate(id: number): Observable<UserResponse> {
     return this.pending.guard(id, () => this.api.deactivateUser(id).pipe(tap((user) => this.replace(user))));
   }

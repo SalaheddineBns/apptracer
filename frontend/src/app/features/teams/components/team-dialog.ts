@@ -24,19 +24,19 @@ export interface TeamSaved {
   readonly team: TeamResponse;
 }
 
-/** Compte proposé dans une liste du dialogue (manager ou membre). */
+/** Account offered in one of the dialog's lists (manager or member). */
 export interface AccountOption {
   readonly id: number;
-  /** « Prénom Nom », suivi de « (inactif) » : c'est le libellé des pastilles de la sélection. */
+  /** 'First Last', followed by '(inactive)': the label of the selection chips. */
   readonly label: string;
   readonly name: string;
   readonly email: string;
   readonly active: boolean;
-  /** Équipe actuelle du compte (H10), absente pour un manager. */
+  /** The account's current team (H10), absent for a manager. */
   readonly currentTeam: { readonly id: number; readonly name: string } | null;
 }
 
-/** SFD-05 E2 Dialogue équipe : création (team = null) ou modification d'une équipe existante (nom, manager, membres). */
+/** SFD-05 E2 Team dialog: creation (team = null) or update of an existing team (name, manager, members). */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, MessageModule, TagModule, FieldError, ErrorState, LoadingState, TPipe],
@@ -49,10 +49,10 @@ export class TeamDialog {
   private readonly i18n = inject(I18n);
 
   readonly visible = model(false);
-  /** Équipe à modifier, ou `null` pour une création. */
+  /** Team to update, or `null` for a creation. */
   readonly team = input<TeamResponse | null>(null);
   readonly saved = output<TeamSaved>();
-  /** Modification concurrente détectée : l'appelant recharge la liste. */
+  /** Concurrent change detected: the caller reloads the list. */
   readonly conflict = output<void>();
 
   protected readonly submitting = signal(false);
@@ -76,16 +76,18 @@ export class TeamDialog {
   protected readonly managerMessages: FieldMessages = { required: 'teams.dialog.errors.managerRequired' };
   protected readonly memberMessages: FieldMessages = {};
 
-  /** Manager choisi (miroir du contrôle, pour filtrer les membres proposés). */
+  /** Selected manager (mirror of the control, used to filter the offered members). */
   private readonly selectedManagerId = signal<number | null>(null);
-  /** Membre retiré de la sélection parce qu'il vient d'être choisi comme manager (RG-05-05), à signaler à l'utilisateur. */
+  /**
+   * Member removed from the selection because they were just chosen as manager (RG-05-05), to be reported to the user.
+   */
   private readonly removedMember = signal<{ name: string | null } | null>(null);
   protected readonly removedMemberName = computed(() => {
     const removed = this.removedMember();
     return removed === null ? null : (removed.name ?? this.i18n.t('teams.dialog.unknownAccount'));
   });
 
-  /** RG-05-02, CA-05-03 : l'API ne propose que des comptes actifs de rôle MANAGER. */
+  /** RG-05-02, CA-05-03: the API offers only active accounts with the MANAGER role. */
   protected readonly managerOptions = computed<AccountOption[]>(() =>
     this.store.managerCandidates().map((c) => ({
       id: c.id,
@@ -98,8 +100,8 @@ export class TeamDialog {
   );
 
   /**
-   * RG-05-03, CA-05-05 : l'API ne propose ni ADMIN. RG-05-05 : le compte choisi comme manager est retiré des membres proposés.
-   * H9, RG-05-11 : un compte inactif reste proposé, signalé. H10 : un compte déjà dans une autre équipe est proposé et signalé.
+   * RG-05-03, CA-05-05: the API offers no ADMIN. RG-05-05: the account chosen as manager is removed from the offered members.
+   * H9, RG-05-11: an inactive account is still offered, flagged. H10: an account already in another team is offered and flagged.
    */
   protected readonly memberOptions = computed<AccountOption[]>(() => {
     const managerId = this.selectedManagerId();
@@ -158,7 +160,9 @@ export class TeamDialog {
     this.store.loadCandidates();
   }
 
-  /** RG-05-05 : le manager n'est pas membre. S'il était déjà coché comme membre, il est décoché et l'utilisateur en est informé. */
+  /**
+   * RG-05-05: the manager is not a member. If they were already ticked as a member, they are unticked and the user is told.
+   */
   private onManagerChange(managerId: number | null): void {
     this.selectedManagerId.set(managerId);
     this.removedMember.set(null);
@@ -174,8 +178,8 @@ export class TeamDialog {
   }
 
   /**
-   * Focus initial sur le nom. `onShow` arrive à la fin de l'animation d'ouverture :
-   * si l'utilisateur saisit déjà dans le formulaire, on ne lui reprend pas le focus.
+   * Initial focus on the name. `onShow` fires at the end of the opening animation:
+   * if the user is already typing in the form, focus is not taken back.
    */
   protected focusFirstField(firstField: HTMLInputElement): void {
     const active = document.activeElement;
@@ -185,7 +189,7 @@ export class TeamDialog {
     firstField.focus();
   }
 
-  /** « Réessayer » détruit le bouton cliqué : le focus passe au premier champ pour rester dans le dialogue. */
+  /** Retry destroys the clicked button: focus moves to the first field to stay inside the dialog. */
   protected retry(firstField: HTMLInputElement): void {
     firstField.focus();
     this.store.loadCandidates();
@@ -195,7 +199,7 @@ export class TeamDialog {
     this.visible.set(false);
   }
 
-  /** Rend le focus au bouton d'origine (retrouvé par son data-cy : la ligne a pu être recréée). */
+  /** Returns focus to the original button (found by its data-cy: the row may have been recreated). */
   protected onHide(): void {
     const cy = this.originCy;
     if (cy) {
