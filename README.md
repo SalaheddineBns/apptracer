@@ -35,23 +35,8 @@ at a glance.**
 ## Architecture
 
 ```mermaid
-flowchart TB
-    user(["User's browser"])
-
-    subgraph render["Render · one Docker container"]
-        direction TB
-        spa["Angular 22 app<br/>PrimeNG · Tailwind<br/>(static files)"]
-        api["Spring Boot 3 · Java 21<br/>REST API /api/v1<br/>JWT · roles · business rules"]
-    end
-
-    db[("PostgreSQL 16 on Neon<br/>Flyway migrations")]
-    reset["GitHub Actions<br/>nightly demo reset"]
-
-    user -->|"1 · loads the app"| spa
-    user -->|"2 · JSON calls + JWT"| api
-    api -->|"3 · JPA"| db
-    reset -.->|"empties the database"| db
-    reset -.->|"redeploys"| render
+flowchart LR
+    user(["User browser"]) --> spa["Angular app"] --> api["Spring Boot server"] --> db[("PostgreSQL database")]
 ```
 
 The browser loads the Angular app and then calls the API on the same address. The API is the only part that talks
@@ -66,20 +51,6 @@ Angular TypeScript client is generated from it.
 | API contract | OpenAPI (springdoc); the Angular TypeScript client is generated from it, never written by hand |
 | Security | Spring Security + JWT: short-lived access token, single-use refresh token stored server-side |
 | Tests | JUnit 5, Mockito, Testcontainers (back), Vitest (front), Cypress (end-to-end) |
-
-### Engineering highlights
-
-- **Spec-driven**: built from nine functional specifications. Each business rule (`RG-xx-yy`) and acceptance
-  criterion (`CA-xx-yy`) is cited in the code and in the test names, so searching for `RG-05-04` finds where that
-  rule is implemented and tested.
-- **Server-side rules**: every right is checked by the API (401 without a valid token, 403 with an insufficient
-  role); hiding a menu is a convenience, never the protection. Overlaps are also blocked by a database constraint.
-- **Contract first**: the OpenAPI contract is exported from the backend and the frontend client is generated from
-  it, so both sides always agree.
-- **Tested**: 600+ backend tests, many against a real PostgreSQL started by Testcontainers, and 500+ frontend
-  tests.
-- **One-container deployment**: the Docker image serves the Angular app from Spring Boot (one URL, no CORS), with a
-  nightly reset of the demo data.
 
 ## Getting started
 
@@ -124,6 +95,8 @@ The full list, with defaults, is in
 [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml).
 
 </details>
+
+Want to contribute? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, conventions and checks.
 
 ## Roles and permissions
 
@@ -245,17 +218,3 @@ docs/api/   OpenAPI contract (openapi.json), source of the generated client
 | [`docs/api/openapi.json`](docs/api/openapi.json) | REST API contract (OpenAPI 3): every endpoint, request and response |
 | [`backend/src/main/resources/db/migration/`](backend/src/main/resources/db/migration/) | Database schema, one Flyway migration per change |
 | [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml) | Backend configuration and the environment variables it reads |
-
-The application was built from nine functional specifications, kept outside the repository:
-
-| Spec | Title |
-|---|---|
-| SFD-01 | Recording activities (**My journal**) |
-| SFD-02 | Reference data (activity types, projects) |
-| SFD-03 | Authentication and accounts |
-| SFD-04 | Team view (MANAGER) |
-| SFD-05 | Teams |
-| SFD-06 | Settings (standard day) |
-| SFD-07 | Daily total time |
-| SFD-08 | Interface language (English / French) |
-| SFD-09 | Job titles |
