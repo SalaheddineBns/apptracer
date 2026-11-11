@@ -6,5 +6,7 @@ target/
 docs/*
 !docs/api/
 !docs/sfd/
+!docs/images/
 .claude/
 CLAUDE.md
+.DS_Store

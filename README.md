@@ -8,6 +8,8 @@ at a glance.**
 ![Java 21](https://img.shields.io/badge/Java-21-blue) ![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-green)
 ![Angular 22](https://img.shields.io/badge/Angular-22-red) ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-blue)
 
+![Adding a one-hour meeting from a day's + button: the card appears and the day and week totals update](docs/images/app-tracer.gif)
+
 ## Live demo
 
 **[apptracer-demo.onrender.com](https://apptracer-demo.onrender.com)**
@@ -33,6 +35,16 @@ at a glance.**
 - **Administration**: accounts and roles, teams, job titles (Developer, QA, Tech Lead…), activity types, projects and
   the length of the standard day.
 - **English and French**, switched from the interface.
+
+## Screenshots
+
+| My journal | New time entry |
+|---|---|
+| ![My journal: a week of time entries with the total of each day and of the week](docs/images/journal.png) | ![The New time entry dialog with the Hour, Day and Range periods](docs/images/time-entry-dialog.png) |
+| **My team (manager)** | **My projects** |
+| ![A manager's team view: one row per member, one column per day](docs/images/team-view.png) | ![My projects: the projects of the user's team, then the shared projects](docs/images/my-projects.png) |
+| **Accounts (admin)** | **Sign in** |
+| ![The ADMIN's Accounts screen: name, e-mail, role, job title and status of each account](docs/images/admin-accounts.png) | ![The sign-in page with the Français / English selector](docs/images/login-page.png) |
 
 ## Architecture
 
