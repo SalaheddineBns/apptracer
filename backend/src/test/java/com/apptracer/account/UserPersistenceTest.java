@@ -99,10 +99,11 @@ class UserPersistenceTest {
     // change by another user: only updated_* change
     authenticateAs(bob.getId());
     User loaded = users.findById(bob.getId()).orElseThrow();
+    Instant storedCreatedAt = loaded.getCreatedAt();
     loaded.setLastName("Martin");
     User saved = users.saveAndFlush(loaded);
     assertThat(saved.getCreatedBy()).isEqualTo(admin.getId());
-    assertThat(saved.getCreatedAt()).isEqualTo(bob.getCreatedAt());
+    assertThat(saved.getCreatedAt()).isEqualTo(storedCreatedAt);
     assertThat(saved.getUpdatedBy()).isEqualTo(bob.getId());
     assertThat(saved.getUpdatedAt()).isAfterOrEqualTo(bob.getUpdatedAt());
     assertThat(saved.getVersion()).isEqualTo(1L);
