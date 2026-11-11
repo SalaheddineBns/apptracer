@@ -213,10 +213,12 @@ on Neon.
 backend/    Spring Boot API (/api/v1), Flyway migrations, tests
 frontend/   Angular application, generated API client, Cypress e2e tests
 docs/api/   OpenAPI contract (openapi.json), source of the generated client
+docs/sfd/   functional specifications: business rules (RG-xx-yy) and acceptance criteria (CA-xx-yy)
 ```
 
 | Reference | Content |
 |---|---|
+| [`docs/sfd/`](docs/sfd/00-vue-ensemble.md) | Functional specifications: start with the overview; every rule (`RG-xx-yy`) and acceptance criterion (`CA-xx-yy`) cited in the code is defined there |
 | [`docs/api/openapi.json`](docs/api/openapi.json) | REST API contract (OpenAPI 3): every endpoint, request and response |
 | [`backend/src/main/resources/db/migration/`](backend/src/main/resources/db/migration/) | Database schema, one Flyway migration per change |
 | [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml) | Backend configuration and the environment variables it reads |

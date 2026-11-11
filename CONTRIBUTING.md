@@ -12,6 +12,13 @@ variables listed in the README; it stays on your machine and is never committed.
 To try the app with data, set `DEMO_PASSWORD` in your `.env`: at start-up the API creates a manager, a developer and a
 QA account, their team and two weeks of sample entries.
 
+## Understand the rules
+
+The functional specifications are in [`docs/sfd/`](docs/sfd/00-vue-ensemble.md): start with the overview. Each business
+rule (`RG-xx-yy`) and acceptance criterion (`CA-xx-yy`) cited in the code or in a test name is defined there, so you can
+look up why the code behaves as it does before changing it. A change of behaviour starts with a change of the
+specification.
+
 ## Report a bug or suggest a feature
 
 Open an issue and include:
