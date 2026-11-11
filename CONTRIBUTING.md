@@ -29,8 +29,10 @@ For a new feature, describe the need first: rules are agreed before any code is 
 2. **Commit** one task per commit, with a one-line message in English:
    `type(scope): summary`, for example `feat(projects): team column in the projects list`. Types: `feat`, `fix`,
    `docs`, `test`, `chore`, `refactor`.
-3. **Open a pull request** to `main` and describe what changed and why. For a screen change, add a screenshot in
-   light and dark mode.
+3. **Open a pull request** to `main`; its template lists what to describe and check. For a screen change, add a
+   screenshot in light and dark mode. The CI runs the backend and frontend checks on every pull request.
+
+New to the project? Look for issues labelled **good first issue**.
 
 ## Coding conventions
 
@@ -96,4 +98,8 @@ The backend tests start a real PostgreSQL with Testcontainers, so Docker must be
 ## Security
 
 Never commit a secret: passwords, tokens, the PrimeUI licence key or a `.env` file. If you find a security issue,
-do not open a public issue; contact the maintainer directly instead.
+do not open a public issue: follow [`SECURITY.md`](SECURITY.md) and write to benkhanoussalaheddine@gmail.com.
+
+## License
+
+By contributing, you agree that your contributions are released under the [MIT License](LICENSE) of the project.

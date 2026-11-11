@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest a new feature or a change of behaviour
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Rules are agreed before any code is written: describe the need first, and the rules will be discussed here.
+  - type: textarea
+    id: need
+    attributes:
+      label: What do you need?
+      description: Who needs it (USER, MANAGER or ADMIN), what they want to do, and why.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: A concrete example
+      description: For example, with a week, an account and an expected result.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I would like to implement it myself

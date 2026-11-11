@@ -1,0 +1,47 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. For a security problem, follow [SECURITY.md](https://github.com/SalaheddineBns/tracker-app/blob/main/SECURITY.md) instead.
+        Never paste a password, a token or personal data.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Sign in as a MANAGER
+        2. Open My team
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role you were signed in with
+      options: [USER, MANAGER, ADMIN, Not signed in]
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where
+      description: Screen address (for example `/journal?week=2026-10-05`) or API endpoint.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Error message, logs or screenshot
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Local, the public demo, browser and version.

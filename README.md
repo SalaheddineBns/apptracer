@@ -3,6 +3,8 @@
 **Employees log what they worked on — by the hour, the day or a range of days — and managers see their team's week
 at a glance.**
 
+[![CI](https://github.com/SalaheddineBns/tracker-app/actions/workflows/ci.yml/badge.svg)](https://github.com/SalaheddineBns/tracker-app/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Java 21](https://img.shields.io/badge/Java-21-blue) ![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-green)
 ![Angular 22](https://img.shields.io/badge/Angular-22-red) ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-blue)
 
@@ -218,3 +220,7 @@ docs/api/   OpenAPI contract (openapi.json), source of the generated client
 | [`docs/api/openapi.json`](docs/api/openapi.json) | REST API contract (OpenAPI 3): every endpoint, request and response |
 | [`backend/src/main/resources/db/migration/`](backend/src/main/resources/db/migration/) | Database schema, one Flyway migration per change |
 | [`backend/src/main/resources/application.yml`](backend/src/main/resources/application.yml) | Backend configuration and the environment variables it reads |
+
+## License
+
+AppTracer is released under the [MIT License](LICENSE). To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
