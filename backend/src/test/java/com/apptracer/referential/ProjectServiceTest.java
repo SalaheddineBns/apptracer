@@ -58,7 +58,7 @@ class ProjectServiceTest {
     Project p = new Project("P1", "Ancien");
     when(projects.findById(1L)).thenReturn(Optional.of(p));
     when(projects.saveAndFlush(p)).thenReturn(p);
-    service.update(1L, "Nouveau", 0L);
+    service.update(1L, "Nouveau", null, 0L);
     assertThat(p.getCode()).isEqualTo("P1");
     assertThat(p.getName()).isEqualTo("Nouveau");
   }
@@ -67,7 +67,7 @@ class ProjectServiceTest {
   @DisplayName("Modification concurrente : une version périmée est refusée")
   void updateRejectsStaleVersion() {
     when(projects.findById(1L)).thenReturn(Optional.of(new Project("P1", "N")));
-    assertThatThrownBy(() -> service.update(1L, "X", 5L))
+    assertThatThrownBy(() -> service.update(1L, "X", null, 5L))
         .isInstanceOf(ObjectOptimisticLockingFailureException.class);
   }
 

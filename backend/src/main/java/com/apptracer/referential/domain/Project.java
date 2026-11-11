@@ -1,11 +1,15 @@
 package com.apptracer.referential.domain;
 
 import com.apptracer.common.audit.AuditableEntity;
+import com.apptracer.team.domain.Team;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
@@ -28,6 +32,11 @@ public class Project extends AuditableEntity {
   // RG-02-05 : jamais supprimé, seulement désactivé
   @Column(nullable = false)
   private boolean active = true;
+
+  /** RG-10-01 : au plus une équipe, facultative (projet commun) ; lue avec le projet. */
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "team_id")
+  private Team team;
 
   @Version
   @Column(nullable = false)
@@ -62,6 +71,14 @@ public class Project extends AuditableEntity {
 
   public void setActive(boolean active) {
     this.active = active;
+  }
+
+  public Team getTeam() {
+    return team;
+  }
+
+  public void setTeam(Team team) {
+    this.team = team;
   }
 
   public long getVersion() {

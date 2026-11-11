@@ -43,7 +43,12 @@ class TeamUpdateServiceTest {
   private final TeamMemberRepository members = mock(TeamMemberRepository.class);
   private final UserRepository users = mock(UserRepository.class);
   private final TeamService service =
-      new TeamService(teams, members, users, Clock.fixed(NOW, ZoneOffset.UTC));
+      new TeamService(
+          teams,
+          members,
+          users,
+          Clock.fixed(NOW, ZoneOffset.UTC),
+          org.mockito.Mockito.mock(com.apptracer.referential.repository.ProjectRepository.class));
 
   private final List<User> known = new ArrayList<>();
   private User manager;

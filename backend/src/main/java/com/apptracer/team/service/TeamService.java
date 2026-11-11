@@ -6,6 +6,8 @@ import com.apptracer.account.repository.UserRepository;
 import com.apptracer.common.error.BusinessException;
 import com.apptracer.common.error.InvalidRequestException;
 import com.apptracer.common.error.ResourceNotFoundException;
+import com.apptracer.referential.domain.Project;
+import com.apptracer.referential.repository.ProjectRepository;
 import com.apptracer.team.domain.Team;
 import com.apptracer.team.domain.TeamMember;
 import com.apptracer.team.repository.TeamMemberRepository;
@@ -54,9 +56,15 @@ public class TeamService {
   private final TeamMemberRepository members;
   private final UserRepository users;
   private final Clock clock;
+  private final ProjectRepository projects;
 
   public TeamService(
-      TeamRepository teams, TeamMemberRepository members, UserRepository users, Clock clock) {
+      TeamRepository teams,
+      TeamMemberRepository members,
+      UserRepository users,
+      Clock clock,
+      ProjectRepository projects) {
+    this.projects = projects;
     this.teams = teams;
     this.members = members;
     this.users = users;
@@ -133,6 +141,7 @@ public class TeamService {
    * RG-05-09 : suppression définitive. Les rattachements disparaissent, les membres se retrouvent
    * sans équipe ; leurs comptes et leurs saisies ne sont pas touchés. RG-05-14 : la ligne de
    * l'équipe est conservée, marquée supprimée (qui, quand), et son nom redevient disponible.
+   * RG-10-07 : ses projets deviennent sans équipe (RG-10-10 : tracé par l'audit JPA).
    */
   @Transactional
   public void delete(Long actorId, Long id) {
@@ -141,6 +150,9 @@ public class TeamService {
             .findActiveById(id)
             .orElseThrow(() -> new ResourceNotFoundException("error.team.not-found"));
     members.deleteByTeamId(id);
+    List<Project> teamProjects = projects.findByTeamId(id);
+    teamProjects.forEach(project -> project.setTeam(null));
+    projects.saveAllAndFlush(teamProjects);
     team.markDeleted(actorId, Instant.now(clock));
     teams.saveAndFlush(team);
   }

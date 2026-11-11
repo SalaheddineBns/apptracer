@@ -51,7 +51,14 @@ class TimeEntryServiceTest {
   private final com.apptracer.timeentry.service.WeeklyEntriesReader reader =
       mock(com.apptracer.timeentry.service.WeeklyEntriesReader.class);
   private final TimeEntryService service =
-      new TimeEntryService(entries, types, projects, settings, CLOCK, reader);
+      new TimeEntryService(
+          entries,
+          types,
+          projects,
+          settings,
+          CLOCK,
+          reader,
+          org.mockito.Mockito.mock(com.apptracer.team.service.TeamProjectScope.class));
 
   private final ActivityType meeting = new ActivityType("REUNION", "Réunion", false, TagColor.WARN);
   private final ActivityType work =

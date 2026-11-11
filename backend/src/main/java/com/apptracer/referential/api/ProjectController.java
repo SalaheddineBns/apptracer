@@ -46,14 +46,17 @@ public class ProjectController {
   @PreAuthorize("isAuthenticated()")
   @Operation(
       operationId = "listProjects",
-      summary = "Lister les projets (actifs, ou tous pour un ADMIN)")
+      summary =
+          "Lister les projets : tous pour un ADMIN, les projets autorisés à la saisie sinon (RG-10-03)")
   @ApiResponse(responseCode = "200", description = "Projets triés par nom")
   @ApiResponse(
       responseCode = "401",
       description = "Access token absent ou invalide (RG-03-09)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public List<ProjectResponse> listProjects() {
-    return service.list(currentUser.isAdmin()).stream().map(mapper::toResponse).toList();
+    return service.listFor(currentUser.currentUserId(), currentUser.isAdmin()).stream()
+        .map(mapper::toResponse)
+        .toList();
   }
 
   @PostMapping
@@ -74,11 +77,11 @@ public class ProjectController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "409",
-      description = "Code déjà utilisé (RG-02-01)",
+      description = "Code déjà utilisé (RG-02-01) ou équipe inconnue (RG-10-01)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public ResponseEntity<ProjectResponse> createProject(
       @Valid @RequestBody CreateProjectRequest request) {
-    Project project = service.create(request.code(), request.name());
+    Project project = service.create(request.code(), request.name(), request.teamId());
     URI location =
         ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").build(project.getId());
     return ResponseEntity.created(location).body(mapper.toResponse(project));
@@ -106,7 +109,7 @@ public class ProjectController {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  @Operation(operationId = "updateProject", summary = "Modifier le nom d'un projet")
+  @Operation(operationId = "updateProject", summary = "Modifier le nom et l'équipe d'un projet")
   @ApiResponse(responseCode = "200", description = "Projet modifié")
   @ApiResponse(
       responseCode = "400",
@@ -126,11 +129,12 @@ public class ProjectController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   @ApiResponse(
       responseCode = "409",
-      description = "Projet modifié entre-temps (conflit de version)",
+      description = "Projet modifié entre-temps (conflit de version) ou équipe inconnue (RG-10-01)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public ProjectResponse updateProject(
       @PathVariable Long id, @Valid @RequestBody UpdateProjectRequest request) {
-    return mapper.toResponse(service.update(id, request.name(), request.version()));
+    return mapper.toResponse(
+        service.update(id, request.name(), request.teamId(), request.version()));
   }
 
   @PostMapping("/{id}/deactivation")

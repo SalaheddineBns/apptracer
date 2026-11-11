@@ -9,6 +9,7 @@ import com.apptracer.referential.domain.Project;
 import com.apptracer.referential.repository.ActivityTypeRepository;
 import com.apptracer.referential.repository.ProjectRepository;
 import com.apptracer.settings.service.AppSettingsService;
+import com.apptracer.team.service.TeamProjectScope;
 import com.apptracer.timeentry.domain.Granularity;
 import com.apptracer.timeentry.domain.TimeEntry;
 import com.apptracer.timeentry.repository.TimeEntryRepository;
@@ -44,6 +45,7 @@ public class TimeEntryService {
   private final DurationCalculator durationCalculator;
   private final Clock clock;
   private final WeeklyEntriesReader weeklyReader;
+  private final TeamProjectScope teamScope;
   private final WeeklyTotalCalculator weeklyCalculator = new WeeklyTotalCalculator();
 
   public TimeEntryService(
@@ -52,7 +54,8 @@ public class TimeEntryService {
       ProjectRepository projects,
       AppSettingsService settings,
       Clock clock,
-      WeeklyEntriesReader weeklyReader) {
+      WeeklyEntriesReader weeklyReader,
+      TeamProjectScope teamScope) {
     this.entries = entries;
     this.types = types;
     this.projects = projects;
@@ -60,6 +63,7 @@ public class TimeEntryService {
     this.durationCalculator = new DurationCalculator();
     this.clock = clock;
     this.weeklyReader = weeklyReader;
+    this.teamScope = teamScope;
   }
 
   /**
@@ -101,7 +105,7 @@ public class TimeEntryService {
     checkPeriod(cmd);
     checkStartDateNotInFuture(cmd.startDate());
     ActivityType type = resolveType(cmd.activityTypeCode());
-    Project project = resolveProject(type, cmd.projectCode());
+    Project project = resolveProject(type, cmd.projectCode(), entry);
     checkNoOverlap(entry.getUserId(), cmd, excludedId);
 
     // endDate renseignée en base pour toutes les granularités (= startDate hors RANGE)
@@ -267,7 +271,12 @@ public class TimeEntryService {
                     "field.activity-type.unknown-or-inactive"));
   }
 
-  private Project resolveProject(ActivityType type, String projectCode) {
+  /**
+   * RG-01-05, RG-02-06 : projet requis ou interdit selon le type, existant et actif. RG-10-03,
+   * RG-10-04 : un nouveau projet doit être sans équipe ou d'une équipe de l'auteur ; RG-10-05 : en
+   * modification, le projet déjà porté par la saisie reste accepté.
+   */
+  private Project resolveProject(ActivityType type, String projectCode, TimeEntry entry) {
     // RG-01-05 : projet obligatoire si le type l'exige, interdit sinon
     if (type.isProjectRequired() && projectCode == null) {
       throw BusinessException.onField(
@@ -281,15 +290,25 @@ public class TimeEntryService {
       return null;
     }
     // RG-02-06 : le projet existe et est actif
-    return projects
-        .findByCode(projectCode)
-        .filter(Project::isActive)
-        .orElseThrow(
-            () ->
-                BusinessException.onField(
-                    "RG-02-06",
-                    "error.project.unknown-or-inactive",
-                    "projectCode",
-                    "field.project.unknown-or-inactive"));
+    Project project =
+        projects
+            .findByCode(projectCode)
+            .filter(Project::isActive)
+            .orElseThrow(
+                () ->
+                    BusinessException.onField(
+                        "RG-02-06",
+                        "error.project.unknown-or-inactive",
+                        "projectCode",
+                        "field.project.unknown-or-inactive"));
+    Project current = entry.getProject();
+    boolean unchanged = current != null && current.getId().equals(project.getId());
+    if (!unchanged
+        && project.getTeam() != null
+        && !teamScope.teamIdsOf(entry.getUserId()).contains(project.getTeam().getId())) {
+      throw BusinessException.onField(
+          "RG-10-04", "error.project.not-in-team", "projectCode", "field.project.not-in-team");
+    }
+    return project;
   }
 }

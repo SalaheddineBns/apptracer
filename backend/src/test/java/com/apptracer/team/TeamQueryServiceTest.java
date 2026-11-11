@@ -26,7 +26,12 @@ class TeamQueryServiceTest {
   private final TeamMemberRepository members = mock(TeamMemberRepository.class);
   private final UserRepository users = mock(UserRepository.class);
   private final TeamService service =
-      new TeamService(teams, members, users, java.time.Clock.systemUTC());
+      new TeamService(
+          teams,
+          members,
+          users,
+          java.time.Clock.systemUTC(),
+          org.mockito.Mockito.mock(com.apptracer.referential.repository.ProjectRepository.class));
 
   private static void set(Object target, String name, Object value) {
     try {

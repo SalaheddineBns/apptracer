@@ -6,10 +6,16 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Création d'un projet.
+ *
+ * @param teamId RG-10-01, RG-10-02 : équipe facultative ; absente, le projet est sans équipe
+ */
 public record CreateProjectRequest(
     // RG-02-01 : contrôlé tel que saisi, jamais transformé (CA-02-04)
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[A-Z0-9_]{2,30}$")
         @NotNull
         @Pattern(regexp = "^[A-Z0-9_]{2,30}$", message = "{validation.code.pattern}")
         String code,
-    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String name) {}
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String name,
+    @Schema(description = "Équipe du projet ; absente pour un projet commun") Long teamId) {}

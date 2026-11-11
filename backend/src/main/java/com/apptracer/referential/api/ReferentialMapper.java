@@ -3,6 +3,7 @@ package com.apptracer.referential.api;
 import com.apptracer.referential.domain.ActivityType;
 import com.apptracer.referential.domain.JobTitle;
 import com.apptracer.referential.domain.Project;
+import com.apptracer.team.api.TeamRef;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -30,6 +31,9 @@ public class ReferentialMapper {
         project.getCode(),
         project.getName(),
         project.isActive(),
+        project.getTeam() == null
+            ? null
+            : new TeamRef(project.getTeam().getId(), project.getTeam().getName()),
         project.getVersion());
   }
 }
