@@ -226,3 +226,4 @@ docs/sfd/   functional specifications: business rules (RG-xx-yy) and acceptance 
 ## License
 
 AppTracer is released under the [MIT License](LICENSE). To report a vulnerability, see [`SECURITY.md`](SECURITY.md).
+The version history is in [`CHANGELOG.md`](CHANGELOG.md).
