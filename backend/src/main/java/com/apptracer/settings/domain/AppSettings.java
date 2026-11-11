@@ -8,15 +8,15 @@ import jakarta.persistence.Version;
 import java.time.Instant;
 
 /**
- * Paramètres de l'application (SFD-06 §2) : ligne unique, créée par la migration. N'étend pas
- * {@code AuditableEntity} : la dernière modification n'est écrite par le service que si la valeur
- * change (RG-06-05, RG-06-06). Jamais exposée directement par l'API.
+ * Application settings (SFD-06 §2): a single row, created by the migration. Does not extend {@code
+ * AuditableEntity}: the service writes the last change only when the value changes (RG-06-05,
+ * RG-06-06). Never exposed directly by the API.
  */
 @Entity
 @Table(name = "app_settings")
 public class AppSettings {
 
-  /** Identifiant de la ligne unique. */
+  /** Identifier of the single row. */
   public static final short SINGLETON_ID = 1;
 
   @Id private Short id;
@@ -58,7 +58,7 @@ public class AppSettings {
     return updatedBy;
   }
 
-  /** RG-06-05 : change la valeur et trace qui et quand, ensemble. */
+  /** RG-06-05: changes the value and records who and when, together. */
   public void changeStandardDayMinutes(int minutes, Instant at, long by) {
     this.standardDayMinutes = minutes;
     this.updatedAt = at;

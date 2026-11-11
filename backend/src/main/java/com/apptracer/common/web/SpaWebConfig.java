@@ -8,10 +8,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.PathResourceResolver;
 
 /**
- * Sert l'application Angular construite dans {@code classpath:/static/} (image Docker de démo). Une
- * route du front ({@code /journal}, {@code /team/members/3}…) renvoie {@code index.html} : le
- * routeur Angular prend la suite. Les chemins de l'API et de la documentation restent en 404 s'ils
- * n'existent pas. En développement, sans {@code static/}, rien n'est servi.
+ * Serves the Angular app built into {@code classpath:/static/} (demo Docker image). A front-end
+ * route ({@code /journal}, {@code /team/members/3}…) returns {@code index.html}, and the Angular
+ * router takes over. Missing API and documentation paths stay 404. In development, without {@code
+ * static/}, nothing is served.
  */
 @Configuration
 public class SpaWebConfig implements WebMvcConfigurer {

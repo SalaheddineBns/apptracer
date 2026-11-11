@@ -1,8 +1,8 @@
 package com.apptracer.common.error;
 
 /**
- * Échec d'authentification (identifiants invalides, compte inactif, refresh token refusé) : 401
- * toujours identique, sans révéler la cause (RG-03-04, RG-03-05).
+ * Authentication failure (invalid credentials, inactive account, refused refresh token): always the
+ * same 401, without revealing the cause (RG-03-04, RG-03-05).
  */
 public class InvalidCredentialsException extends RuntimeException {
 

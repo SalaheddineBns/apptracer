@@ -1,4 +1,4 @@
 package com.apptracer.common.error;
 
-/** Erreur portant sur un champ de la requête (élément de {@code errors[]}). */
+/** Error on a field of the request (an element of {@code errors[]}). */
 public record ApiFieldError(String field, String message) {}

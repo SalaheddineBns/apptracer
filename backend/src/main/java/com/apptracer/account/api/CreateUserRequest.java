@@ -21,7 +21,7 @@ public record CreateUserRequest(
     // RG-09-02, RG-09-04 : fonction facultative (code), pour un USER ou un MANAGER
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true) String jobTitleCode) {
 
-  /** Le mot de passe ne doit jamais apparaître dans un log. */
+  /** The password must never appear in a log. */
   @Override
   public String toString() {
     return "CreateUserRequest[email=" + email + ", role=" + role + ", initialPassword=***]";

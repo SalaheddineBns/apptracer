@@ -11,7 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
-/** Type d'activité (SFD-02 §2). Jamais exposé directement par l'API. */
+/** Activity type (SFD-02 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "activity_types")
 public class ActivityType extends AuditableEntity {

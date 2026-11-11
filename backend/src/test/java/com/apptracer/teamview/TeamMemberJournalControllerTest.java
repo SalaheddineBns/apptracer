@@ -34,7 +34,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** listTeamMemberTimeEntries : journal de la semaine d'un membre (SFD-04, lecture seule). */
+/** listTeamMemberTimeEntries: a member's journal for the week (SFD-04, read-only). */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

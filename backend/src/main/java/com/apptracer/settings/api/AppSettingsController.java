@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** RG-06-03 : lecture ouverte à tout utilisateur connecté. */
+/** RG-06-03: readable by any signed-in user. */
 @RestController
 @RequestMapping("/api/v1/app-settings")
 @Tag(name = "AppSettings")

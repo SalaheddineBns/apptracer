@@ -23,9 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/**
- * RG-02-09 : lecture des listes ouverte à tout connecté ; RG-02-08 : écriture réservée à l'ADMIN.
- */
+/** RG-02-09: lists are readable by anyone signed in; RG-02-08: writing is ADMIN only. */
 @RestController
 @RequestMapping("/api/v1/projects")
 @Tag(name = "Projects")

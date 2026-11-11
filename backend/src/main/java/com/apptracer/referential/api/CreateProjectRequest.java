@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * Création d'un projet.
+ * Creation of a project.
  *
- * @param teamId RG-10-01, RG-10-02 : équipe facultative ; absente, le projet est sans équipe
+ * @param teamId RG-10-01, RG-10-02: optional team; when absent, the project has no team
  */
 public record CreateProjectRequest(
     // RG-02-01 : contrôlé tel que saisi, jamais transformé (CA-02-04)

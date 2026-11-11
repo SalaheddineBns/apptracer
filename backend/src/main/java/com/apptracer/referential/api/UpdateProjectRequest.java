@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
- * RG-02-01 : pas de {@code code}, immuable après la création.
+ * RG-02-01: no {@code code}, which cannot change after creation.
  *
- * @param teamId RG-10-02 : absente, l'équipe est retirée et le projet devient sans équipe
+ * @param teamId RG-10-02: when absent, the team is removed and the project no longer has a team
  */
 public record UpdateProjectRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String name,

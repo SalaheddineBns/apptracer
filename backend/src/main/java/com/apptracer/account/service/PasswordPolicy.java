@@ -4,10 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Règle de mot de passe, partagée par le compte ADMIN initial, la création de compte et le
- * changement de mot de passe.
- */
+/** Password rule, shared by the initial ADMIN account, account creation and password change. */
 public final class PasswordPolicy {
 
   public static final int MIN_LENGTH = 12;
@@ -17,10 +14,7 @@ public final class PasswordPolicy {
 
   private PasswordPolicy() {}
 
-  /**
-   * Liste des règles non respectées (clés de message, RG-08-06) ; vide si le mot de passe est
-   * valide.
-   */
+  /** List of the rules not met (message keys, RG-08-06); empty if the password is valid. */
   public static List<String> violations(String password) {
     List<String> violations = new ArrayList<>();
     if (password == null || password.isEmpty()) {

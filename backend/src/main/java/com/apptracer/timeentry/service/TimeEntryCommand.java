@@ -4,7 +4,7 @@ import com.apptracer.timeentry.domain.Granularity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** Données d'une saisie à enregistrer, telles que reçues de l'API (type et projet par code). */
+/** Data of a time entry to save, as received from the API (type and project by code). */
 public record TimeEntryCommand(
     Granularity granularity,
     LocalDate startDate,

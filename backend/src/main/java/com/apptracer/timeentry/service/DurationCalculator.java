@@ -7,16 +7,16 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * RG-01-08 : calcul pur de la durée d'une saisie, en minutes. La journée standard est reçue en
- * paramètre ; les valeurs d'entrée sont supposées déjà validées (RG-01-01 à RG-01-03).
+ * RG-01-08: pure computation of a time entry's duration, in minutes. The standard day is passed as
+ * a parameter; the input values are assumed to be already validated (RG-01-01 to RG-01-03).
  */
 public final class DurationCalculator {
 
   /**
-   * @param endDate utilisé seulement pour RANGE
-   * @param startTime utilisé seulement pour HOUR
-   * @param endTime utilisé seulement pour HOUR
-   * @param standardDayMinutes journée standard en vigueur (RG-00-02)
+   * @param endDate used for RANGE only
+   * @param startTime used for HOUR only
+   * @param endTime used for HOUR only
+   * @param standardDayMinutes standard day in force (RG-00-02)
    */
   public int compute(
       Granularity granularity,
@@ -35,7 +35,10 @@ public final class DurationCalculator {
     };
   }
 
-  /** Nombre de jours du lundi au vendredi entre les deux dates incluses (fériés comptés). */
+  /**
+   * Number of days from Monday to Friday between the two dates, both included (public holidays
+   * counted).
+   */
   static int countWeekdays(LocalDate from, LocalDate to) {
     int count = 0;
     for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {

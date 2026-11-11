@@ -8,7 +8,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Mot de passe conforme à RG-03-02 (et à la limite BCrypt de 72 octets). {@code null} accepté. */
+/**
+ * Password that complies with RG-03-02 (and with the 72-byte BCrypt limit). {@code null} is
+ * accepted.
+ */
 @Documented
 @Constraint(validatedBy = ValidPasswordValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.RECORD_COMPONENT})

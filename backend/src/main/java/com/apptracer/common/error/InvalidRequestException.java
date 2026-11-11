@@ -3,8 +3,8 @@ package com.apptracer.common.error;
 import java.util.List;
 
 /**
- * Requête invalide hors Bean Validation (par exemple un paramètre de tri inconnu) : 400. Les
- * messages sont des clés de message (RG-08-06), résolues avec {@code args}.
+ * Invalid request outside Bean Validation (for example an unknown sort parameter): 400. The
+ * messages are message keys (RG-08-06), resolved with {@code args}.
  */
 public class InvalidRequestException extends RuntimeException {
 

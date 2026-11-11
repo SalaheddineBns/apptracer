@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UserService {
 
-  /** Propriétés de tri autorisées (jamais le haché du mot de passe). */
+  /** Allowed sort properties (never the password hash). */
   private static final Set<String> SORTABLE =
       Set.of("lastName", "firstName", "email", "role", "active");
 
@@ -47,8 +47,8 @@ public class UserService {
   }
 
   /**
-   * RG-03-11 : réservé à l'ADMIN (contrôlé par le contrôleur). Le format et la force du mot de
-   * passe (RG-03-02) sont contrôlés par Bean Validation sur le DTO.
+   * RG-03-11: ADMIN only (checked by the controller). The password's format and strength (RG-03-02)
+   * are checked by Bean Validation on the DTO.
    */
   @Transactional
   public User create(
@@ -99,7 +99,7 @@ public class UserService {
         .orElseThrow(() -> new ResourceNotFoundException("error.account.not-found"));
   }
 
-  /** Compte chargé avec un verrou exclusif ({@code FOR UPDATE}), pour update et deactivate. */
+  /** Account loaded with an exclusive lock ({@code FOR UPDATE}), for update and deactivate. */
   private User getForUpdate(Long id) {
     return users
         .findByIdForUpdate(id)
@@ -107,9 +107,9 @@ public class UserService {
   }
 
   /**
-   * RG-09-02, RG-09-06 : fonction à attribuer pour le rôle visé. {@code null} sans code. Refus
-   * (409, champ {@code jobTitleCode}) pour un ADMIN, et pour une fonction inconnue ou inactive sauf
-   * si le compte la porte déjà ({@code current}).
+   * RG-09-02, RG-09-06: job title to assign for the target role. {@code null} without a code.
+   * Refused (409, field {@code jobTitleCode}) for an ADMIN, and for an unknown or inactive job
+   * title unless the account already has it ({@code current}).
    */
   private JobTitle resolveJobTitle(Role role, String code, JobTitle current) {
     if (code == null) {
@@ -146,15 +146,15 @@ public class UserService {
     return title;
   }
 
-  /** RG-05-10 : noms des équipes gérées, entre guillemets, séparés par des virgules. */
+  /** RG-05-10: names of the managed teams, in quotes, separated by commas. */
   private static String quotedNames(List<String> teamNames) {
     return teamNames.stream().map(n -> "« " + n + " »").collect(Collectors.joining(", "));
   }
 
   /**
-   * RG-03-11 : seuls le prénom, le nom, le rôle et la fonction (RG-09-04) sont modifiables (ni
-   * e-mail, ni mot de passe). Sans {@code jobTitleCode}, le compte n'a plus de fonction. {@code
-   * actorId} est l'ADMIN connecté, lu dans le token.
+   * RG-03-11: only the first name, last name, role and job title (RG-09-04) can be changed (neither
+   * e-mail nor password). Without {@code jobTitleCode}, the account no longer has a job title.
+   * {@code actorId} is the signed-in ADMIN, read from the token.
    */
   @Transactional
   public User update(
@@ -213,7 +213,7 @@ public class UserService {
     return saved;
   }
 
-  /** Sans effet si le compte est déjà inactif. */
+  /** No effect if the account is already inactive. */
   @Transactional
   public User deactivate(Long actorId, Long id) {
     // Verrou exclusif : sérialise avec la gestion des équipes (architecture §2.11)
@@ -243,7 +243,7 @@ public class UserService {
     return saved;
   }
 
-  /** Sans effet si le compte est déjà actif. Les jetons révoqués ne sont pas restaurés. */
+  /** No effect if the account is already active. Revoked tokens are not restored. */
   @Transactional
   public User reactivate(Long id) {
     User user = get(id);

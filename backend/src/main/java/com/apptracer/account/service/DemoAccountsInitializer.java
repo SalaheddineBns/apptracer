@@ -23,12 +23,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * Outil de développement (hors SFD) : crée au démarrage un manager, un développeur et un QA de
- * démonstration, puis l'équipe « Demo team » qui les réunit, seulement si DEMO_PASSWORD est défini
- * (jamais en production). Idempotent : un e-mail déjà présent est ignoré, aucun compte existant
- * n'est modifié, et l'équipe n'est créée que si le manager n'en dirige aucune et que les deux
- * membres n'en ont pas. L'ADMIN vient de {@link InitialAdminInitializer}, exécuté avant. Le mot de
- * passe n'apparaît dans aucun message ni log.
+ * Development tool (outside the specs): at start-up, creates a demo manager, developer and QA, then
+ * the team Demo team that brings them together, only if DEMO_PASSWORD is set (never in production).
+ * Idempotent: an e-mail that already exists is skipped, no existing account is changed, and the
+ * team is created only if the manager leads no team and neither member has one. The ADMIN comes
+ * from {@link InitialAdminInitializer}, which runs first. The password appears in no message or
+ * log.
  */
 @Component
 @Order(1)
@@ -37,7 +37,7 @@ public class DemoAccountsInitializer implements ApplicationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(DemoAccountsInitializer.class);
 
-  /** Compte de démonstration ; {@code jobTitleCode} vaut {@code null} pour aucune fonction. */
+  /** Demo account; {@code jobTitleCode} is {@code null} for no job title. */
   public record DemoAccount(
       String email, String firstName, String lastName, Role role, String jobTitleCode) {}
 
@@ -86,7 +86,7 @@ public class DemoAccountsInitializer implements ApplicationRunner {
     return password != null && !password.isBlank();
   }
 
-  /** Renvoie le nombre de comptes créés. */
+  /** Returns the number of accounts created. */
   public int createMissing() {
     if (!enabled()) {
       return 0;
@@ -120,8 +120,8 @@ public class DemoAccountsInitializer implements ApplicationRunner {
   }
 
   /**
-   * Crée « Demo team » (manager de démonstration, dev et QA comme membres) avec les règles de
-   * SFD-05, au nom du premier ADMIN actif. Renvoie vrai si l'équipe a été créée.
+   * Creates Demo team (demo manager, with the developer and the QA as members) following the SFD-05
+   * rules, on behalf of the first active ADMIN. Returns true if the team was created.
    */
   public boolean createTeamIfAbsent() {
     if (!enabled()) {

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** RG-04-01, RG-04-03 : vue équipe réservée au MANAGER, uniquement des lectures. */
+/** RG-04-01, RG-04-03: team view reserved for the MANAGER, read-only. */
 @RestController
 @RequestMapping("/api/v1/team-view")
 @Tag(name = "TeamView")

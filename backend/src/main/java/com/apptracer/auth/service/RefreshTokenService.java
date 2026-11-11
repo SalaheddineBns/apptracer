@@ -31,8 +31,8 @@ public class RefreshTokenService implements SessionRevoker {
   }
 
   /**
-   * RG-03-07 : émet un jeton opaque de 256 bits, stocké haché côté serveur, valable {@code
-   * JWT_REFRESH_TTL}. Renvoie le jeton en clair, qui n'existe que dans la réponse.
+   * RG-03-07: issues an opaque 256-bit token, stored hashed on the server, valid for {@code
+   * JWT_REFRESH_TTL}. Returns the token in clear, which exists only in the response.
    */
   public String issue(Long userId, UUID sessionId) {
     byte[] bytes = new byte[TOKEN_BYTES];
@@ -50,8 +50,8 @@ public class RefreshTokenService implements SessionRevoker {
   }
 
   /**
-   * RG-03-07 : consomme un refresh token (usage unique). Renvoie le jeton consommé, ou vide s'il
-   * est inconnu, déjà utilisé, révoqué ou expiré.
+   * RG-03-07: consumes a refresh token (single use). Returns the consumed token, or empty if it is
+   * unknown, already used, revoked or expired.
    */
   public Optional<RefreshToken> consume(String rawToken) {
     String hash = TokenHasher.sha256Hex(rawToken);
@@ -62,28 +62,28 @@ public class RefreshTokenService implements SessionRevoker {
     return repository.findByTokenHash(hash);
   }
 
-  /** RG-03-08 : révoque le refresh token présenté ; idempotent. */
+  /** RG-03-08: revokes the presented refresh token; idempotent. */
   public void revoke(String rawToken) {
     repository.revokeActive(
         TokenHasher.sha256Hex(rawToken), Instant.now(clock), RevocationReason.LOGOUT);
   }
 
-  /** RG-03-14 : désactivation d'un compte. */
+  /** RG-03-14: deactivation of an account. */
   @Override
   public void revokeAllOnDeactivation(Long userId) {
     repository.revokeAllActiveByUser(
         userId, Instant.now(clock), RevocationReason.ACCOUNT_DEACTIVATED);
   }
 
-  /** RG-03-14 : changement de rôle d'un compte. */
+  /** RG-03-14: change of an account's role. */
   @Override
   public void revokeAllOnRoleChange(Long userId) {
     repository.revokeAllActiveByUser(userId, Instant.now(clock), RevocationReason.ROLE_CHANGED);
   }
 
   /**
-   * RG-03-15 : change de mot de passe, révoque les autres sessions du compte. Sans session courante
-   * connue, toutes les sessions sont révoquées.
+   * RG-03-15: password change; revokes the account's other sessions. When no current session is
+   * known, all sessions are revoked.
    */
   public void revokeOtherSessions(Long userId, UUID currentSessionId) {
     Instant now = Instant.now(clock);

@@ -9,7 +9,7 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
-/** RG-00-04 : active l'audit JPA ; les dates viennent du {@link Clock} applicatif. */
+/** RG-00-04: enables JPA auditing; dates come from the application {@link Clock}. */
 @Configuration
 @EnableJpaAuditing(
     auditorAwareRef = "auditorAware",

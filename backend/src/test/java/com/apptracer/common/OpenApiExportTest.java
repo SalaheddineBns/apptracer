@@ -17,7 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** Exporte le contrat OpenAPI consommé par le front (voir skill contrat-openapi). */
+/** Exports the OpenAPI contract used by the front end (see the contrat-openapi skill). */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

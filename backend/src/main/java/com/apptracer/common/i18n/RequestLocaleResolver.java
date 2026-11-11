@@ -8,10 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.LocaleResolver;
 
 /**
- * RG-08-06 : langue des messages renvoyés par le serveur, lue dans {@code Accept-Language}.
- * Français si la langue préférée (poids le plus fort) est le français ({@code fr}, {@code fr-FR}…),
- * anglais pour toute autre valeur ou en l'absence d'en-tête. Utilisable aussi hors Spring MVC
- * (points d'entrée de sécurité).
+ * RG-08-06: language of the messages returned by the server, read from {@code Accept-Language}.
+ * French if the preferred language (highest weight) is French ({@code fr}, {@code fr-FR}…), English
+ * for any other value or without the header. Also usable outside Spring MVC (security entry
+ * points).
  */
 @Component("localeResolver")
 public class RequestLocaleResolver implements LocaleResolver {

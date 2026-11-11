@@ -14,7 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
-/** Compte utilisateur (SFD-03 §2). Jamais exposé directement par l'API. */
+/** User account (SFD-03 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "users")
 public class User extends AuditableEntity {

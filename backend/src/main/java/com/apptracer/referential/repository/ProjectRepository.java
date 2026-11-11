@@ -20,15 +20,15 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
   List<Project> findActiveSorted();
 
   /**
-   * RG-10-03 : projets actifs sans équipe ou affectés à l'une des équipes données ; RG-10-09 : tri
-   * par nom.
+   * RG-10-03: active projects with no team or assigned to one of the given teams; RG-10-09: sorted
+   * by name.
    */
   @Query(
       "select p from Project p left join p.team t where p.active = true"
           + " and (t is null or t.id in :teamIds) order by lower(p.name), p.code")
   List<Project> findAllowedSorted(@Param("teamIds") Collection<Long> teamIds);
 
-  /** RG-10-07 : projets d'une équipe. */
+  /** RG-10-07: projects of a team. */
   List<Project> findByTeamId(Long teamId);
 
   boolean existsByCode(String code);

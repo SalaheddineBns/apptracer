@@ -1,6 +1,6 @@
 package com.apptracer.referential.domain;
 
-/** RG-02-04 : palette des tags du design system (severities p-tag proposées, sans danger). */
+/** RG-02-04: tag palette of the design system (p-tag severities offered, without danger). */
 public enum TagColor {
   INFO,
   WARN,

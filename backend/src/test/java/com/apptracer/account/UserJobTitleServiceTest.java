@@ -23,7 +23,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-/** Contrôles de fonction du service des comptes (SFD-09). */
+/** Job title checks of the account service (SFD-09). */
 class UserJobTitleServiceTest {
 
   private static final Long ADMIN_ID = 1L;

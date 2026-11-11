@@ -9,9 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/**
- * Création d'une saisie. Le propriétaire est l'utilisateur du jeton, jamais un champ (RG-00-03).
- */
+/** Creation of a time entry. The owner is the user of the token, never a field (RG-00-03). */
 @ValidGranularityFields
 public record CreateTimeEntryRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, enumAsRef = true) @NotNull

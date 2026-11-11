@@ -20,7 +20,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
-/** JWT HS256 (RG-03-06) et hiérarchie des rôles (RG-03-10). */
+/** HS256 JWT (RG-03-06) and role hierarchy (RG-03-10). */
 @Configuration
 @EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfig {
@@ -40,8 +40,8 @@ public class JwtConfig {
   }
 
   /**
-   * RG-03-06 : le rôle vient du claim {@code role}. Le nom de l'authentification est le claim
-   * {@code sub} (identifiant de l'utilisateur), lu par {@code SecurityAuditorAware}.
+   * RG-03-06: the role comes from the {@code role} claim. The authentication name is the {@code
+   * sub} claim (the user's identifier), read by {@code SecurityAuditorAware}.
    */
   @Bean
   JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -56,7 +56,7 @@ public class JwtConfig {
     return converter;
   }
 
-  /** RG-03-10 : MANAGER inclut les droits USER ; ADMIN n'hérite de rien. */
+  /** RG-03-10: MANAGER includes the USER rights; ADMIN inherits nothing. */
   @Bean
   static RoleHierarchy roleHierarchy() {
     return RoleHierarchyImpl.fromHierarchy("ROLE_MANAGER > ROLE_USER");

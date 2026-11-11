@@ -9,9 +9,7 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Paramètres de l'application (SFD-06). Point d'accès des autres domaines à la journée standard.
- */
+/** Application settings (SFD-06). Entry point for the other domains to read the standard day. */
 @Service
 public class AppSettingsService {
 
@@ -26,8 +24,8 @@ public class AppSettingsService {
   }
 
   /**
-   * RG-00-02, RG-06-01 : journée standard en minutes, lue en base à chaque appel (pas de cache). À
-   * appeler dans la transaction de l'enregistrement d'une saisie (SFD-01).
+   * RG-00-02, RG-06-01: standard day in minutes, read from the database on each call (no cache). To
+   * be called within the transaction that saves a time entry (SFD-01).
    */
   @Transactional(readOnly = true)
   public int getStandardDayMinutes() {
@@ -35,8 +33,8 @@ public class AppSettingsService {
   }
 
   /**
-   * RG-06-03 : tout utilisateur connecté lit la journée standard. H7 / RG-06-05 : l'auteur et la
-   * date de la dernière modification ne sont renseignés que pour un ADMIN.
+   * RG-06-03: any signed-in user reads the standard day. H7 / RG-06-05: the author and date of the
+   * last change are filled in for an ADMIN only.
    */
   @Transactional(readOnly = true)
   public AppSettingsView read(boolean includeLastModification) {
@@ -44,10 +42,10 @@ public class AppSettingsService {
   }
 
   /**
-   * RG-06-02 : bornes et pas contrôlés en amont (Bean Validation), la contrainte de base reste le
-   * filet. RG-06-03 : réservé à l'ADMIN (contrôlé par le contrôleur). RG-06-04 : seule la ligne de
-   * paramètres est écrite, aucune saisie n'est lue ni recalculée. L'auteur vient du jeton et la
-   * date de l'horloge applicative, jamais de la requête.
+   * RG-06-02: bounds and step are checked upstream (Bean Validation); the database constraint
+   * remains the safety net. RG-06-03: ADMIN only (checked by the controller). RG-06-04: only the
+   * settings row is written; no time entry is read or recalculated. The author comes from the token
+   * and the date from the application clock, never from the request.
    */
   @Transactional
   public AppSettingsView update(int minutes, long version, long adminId) {

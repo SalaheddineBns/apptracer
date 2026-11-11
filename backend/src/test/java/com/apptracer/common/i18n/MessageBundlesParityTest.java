@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** RG-08-06 : les deux fichiers de messages portent exactement les mêmes clés. */
+/** RG-08-06: both message files have exactly the same keys. */
 class MessageBundlesParityTest {
 
   private static final Pattern PARAMETER = Pattern.compile("\\{\\d+}");

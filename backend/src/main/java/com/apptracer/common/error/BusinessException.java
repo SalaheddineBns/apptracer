@@ -3,9 +3,9 @@ package com.apptracer.common.error;
 import java.util.List;
 
 /**
- * Violation d'une règle de gestion : traduite en 409, {@code code} = identifiant de la RG. Le
- * message est une clé de {@code messages_*.properties} (RG-08-06), résolue dans la langue de la
- * requête avec {@code args} ; {@code getMessage()} renvoie la clé.
+ * Violation of a business rule: translated into a 409, {@code code} = the rule's identifier. The
+ * message is a key of {@code messages_*.properties} (RG-08-06), resolved in the request's language
+ * with {@code args}; {@code getMessage()} returns the key.
  */
 public class BusinessException extends RuntimeException {
 
@@ -26,8 +26,8 @@ public class BusinessException extends RuntimeException {
   }
 
   /**
-   * Variante pour une règle portant sur un seul champ. {@code fieldMessageKey} est la clé du
-   * message du champ ; les mêmes {@code args} servent aux deux messages.
+   * Variant for a rule on a single field. {@code fieldMessageKey} is the key of the field's
+   * message; the same {@code args} are used for both messages.
    */
   public static BusinessException onField(
       String rgCode, String messageKey, String field, String fieldMessageKey, Object... args) {
@@ -39,7 +39,7 @@ public class BusinessException extends RuntimeException {
     return rgCode;
   }
 
-  /** Erreurs de champ : {@code message} est une clé, résolue par le handler global. */
+  /** Field errors: {@code message} is a key, resolved by the global handler. */
   public List<ApiFieldError> getErrors() {
     return errors;
   }

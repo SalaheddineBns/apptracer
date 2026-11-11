@@ -10,8 +10,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Modification d'une saisie (RG-01-12) : mêmes champs que la création, plus la version lue. Le
- * propriétaire reste l'utilisateur du jeton (RG-00-03).
+ * Update of a time entry (RG-01-12): same fields as the creation, plus the version read. The owner
+ * remains the user of the token (RG-00-03).
  */
 @ValidGranularityFields
 public record UpdateTimeEntryRequest(

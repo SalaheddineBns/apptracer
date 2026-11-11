@@ -28,11 +28,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
- * Outil de démonstration (hors SFD) : après {@link DemoAccountsInitializer}, remplit les 10 jours
- * ouvrés précédant aujourd'hui pour le développeur et le QA de démonstration, et crée le projet «
- * AppTracer » qu'utilisent ces saisies. Seulement si DEMO_PASSWORD est défini. Les saisies passent
- * par {@link TimeEntryService}, au nom de leur auteur, avec toutes les règles de SFD-01. Un compte
- * qui a déjà une saisie est ignoré.
+ * Demo tool (outside the specs): after {@link DemoAccountsInitializer}, fills the 10 working days
+ * before today for the demo developer and QA, and creates the AppTracer project those entries use.
+ * Only if DEMO_PASSWORD is set. The entries go through {@link TimeEntryService}, on behalf of their
+ * author, with all the SFD-01 rules. An account that already has an entry is skipped.
  */
 @Component
 @Order(2)
@@ -94,7 +93,7 @@ public class DemoWeekSeeder implements ApplicationRunner {
     seed();
   }
 
-  /** Renvoie le nombre de saisies créées. */
+  /** Returns the number of time entries created. */
   public int seed() {
     String password = properties.password();
     if (password == null || password.isBlank()) {
@@ -155,9 +154,7 @@ public class DemoWeekSeeder implements ApplicationRunner {
     return created[0];
   }
 
-  /**
-   * Les {@code count} jours du lundi au vendredi strictement avant {@code today}, du plus ancien.
-   */
+  /** The {@code count} days from Monday to Friday strictly before {@code today}, oldest first. */
   static List<LocalDate> previousWorkingDays(LocalDate today, int count) {
     List<LocalDate> days = new ArrayList<>();
     LocalDate day = today.minusDays(1);

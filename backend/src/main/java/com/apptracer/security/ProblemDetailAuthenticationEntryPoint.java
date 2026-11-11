@@ -15,7 +15,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-/** RG-03-09 : requête sans access token valide sur une ressource protégée, 401 en ProblemDetail. */
+/**
+ * RG-03-09: request without a valid access token on a protected resource, 401 as a ProblemDetail.
+ */
 @Component
 public class ProblemDetailAuthenticationEntryPoint implements AuthenticationEntryPoint {
 

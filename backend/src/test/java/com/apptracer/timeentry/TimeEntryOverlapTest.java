@@ -42,7 +42,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-/** RG-01-06 : non-chevauchement, contrôle de service et contrainte d'exclusion SQL. */
+/** RG-01-06: no overlap, service check and SQL exclusion constraint. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

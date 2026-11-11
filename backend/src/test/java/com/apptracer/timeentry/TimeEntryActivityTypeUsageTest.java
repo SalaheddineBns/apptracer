@@ -32,7 +32,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-/** RG-02-07 : « projet requis » d'un type figé dès qu'une saisie l'utilise. */
+/** RG-02-07: a type's project required flag is frozen as soon as a time entry uses it. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

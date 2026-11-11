@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Semaine d'une équipe : une ligne par membre, triés par nom puis prénom (RG-04-09). */
+/** A team's week: one row per member, sorted by last name then first name (RG-04-09). */
 public record TeamWeekSummaryResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) ManagedTeamResponse team,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) LocalDate weekStart,

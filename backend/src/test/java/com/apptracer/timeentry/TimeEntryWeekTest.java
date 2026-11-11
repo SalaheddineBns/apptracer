@@ -34,7 +34,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
-/** RG-01-13 : journal d'une semaine. */
+/** RG-01-13: journal of one week. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -279,7 +279,7 @@ class TimeEntryWeekTest {
     jdbc.update("UPDATE app_settings SET standard_day_minutes = ?", minutes);
   }
 
-  /** Vérifie les sept jours du lundi 05/10/2026 : 7 entrées, dates consécutives, minutes. */
+  /** Checks the seven days of Monday 05/10/2026: 7 entries, consecutive dates, minutes. */
   private void expectDays(ResultActions r, int... minutes) throws Exception {
     r.andExpect(jsonPath("$.days.length()").value(7));
     for (int i = 0; i < 7; i++) {

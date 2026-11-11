@@ -20,7 +20,7 @@ public class JobTitleService {
     this.titles = titles;
   }
 
-  /** RG-09-07 : réservé à l'ADMIN (contrôlé par le contrôleur). */
+  /** RG-09-07: ADMIN only (checked by the controller). */
   @Transactional
   public JobTitle create(String code, String label) {
     // RG-09-05 : code unique sans tenir compte de la casse (l'index unique couvre les créations
@@ -45,7 +45,7 @@ public class JobTitleService {
         .orElseThrow(() -> new ResourceNotFoundException("error.job-title.not-found"));
   }
 
-  /** RG-09-05 : le code n'est pas modifiable. RG-09-07 : réservé à l'ADMIN. */
+  /** RG-09-05: the code cannot be changed. RG-09-07: ADMIN only. */
   @Transactional
   public JobTitle update(Long id, String label, long version) {
     JobTitle title = get(id);
@@ -59,15 +59,15 @@ public class JobTitleService {
   }
 
   /**
-   * RG-09-06 : jamais supprimée, seulement désactivée ; les comptes qui la portent la gardent. Sans
-   * effet si la fonction est déjà inactive. RG-09-07 : réservé à l'ADMIN.
+   * RG-09-06: never deleted, only deactivated; the accounts that hold it keep it. No effect if the
+   * job title is already inactive. RG-09-07: ADMIN only.
    */
   @Transactional
   public JobTitle deactivate(Long id) {
     return setActive(id, false);
   }
 
-  /** RG-09-06 : réactivable. Sans effet si la fonction est déjà active. */
+  /** RG-09-06: can be reactivated. No effect if the job title is already active. */
   @Transactional
   public JobTitle reactivate(Long id) {
     return setActive(id, true);
@@ -84,8 +84,8 @@ public class JobTitleService {
   }
 
   /**
-   * RG-09-07 : un ADMIN voit actives et inactives, les autres seulement les actives ; RG-09-08 :
-   * tri alphabétique par libellé.
+   * RG-09-07: an ADMIN sees active and inactive ones, the others only the active ones; RG-09-08:
+   * sorted alphabetically by label.
    */
   @Transactional(readOnly = true)
   public List<JobTitle> list(boolean admin) {

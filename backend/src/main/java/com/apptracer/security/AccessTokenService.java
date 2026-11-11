@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-/** Émission des access tokens (RG-03-06). */
+/** Issues access tokens (RG-03-06). */
 @Service
 public class AccessTokenService {
 
@@ -29,8 +29,8 @@ public class AccessTokenService {
   }
 
   /**
-   * RG-03-06 : {@code sub} = identifiant de l'utilisateur, {@code role} = son rôle, {@code sid} =
-   * identifiant de session (sert à RG-03-15), expiration = {@code JWT_ACCESS_TTL}.
+   * RG-03-06: {@code sub} = the user's identifier, {@code role} = their role, {@code sid} = session
+   * identifier (used by RG-03-15), expiry = {@code JWT_ACCESS_TTL}.
    */
   public String issue(Long userId, Role role, UUID sessionId) {
     Instant now = Instant.now(clock);

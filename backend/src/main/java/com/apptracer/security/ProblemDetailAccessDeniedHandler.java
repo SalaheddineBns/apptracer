@@ -15,7 +15,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
-/** RG-03-09 : rôle insuffisant, 403 en ProblemDetail. */
+/** RG-03-09: insufficient role, 403 as a ProblemDetail. */
 @Component
 public class ProblemDetailAccessDeniedHandler implements AccessDeniedHandler {
 

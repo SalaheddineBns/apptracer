@@ -7,8 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 /**
- * RG-03-11 : prénom, nom, rôle et fonction uniquement ; l'e-mail et le mot de passe ne sont pas
- * modifiables.
+ * RG-03-11: first name, last name, role and job title only; the e-mail and the password cannot be
+ * changed.
  */
 public record UpdateUserRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100)

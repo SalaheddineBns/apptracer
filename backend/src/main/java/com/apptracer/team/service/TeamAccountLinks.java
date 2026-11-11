@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
-/** Implémentation, côté équipes, du port {@link AccountTeamLinks} utilisé par les comptes. */
+/** Team-side implementation of the {@link AccountTeamLinks} port used by the accounts. */
 @Service
 public class TeamAccountLinks implements AccountTeamLinks {
 

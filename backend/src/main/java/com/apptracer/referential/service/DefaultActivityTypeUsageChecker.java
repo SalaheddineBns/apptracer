@@ -4,8 +4,8 @@ import org.springframework.context.annotation.Fallback;
 import org.springframework.stereotype.Component;
 
 /**
- * Implémentation par défaut tant que SFD-01 n'existe pas : aucune saisie, donc aucun type utilisé.
- * {@link Fallback} : elle s'efface dès qu'une autre implémentation du port est déclarée.
+ * Default implementation while SFD-01 does not exist: no time entries, so no type in use. {@link
+ * Fallback}: it steps aside as soon as another implementation of the port is declared.
  */
 @Component
 @Fallback

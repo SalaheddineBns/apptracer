@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import java.time.Instant;
 
-/** Équipe (SFD-05 §2). Jamais exposée directement par l'API. */
+/** Team (SFD-05 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "teams")
 public class Team extends AuditableEntity {
@@ -50,7 +50,7 @@ public class Team extends AuditableEntity {
     this.manager = manager;
   }
 
-  /** RG-05-09, RG-05-14 : suppression définitive, qui et quand ensemble. */
+  /** RG-05-09, RG-05-14: permanent deletion, who and when together. */
   public void markDeleted(Long deletedBy, Instant deletedAt) {
     this.deletedBy = deletedBy;
     this.deletedAt = deletedAt;

@@ -5,9 +5,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Semaine de saisies d'un compte avec son total (RG-01-13) et la durée de chaque jour (RG-07-02).
+ * Week of time entries of an account, with its total (RG-01-13) and the duration of each day
+ * (RG-07-02).
  *
- * @param minutesPerDay durée de chaque jour, lundi (index 0) à dimanche (index 6), issue de {@link
+ * @param minutesPerDay duration of each day, Monday (index 0) to Sunday (index 6), from {@link
  *     WeeklyTotalCalculator}
  */
 public record WeeklyTimeEntries(

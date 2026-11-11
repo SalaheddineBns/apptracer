@@ -33,7 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** getTeamWeekSummary : totaux de la semaine des membres d'une équipe (SFD-04). */
+/** getTeamWeekSummary: week totals of a team's members (SFD-04). */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

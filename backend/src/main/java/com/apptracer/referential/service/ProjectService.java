@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ProjectService {
 
-  /** Identifiant d'équipe impossible : remplace une liste vide dans la clause {@code in}. */
+  /** Impossible team identifier: replaces an empty list in the {@code in} clause. */
   private static final Long NO_TEAM = -1L;
 
   private final ProjectRepository projects;
@@ -32,13 +32,13 @@ public class ProjectService {
     this.teamScope = teamScope;
   }
 
-  /** RG-02-08 : réservé à l'ADMIN (contrôlé par le contrôleur). */
+  /** RG-02-08: ADMIN only (checked by the controller). */
   @Transactional
   public Project create(String code, String name) {
     return create(code, name, null);
   }
 
-  /** RG-10-01, RG-10-02 : {@code teamId} facultatif ; absent, le projet est sans équipe. */
+  /** RG-10-01, RG-10-02: {@code teamId} is optional; when absent, the project has no team. */
   @Transactional
   public Project create(String code, String name, Long teamId) {
     // RG-02-01 : code unique dans le référentiel (l'index unique couvre les créations concurrentes
@@ -62,9 +62,9 @@ public class ProjectService {
   }
 
   /**
-   * RG-02-01 : le code n'est pas modifiable. RG-02-08 : réservé à l'ADMIN. RG-10-02 : l'équipe se
-   * change ou se retire à tout moment ({@code teamId} absent = sans équipe) ; RG-10-06 : les
-   * saisies existantes ne changent pas ; RG-10-10 : tracé par l'audit JPA.
+   * RG-02-01: the code cannot be changed. RG-02-08: ADMIN only. RG-10-02: the team can be changed
+   * or removed at any time ({@code teamId} absent = no team); RG-10-06: existing time entries do
+   * not change; RG-10-10: recorded by JPA auditing.
    */
   @Transactional
   public Project update(Long id, String name, Long teamId, long version) {
@@ -80,15 +80,15 @@ public class ProjectService {
   }
 
   /**
-   * RG-02-05 : jamais supprimé, seulement désactivé. Sans effet si le projet est déjà inactif.
-   * RG-02-08 : réservé à l'ADMIN (contrôlé par le contrôleur).
+   * RG-02-05: never deleted, only deactivated. No effect if the project is already inactive.
+   * RG-02-08: ADMIN only (checked by the controller).
    */
   @Transactional
   public Project deactivate(Long id) {
     return setActive(id, false);
   }
 
-  /** RG-02-05 : réactivable. Sans effet si le projet est déjà actif. */
+  /** RG-02-05: can be reactivated. No effect if the project is already active. */
   @Transactional
   public Project reactivate(Long id) {
     return setActive(id, true);
@@ -105,8 +105,8 @@ public class ProjectService {
   }
 
   /**
-   * RG-02-09 : un ADMIN voit actifs et inactifs, les autres seulement les actifs (RG-02-06) ; tri
-   * alphabétique par nom (RG-02-10).
+   * RG-02-09: an ADMIN sees active and inactive ones, the others only the active ones (RG-02-06);
+   * sorted alphabetically by name (RG-02-10).
    */
   @Transactional(readOnly = true)
   public List<Project> list(boolean admin) {
@@ -114,9 +114,9 @@ public class ProjectService {
   }
 
   /**
-   * RG-10-03 : un ADMIN voit tous les projets ; un USER ou un MANAGER voit les projets autorisés
-   * pour sa saisie (sans équipe, équipe dont il est membre, équipes qu'il dirige). RG-10-09 : tri
-   * par nom.
+   * RG-10-03: an ADMIN sees every project; a USER or a MANAGER sees the projects allowed for their
+   * time entries (no team, the team they belong to, the teams they manage). RG-10-09: sorted by
+   * name.
    */
   @Transactional(readOnly = true)
   public List<Project> listFor(Long userId, boolean admin) {
@@ -164,7 +164,7 @@ public class ProjectService {
     return new MyProjects(groups, shared);
   }
 
-  /** RG-10-01 : équipe existante (non supprimée), ou aucune. */
+  /** RG-10-01: an existing (not deleted) team, or none. */
   private Team resolveTeam(Long teamId) {
     if (teamId == null) {
       return null;

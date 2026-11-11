@@ -9,7 +9,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * RG-06-02 : de 60 à 1 440 minutes, par pas de 15. {@code null} accepté (voir {@code @NotNull}).
+ * RG-06-02: from 60 to 1,440 minutes, in steps of 15. {@code null} is accepted here (see
+ * {@code @NotNull}).
  */
 @Documented
 @Constraint(validatedBy = ValidStandardDayValidator.class)

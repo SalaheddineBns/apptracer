@@ -21,8 +21,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Traduit les exceptions en ProblemDetail. Les 401 / 403 de sécurité sont produits en amont par
- * {@code ProblemDetailAuthenticationEntryPoint} et {@code ProblemDetailAccessDeniedHandler}.
+ * Translates exceptions into ProblemDetail responses. Security 401 / 403 responses are produced
+ * upstream by {@code ProblemDetailAuthenticationEntryPoint} and {@code
+ * ProblemDetailAccessDeniedHandler}.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     this.messages = messages;
   }
 
-  /** RG-08-06 : message résolu dans la langue de la requête (Accept-Language). */
+  /** RG-08-06: message resolved in the request's language (Accept-Language). */
   private String msg(String key, Object... args) {
     Locale locale = LocaleContextHolder.getLocale();
     return messages.getMessage(key, args, locale);
@@ -43,7 +44,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return errors.stream().map(e -> new ApiFieldError(e.field(), msg(e.message(), args))).toList();
   }
 
-  /** Règle de gestion violée : 409 avec le code de la RG. */
+  /** Business rule violated: 409 with the rule's code. */
   @ExceptionHandler(BusinessException.class)
   ResponseEntity<ProblemDetail> handleBusiness(BusinessException ex) {
     ProblemDetail problem =
@@ -57,7 +58,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
   }
 
-  /** RG-03-04 / RG-03-05 : réponse d'échec unique, quelle que soit la cause. */
+  /** RG-03-04 / RG-03-05: a single failure response, whatever the cause. */
   @ExceptionHandler(InvalidCredentialsException.class)
   ResponseEntity<ProblemDetail> handleInvalidCredentials(InvalidCredentialsException ex) {
     ProblemDetail problem =
@@ -71,7 +72,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
   }
 
-  /** Opération interdite (par exemple saisie d'un autre utilisateur, RG-01-10) : 403 avec code. */
+  /** Forbidden operation (for example another user's time entry, RG-01-10): 403 with a code. */
   @ExceptionHandler(ForbiddenOperationException.class)
   ResponseEntity<ProblemDetail> handleForbiddenOperation(ForbiddenOperationException ex) {
     ProblemDetail problem =
@@ -111,7 +112,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 localized(ex.getErrors(), ex.getArgs())));
   }
 
-  /** Conflit de version ({@code @Version}) : 409 sans code de RG. */
+  /** Version conflict ({@code @Version}): 409 without a rule code. */
   @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
   ResponseEntity<ProblemDetail> handleOptimisticLocking(
       ObjectOptimisticLockingFailureException ex) {
@@ -127,8 +128,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   }
 
   /**
-   * Contraintes SQL connues, traduites comme le contrôle de service équivalent (filet de sécurité
-   * en cas de requêtes concurrentes). Toute autre violation est relancée (500).
+   * Known SQL constraints, translated like the equivalent service check (safety net for concurrent
+   * requests). Any other violation is rethrown (500).
    */
   @ExceptionHandler(DataIntegrityViolationException.class)
   ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {
@@ -190,7 +191,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return false;
   }
 
-  /** Bean Validation sur un corps de requête : 400 avec {@code errors[]} par champ. */
+  /** Bean Validation on a request body: 400 with {@code errors[]} per field. */
   @Override
   protected ResponseEntity<Object> handleMethodArgumentNotValid(
       MethodArgumentNotValidException ex,
@@ -214,7 +215,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     return ResponseEntity.badRequest().body(validationProblem(List.of()));
   }
 
-  /** Paramètre de requête obligatoire absent : 400 avec le nom du paramètre en erreur. */
+  /** Missing required request parameter: 400 with the parameter's name in error. */
   @Override
   protected ResponseEntity<Object> handleMissingServletRequestParameter(
       MissingServletRequestParameterException ex,
@@ -227,7 +228,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 List.of(new ApiFieldError(ex.getParameterName(), msg("field.param-required")))));
   }
 
-  /** Paramètre de requête mal formé (par exemple une date illisible) : 400 sur ce paramètre. */
+  /** Malformed request parameter (for example an unreadable date): 400 on that parameter. */
   @Override
   protected ResponseEntity<Object> handleTypeMismatch(
       TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {

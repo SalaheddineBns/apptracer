@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** Saisie d'activité (SFD-01 §2). Jamais exposée directement par l'API. */
+/** Activity time entry (SFD-01 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "time_entries")
 public class TimeEntry extends AuditableEntity {
@@ -83,7 +83,7 @@ public class TimeEntry extends AuditableEntity {
 
   protected TimeEntry() {}
 
-  /** Saisie à compléter par le service (période, type, durée) avant enregistrement. */
+  /** Time entry to be completed by the service (period, type, duration) before saving. */
   public TimeEntry(Long userId) {
     this.userId = userId;
   }
@@ -93,7 +93,7 @@ public class TimeEntry extends AuditableEntity {
     this.activityType = activityType;
   }
 
-  /** Remplace la période ; les valeurs sont validées par le service (T-01-3) et par la base. */
+  /** Replaces the period; the values are validated by the service (T-01-3) and by the database. */
   public void setPeriod(
       Granularity granularity,
       LocalDate startDate,
@@ -107,13 +107,13 @@ public class TimeEntry extends AuditableEntity {
     this.endTime = endTime;
   }
 
-  /** RG-01-08 : durée et journée standard figées ensemble. */
+  /** RG-01-08: duration and standard day frozen together. */
   public void setDuration(int durationMinutes, int standardDayMinutes) {
     this.durationMinutes = durationMinutes;
     this.standardDayMinutes = standardDayMinutes;
   }
 
-  /** RG-01-11 : suppression logique, qui et quand ensemble. */
+  /** RG-01-11: logical deletion, who and when together. */
   public void markDeleted(Long deletedBy, Instant deletedAt) {
     this.deletedBy = deletedBy;
     this.deletedAt = deletedAt;

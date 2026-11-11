@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** RG-02-01 : pas de {@code code}, immuable après la création. */
+/** RG-02-01: no {@code code}, which cannot change after creation. */
 public record UpdateActivityTypeRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String label,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull Boolean projectRequired,

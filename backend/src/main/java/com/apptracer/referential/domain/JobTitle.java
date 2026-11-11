@@ -9,7 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
-/** Fonction d'un collaborateur (SFD-09 §2). Jamais exposée directement par l'API. */
+/** Job title of an employee (SFD-09 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "job_titles")
 public class JobTitle extends AuditableEntity {

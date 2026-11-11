@@ -4,7 +4,7 @@ import com.apptracer.timeentry.domain.Granularity;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** Champs de période partagés par les requêtes de création et de modification. */
+/** Period fields shared by the create and update requests. */
 interface TimeEntryShape {
 
   Granularity granularity();

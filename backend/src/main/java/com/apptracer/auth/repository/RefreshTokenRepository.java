@@ -14,9 +14,9 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
   Optional<RefreshToken> findByTokenHash(String tokenHash);
 
   /**
-   * RG-03-07 : révocation conditionnelle d'un jeton actif et non expiré. Renvoie le nombre de
-   * lignes modifiées : 0 si le jeton est inconnu, déjà utilisé, révoqué ou expiré. L'atomicité de
-   * la mise à jour garantit l'usage unique même pour deux requêtes simultanées.
+   * RG-03-07: conditional revocation of an active, unexpired token. Returns the number of updated
+   * rows: 0 if the token is unknown, already used, revoked or expired. The atomic update guarantees
+   * single use even for two concurrent requests.
    */
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query(
@@ -31,7 +31,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
       @Param("reason") RevocationReason reason);
 
   /**
-   * RG-03-08 : révocation d'un jeton encore actif (sans effet s'il est inconnu ou déjà révoqué).
+   * RG-03-08: revocation of a still active token (no effect if it is unknown or already revoked).
    */
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query(
@@ -46,8 +46,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
       @Param("reason") RevocationReason reason);
 
   /**
-   * RG-03-14 : révoque tous les jetons encore actifs d'un compte, dans la transaction de
-   * l'appelant.
+   * RG-03-14: revokes all the still active tokens of an account, within the caller's transaction.
    */
   @Modifying(flushAutomatically = true)
   @Query(
@@ -62,8 +61,8 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
       @Param("reason") RevocationReason reason);
 
   /**
-   * RG-03-15 : révoque les jetons actifs d'un compte autres que ceux de la session courante, dans
-   * la transaction de l'appelant.
+   * RG-03-15: revokes the active tokens of an account other than those of the current session,
+   * within the caller's transaction.
    */
   @Modifying(flushAutomatically = true)
   @Query(

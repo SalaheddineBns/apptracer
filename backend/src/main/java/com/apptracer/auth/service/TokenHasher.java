@@ -5,7 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
-/** SHA-256 hexadécimal d'un refresh token : seul le haché est stocké (RG-03-07). */
+/** Hexadecimal SHA-256 of a refresh token: only the hash is stored (RG-03-07). */
 final class TokenHasher {
 
   private TokenHasher() {}

@@ -12,7 +12,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-/** Migration V8 : passe la journée standard de 7 h à 8 h sans toucher une valeur déjà modifiée. */
+/**
+ * Migration V8: moves the standard day from 7 h to 8 h without touching a value that was already
+ * changed.
+ */
 @Testcontainers
 class StandardDayMigrationTest {
 

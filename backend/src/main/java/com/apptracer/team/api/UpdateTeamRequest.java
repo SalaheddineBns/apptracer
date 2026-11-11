@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 
-/** Remplace d'un bloc le nom, le manager et la liste complète des membres. */
+/** Replaces the name, the manager and the full list of members in one go. */
 public record UpdateTeamRequest(
     // RG-05-01 : 2 à 100 caractères, espaces de bord retirés par le service
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 100)

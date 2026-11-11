@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/** RG-03-11 : gestion des comptes réservée à l'ADMIN. */
+/** RG-03-11: account management is ADMIN only. */
 @RestController
 @RequestMapping("/api/v1/users")
 @Tag(name = "Users")

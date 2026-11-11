@@ -7,12 +7,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
- * RG-00-04 : identifiant de l'utilisateur courant, lu dans le {@code SecurityContext}.
+ * RG-00-04: identifier of the current user, read from the {@code SecurityContext}.
  *
- * <p>Il s'appuie sur {@link Authentication#getName()}. Avec le JWT (access token dont {@code sub} =
- * identifiant de l'utilisateur), {@code JwtAuthenticationToken#getName()} renvoie le {@code sub} :
- * aucun changement ici au branchement du JWT. Sans authentification, ou si le nom n'est pas un
- * identifiant numérique, il n'y a pas d'auditeur ({@code NULL} : création par le système).
+ * <p>It relies on {@link Authentication#getName()}. With the JWT (access token whose {@code sub} =
+ * the user's identifier), {@code JwtAuthenticationToken#getName()} returns the {@code sub}: nothing
+ * changes here when plugging in the JWT. Without authentication, or if the name is not a numeric
+ * identifier, there is no auditor ({@code NULL}: created by the system).
  */
 public class SecurityAuditorAware implements AuditorAware<Long> {
 

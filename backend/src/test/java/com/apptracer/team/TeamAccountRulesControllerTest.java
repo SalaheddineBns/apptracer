@@ -35,7 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-/** RG-05-10 et RG-05-12 dans la gestion des comptes (SFD-03), avec des équipes réelles. */
+/** RG-05-10 and RG-05-12 in account management (SFD-03), with real teams. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

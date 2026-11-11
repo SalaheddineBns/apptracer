@@ -28,21 +28,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Gestion des équipes (SFD-05). RG-05-08 : réservé à l'ADMIN, contrôlé par le contrôleur. Les
- * comptes manager et membres sont chargés avec un verrou partagé (architecture §2.11) pour que
- * leurs contrôles (RG-05-02, RG-05-03) ne soient pas contredits par une modification concurrente du
- * compte.
+ * Team management (SFD-05). RG-05-08: ADMIN only, checked by the controller. Manager and member
+ * accounts are loaded with a shared lock (architecture §2.11) so that their checks (RG-05-02,
+ * RG-05-03) are not contradicted by a concurrent change of the account.
  */
 @Service
 public class TeamService {
 
-  /** Équipe et ses membres, triés par nom puis prénom (RG-05-13). */
+  /** Team and its members, sorted by last name then first name (RG-05-13). */
   public record TeamDetails(Team team, List<User> members) {}
 
-  /** Compte éligible comme membre, avec son équipe actuelle (RG-05-04), s'il en a une. */
+  /** Account eligible as a member, with its current team (RG-05-04), if any. */
   public record MemberCandidate(User user, Team currentTeam) {}
 
-  /** RG-05-13 : membres triés par nom puis prénom. */
+  /** RG-05-13: members sorted by last name then first name. */
   static final Comparator<User> MEMBER_ORDER =
       Comparator.comparing((User u) -> u.getLastName().toLowerCase())
           .thenComparing(u -> u.getFirstName().toLowerCase())
@@ -72,9 +71,9 @@ public class TeamService {
   }
 
   /**
-   * Crée une équipe. Ordre des contrôles : RG-05-01, RG-05-02, RG-05-03, RG-05-05, RG-05-04.
-   * RG-05-07 : {@code memberIds} peut être vide. RG-05-06 : un même manager peut avoir plusieurs
-   * équipes. {@code actorId} est l'ADMIN connecté, lu dans le token.
+   * Creates a team. Order of the checks: RG-05-01, RG-05-02, RG-05-03, RG-05-05, RG-05-04.
+   * RG-05-07: {@code memberIds} may be empty. RG-05-06: one manager can lead several teams. {@code
+   * actorId} is the signed-in ADMIN, read from the token.
    */
   @Transactional
   public TeamDetails create(Long actorId, String name, Long managerId, List<Long> memberIds) {
@@ -91,11 +90,10 @@ public class TeamService {
   }
 
   /**
-   * Remplace d'un bloc le nom, le manager et la liste complète des membres, avec les mêmes
-   * contrôles qu'à la création (hors RG-05-04 pour les membres déjà dans cette équipe). Les membres
-   * conservés gardent leur rattachement, les retirés le perdent, les nouveaux en reçoivent un.
-   * RG-05-14 : tout changement de manager ou de membres met à jour l'équipe (date, auteur,
-   * version).
+   * Replaces the name, the manager and the full list of members in one go, with the same checks as
+   * at creation (except RG-05-04 for members already in this team). Kept members keep their link,
+   * removed ones lose it, new ones get one. RG-05-14: any change of manager or members updates the
+   * team (date, author, version).
    */
   @Transactional
   public TeamDetails update(
@@ -138,10 +136,10 @@ public class TeamService {
   }
 
   /**
-   * RG-05-09 : suppression définitive. Les rattachements disparaissent, les membres se retrouvent
-   * sans équipe ; leurs comptes et leurs saisies ne sont pas touchés. RG-05-14 : la ligne de
-   * l'équipe est conservée, marquée supprimée (qui, quand), et son nom redevient disponible.
-   * RG-10-07 : ses projets deviennent sans équipe (RG-10-10 : tracé par l'audit JPA).
+   * RG-05-09: permanent deletion. The links disappear and the members end up without a team; their
+   * accounts and time entries are not touched. RG-05-14: the team's row is kept, marked as deleted
+   * (who, when), and its name becomes available again. RG-10-07: its projects no longer have a team
+   * (RG-10-10: recorded by JPA auditing).
    */
   @Transactional
   public void delete(Long actorId, Long id) {
@@ -169,7 +167,7 @@ public class TeamService {
     return new TeamDetails(team, teamMembers);
   }
 
-  /** RG-05-13 : équipes triées par nom, membres triés par nom puis prénom. */
+  /** RG-05-13: teams sorted by name, members sorted by last name then first name. */
   @Transactional(readOnly = true)
   public List<TeamDetails> list() {
     List<Team> all = teams.findAllActiveSorted();
@@ -187,15 +185,15 @@ public class TeamService {
         .toList();
   }
 
-  /** RG-05-02 : comptes actifs de rôle MANAGER, triés par nom puis prénom. */
+  /** RG-05-02: active accounts with the MANAGER role, sorted by last name then first name. */
   @Transactional(readOnly = true)
   public List<User> managerCandidates() {
     return users.findActiveByRoleSorted(Role.MANAGER);
   }
 
   /**
-   * RG-05-03 : comptes USER ou MANAGER, actifs ou non (RG-05-11), jamais ADMIN. RG-05-04 : chacun
-   * avec son équipe actuelle, que l'API refusera de lui retirer implicitement (H10).
+   * RG-05-03: USER or MANAGER accounts, active or not (RG-05-11), never ADMIN. RG-05-04: each one
+   * with its current team, which the API will refuse to remove implicitly (H10).
    */
   @Transactional(readOnly = true)
   public List<MemberCandidate> memberCandidates() {
@@ -209,7 +207,7 @@ public class TeamService {
 
   // ---- contrôles communs à la création et à la modification ----
 
-  /** RG-05-01 : 2 à 100 caractères, espaces de bord retirés. */
+  /** RG-05-01: 2 to 100 characters, surrounding spaces removed. */
   private static String normalizeName(String name) {
     String stripped = name == null ? "" : name.strip();
     if (stripped.length() < NAME_MIN || stripped.length() > NAME_MAX) {
@@ -219,7 +217,7 @@ public class TeamService {
     return stripped;
   }
 
-  /** RG-05-01 : nom unique, insensible à la casse, parmi les équipes non supprimées. */
+  /** RG-05-01: unique name, case-insensitive, among the teams that are not deleted. */
   private void checkNameAvailable(String name, Long currentTeamId) {
     if (teams.existsActiveByName(name, currentTeamId)) {
       throw BusinessException.onField(

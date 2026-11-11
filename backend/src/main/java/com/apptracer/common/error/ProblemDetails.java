@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 
-/** Fabrique des réponses d'erreur au format ProblemDetail décrit dans le skill conventions-api. */
+/** Builds error responses in the ProblemDetail format described in the conventions-api skill. */
 public final class ProblemDetails {
 
   private static final String BASE = "https://apptracer/errors/";

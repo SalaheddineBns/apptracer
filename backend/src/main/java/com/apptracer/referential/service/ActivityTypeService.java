@@ -21,7 +21,7 @@ public class ActivityTypeService {
     this.usageChecker = usageChecker;
   }
 
-  /** RG-02-08 : réservé à l'ADMIN (contrôlé par le contrôleur). */
+  /** RG-02-08: ADMIN only (checked by the controller). */
   @Transactional
   public ActivityType create(String code, String label, boolean projectRequired, TagColor color) {
     // RG-02-01 : code unique dans le référentiel (l'index unique couvre les créations concurrentes
@@ -42,7 +42,7 @@ public class ActivityTypeService {
         .orElseThrow(() -> new ResourceNotFoundException("error.activity-type.not-found"));
   }
 
-  /** RG-02-01 : le code n'est pas modifiable. RG-02-08 : réservé à l'ADMIN. */
+  /** RG-02-01: the code cannot be changed. RG-02-08: ADMIN only. */
   @Transactional
   public ActivityType update(
       Long id, String label, boolean projectRequired, TagColor color, long version) {
@@ -67,19 +67,19 @@ public class ActivityTypeService {
   }
 
   /**
-   * RG-02-09 : un ADMIN voit actifs et inactifs, les autres seulement les actifs (RG-02-06) ; tri
-   * alphabétique par libellé (RG-02-10).
+   * RG-02-09: an ADMIN sees active and inactive ones, the others only the active ones (RG-02-06);
+   * sorted alphabetically by label (RG-02-10).
    */
   /**
-   * RG-02-05 : jamais supprimé, seulement désactivé. Sans effet si le type est déjà inactif.
-   * RG-02-08 : réservé à l'ADMIN (contrôlé par le contrôleur).
+   * RG-02-05: never deleted, only deactivated. No effect if the type is already inactive. RG-02-08:
+   * ADMIN only (checked by the controller).
    */
   @Transactional
   public ActivityType deactivate(Long id) {
     return setActive(id, false);
   }
 
-  /** RG-02-05 : réactivable. Sans effet si le type est déjà actif. */
+  /** RG-02-05: can be reactivated. No effect if the type is already active. */
   @Transactional
   public ActivityType reactivate(Long id) {
     return setActive(id, true);

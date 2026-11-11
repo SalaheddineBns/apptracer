@@ -24,14 +24,14 @@ import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Saisies d'activité (SFD-01). Le propriétaire est toujours l'utilisateur du jeton (RG-00-03). */
+/** Activity time entries (SFD-01). The owner is always the user of the token (RG-00-03). */
 @Service
 public class TimeEntryService {
 
-  /** RG-01-03 : 31 jours calendaires bornes incluses, soit 30 jours d'écart. */
+  /** RG-01-03: 31 calendar days, bounds included, that is a 30-day gap. */
   private static final long MAX_RANGE_GAP_DAYS = 30;
 
-  /** Identifiant qui ne correspond à aucune saisie : rien à ignorer (création). */
+  /** Identifier that matches no time entry: nothing to ignore (creation). */
   private static final long NO_ENTRY = -1L;
 
   private static final DateTimeFormatter FRENCH_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -67,8 +67,8 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-14 (rôles) est contrôlé par le contrôleur. RG-01-06 : chevauchement contrôlé ici, la
-   * contrainte d'exclusion {@code ex_time_entries_no_overlap} couvrant les requêtes simultanées.
+   * RG-01-14 (roles) is checked by the controller. RG-01-06: overlap is checked here, with the
+   * exclusion constraint {@code ex_time_entries_no_overlap} covering concurrent requests.
    */
   @Transactional
   public TimeEntry create(Long userId, TimeEntryCommand cmd) {
@@ -79,12 +79,12 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-12 : tous les champs sont modifiables, granularité comprise, avec exactement les mêmes
-   * contrôles qu'à la création (RG-02-06 inclus : type et projet doivent être actifs, même
-   * inchangés). Le chevauchement ignore la saisie elle-même. RG-01-08, RG-06-04 : durée recalculée
-   * et refigée avec la journée standard en vigueur. RG-01-11 : modifié par / le par l'audit JPA.
+   * RG-01-12: every field can be changed, granularity included, with exactly the same checks as at
+   * creation (RG-02-06 included: type and project must be active, even unchanged). The overlap
+   * check ignores the entry itself. RG-01-08, RG-06-04: the duration is recalculated and frozen
+   * with the standard day in force. RG-01-11: modified by / at through JPA auditing.
    *
-   * @param version version lue par l'utilisateur ; périmée, la modification est refusée
+   * @param version version read by the user; if outdated, the change is refused
    */
   @Transactional
   public TimeEntry update(Long userId, Long id, long version, TimeEntryCommand cmd) {
@@ -97,9 +97,9 @@ public class TimeEntryService {
   }
 
   /**
-   * Contrôles communs à la création et à la modification, puis application sur la saisie. Tous les
-   * contrôles précèdent la première écriture sur l'entité (pas de vidage prématuré). Les champs
-   * devenus sans objet après un changement de granularité sont remis à vide (heures, date de fin).
+   * Checks shared by creation and update, then applied to the time entry. All checks run before the
+   * first write to the entity (no premature flush). Fields that no longer apply after a granularity
+   * change are cleared (times, end date).
    */
   private void applyChecked(TimeEntry entry, TimeEntryCommand cmd, long excludedId) {
     checkPeriod(cmd);
@@ -136,9 +136,9 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-11 : suppression logique (qui, quand, horloge applicative), la ligne reste en base.
-   * RG-01-10 : seul le propriétaire supprime sa saisie ; absente ou déjà supprimée = introuvable.
-   * Aucune version n'est demandée (l'architecture n'en prévoit pas pour DELETE).
+   * RG-01-11: logical deletion (who, when, application clock); the row stays in the database.
+   * RG-01-10: only the owner deletes their time entry; missing or already deleted means not found.
+   * No version is required (the architecture does not provide one for DELETE).
    */
   @Transactional
   public void delete(Long userId, Long id) {
@@ -149,8 +149,8 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-00-03 : journal de la semaine du compte donné (celui du jeton, passé par le contrôleur).
-   * RG-01-11 : saisies supprimées exclues. RG-01-13 : total calculé par {@link
+   * RG-00-03: journal of the week of the given account (the token's, passed by the controller).
+   * RG-01-11: deleted time entries excluded. RG-01-13: total computed by {@link
    * WeeklyTotalCalculator}.
    */
   @Transactional(readOnly = true)
@@ -165,7 +165,7 @@ public class TimeEntryService {
         weekStart, weekStart.plusDays(6), totals.totalMinutes(), totals.minutesPerDay(), week);
   }
 
-  /** RG-01-10, RG-00-03 : seul le propriétaire lit sa saisie ; une saisie supprimée est absente. */
+  /** RG-01-10, RG-00-03: only the owner reads their time entry; a deleted entry is missing. */
   @Transactional(readOnly = true)
   public TimeEntry getOwn(Long userId, Long id) {
     // RG-01-11 : saisie absente ou supprimée logiquement
@@ -181,9 +181,9 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-06 : intervalle semi-ouvert [début, fin) en heure locale, comme la colonne {@code
-   * occupied} : HOUR = [date + début, date + fin), DAY / RANGE = jours entiers, week-ends compris.
-   * {@code excludedId} permet à la modification d'ignorer la saisie elle-même (RG-01-12).
+   * RG-01-06: half-open interval [start, end) in local time, like the {@code occupied} column: HOUR
+   * = [date + start, date + end), DAY / RANGE = whole days, weekends included. {@code excludedId}
+   * lets an update ignore the entry itself (RG-01-12).
    */
   private void checkNoOverlap(Long userId, TimeEntryCommand cmd, long excludedId) {
     LocalDateTime from;
@@ -272,9 +272,9 @@ public class TimeEntryService {
   }
 
   /**
-   * RG-01-05, RG-02-06 : projet requis ou interdit selon le type, existant et actif. RG-10-03,
-   * RG-10-04 : un nouveau projet doit être sans équipe ou d'une équipe de l'auteur ; RG-10-05 : en
-   * modification, le projet déjà porté par la saisie reste accepté.
+   * RG-01-05, RG-02-06: project required or forbidden depending on the type, existing and active.
+   * RG-10-03, RG-10-04: a new project must have no team or belong to one of the author's teams;
+   * RG-10-05: on update, the project already on the entry is still accepted.
    */
   private Project resolveProject(ActivityType type, String projectCode, TimeEntry entry) {
     // RG-01-05 : projet obligatoire si le type l'exige, interdit sinon

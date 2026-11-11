@@ -9,11 +9,11 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.validation.annotation.Validated;
 
 /**
- * Propriétés {@code app.security.jwt.*}, validées au démarrage.
+ * Properties {@code app.security.jwt.*}, validated at start-up.
  *
- * @param secret clé HS256, obligatoire, au moins 32 octets (RG-03-06)
- * @param accessTtl durée de vie de l'access token, RG-03-06 (15 minutes par défaut)
- * @param refreshTtl durée de vie du refresh token, RG-03-07 (7 jours par défaut)
+ * @param secret HS256 key, required, at least 32 bytes (RG-03-06)
+ * @param accessTtl lifetime of the access token, RG-03-06 (15 minutes by default)
+ * @param refreshTtl lifetime of the refresh token, RG-03-07 (7 days by default)
  */
 @Validated
 @ConfigurationProperties(prefix = "app.security.jwt")

@@ -58,8 +58,9 @@ public class AuthService {
   }
 
   /**
-   * RG-03-07 : rotation à usage unique. Tout échec (jeton inconnu, déjà utilisé, révoqué, expiré,
-   * compte inactif) lève la même exception. En cas de compte inactif la transaction est annulée.
+   * RG-03-07: single-use rotation. Every failure (unknown, already used, revoked or expired token,
+   * inactive account) raises the same exception. For an inactive account, the transaction is rolled
+   * back.
    */
   @Transactional
   public LoginResult refreshSession(String rawRefreshToken) {
@@ -76,7 +77,7 @@ public class AuthService {
     return new LoginResult(accessToken, refreshToken, user);
   }
 
-  /** RG-03-08 : la déconnexion révoque le refresh token de la session courante. */
+  /** RG-03-08: signing out revokes the refresh token of the current session. */
   @Transactional
   public void logout(String rawRefreshToken) {
     refreshTokens.revoke(rawRefreshToken);

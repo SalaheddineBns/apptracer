@@ -12,7 +12,7 @@ public record ChangePasswordRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @ValidPassword
         String newPassword) {
 
-  /** Aucun mot de passe dans les logs. */
+  /** No password in the logs. */
   @Override
   public String toString() {
     return "ChangePasswordRequest[currentPassword=***, newPassword=***]";

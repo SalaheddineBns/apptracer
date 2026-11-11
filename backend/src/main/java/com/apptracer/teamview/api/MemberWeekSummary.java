@@ -4,7 +4,7 @@ import com.apptracer.common.api.DailyTotal;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
-/** Un membre et ses sept jours, lundi à dimanche (RG-04-05). */
+/** A member and their seven days, Monday to Sunday (RG-04-05). */
 public record MemberWeekSummary(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) TeamViewMember member,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) List<DailyTotal> days,

@@ -30,8 +30,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * SFD-10 : jeu commun des CA. Équipe Dev (manager Marion, membre Alice) avec ALPHA, équipe QA
- * (manager Quentin, membre Bruno) avec BETA, COMMUN sans équipe, Chloé sans équipe.
+ * SFD-10: shared data set of the acceptance criteria. Team Dev (manager Marion, member Alice) with
+ * ALPHA, team QA (manager Quentin, member Bruno) with BETA, COMMUN without a team, Chloé without a
+ * team.
  */
 @SpringBootTest
 @AutoConfigureMockMvc

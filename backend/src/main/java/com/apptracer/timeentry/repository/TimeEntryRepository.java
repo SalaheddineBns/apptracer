@@ -22,10 +22,10 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
   Optional<TimeEntry> findActiveById(Long id);
 
   /**
-   * RG-01-06 : premier jour de chevauchement entre l'intervalle {@code [from, to)} et les saisies
-   * non supprimées du même utilisateur, hors saisie {@code excludedId} (RG-01-12). Date ISO {@code
-   * yyyy-MM-dd}. Liste vide s'il n'y a aucun chevauchement. La colonne générée {@code occupied}
-   * n'est pas mappée dans l'entité.
+   * RG-01-06: first day of overlap between the interval {@code [from, to)} and the same user's
+   * non-deleted time entries, excluding entry {@code excludedId} (RG-01-12). ISO date {@code
+   * yyyy-MM-dd}. Empty list when there is no overlap. The generated column {@code occupied} is not
+   * mapped in the entity.
    */
   @Query(
       value =
@@ -47,18 +47,18 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
       @Param("excludedId") Long excludedId);
 
   /**
-   * RG-02-07 : vrai dès qu'une saisie référence le type, saisies supprimées logiquement comprises
-   * (architecture, H3) : aucun filtre sur {@code deletedAt}.
+   * RG-02-07: true as soon as a time entry references the type, logically deleted entries included
+   * (architecture, H3): no filter on {@code deletedAt}.
    */
   boolean existsByActivityTypeId(Long activityTypeId);
 
   boolean existsByUserId(Long userId);
 
   /**
-   * RG-01-11, RG-01-13 : saisies non supprimées d'un compte dont la période coupe {@code
-   * [weekStart, weekEnd]} (une PLAGE à cheval est donc incluse). Type et projet chargés dans la
-   * même requête, actifs ou non (RG-02-05). Tri : date de début, puis heure de début (les saisies
-   * sans heure d'abord), puis identifiant.
+   * RG-01-11, RG-01-13: non-deleted time entries of an account whose period intersects {@code
+   * [weekStart, weekEnd]} (a RANGE spanning the week boundary is therefore included). Type and
+   * project are loaded in the same query, active or not (RG-02-05). Order: start date, then start
+   * time (entries without a time first), then identifier.
    */
   @Query(
       """
@@ -76,10 +76,7 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
       @Param("weekStart") java.time.LocalDate weekStart,
       @Param("weekEnd") java.time.LocalDate weekEnd);
 
-  /**
-   * RG-04-05 : même lecture que {@link #findWeek} pour plusieurs comptes en une requête (vue
-   * équipe).
-   */
+  /** RG-04-05: same read as {@link #findWeek} for several accounts in one query (team view). */
   @Query(
       """
       select e from TimeEntry e

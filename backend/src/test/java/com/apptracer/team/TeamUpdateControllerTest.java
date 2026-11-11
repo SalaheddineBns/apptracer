@@ -78,7 +78,7 @@ class TeamUpdateControllerTest {
     jdbc.execute("DELETE FROM users WHERE email LIKE 'tu-%'");
   }
 
-  /** Données de départ attribuées à un autre ADMIN que l'appelant, pour tester RG-05-14. */
+  /** Starting data attributed to an ADMIN other than the caller, to test RG-05-14. */
   private Team team(String name, User teamManager, User... teamMembers) {
     SecurityContextHolder.getContext()
         .setAuthentication(

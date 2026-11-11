@@ -13,7 +13,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
-/** Projet (SFD-02 §2). Jamais exposé directement par l'API. */
+/** Project (SFD-02 §2). Never exposed directly by the API. */
 @Entity
 @Table(name = "projects")
 public class Project extends AuditableEntity {
@@ -33,7 +33,7 @@ public class Project extends AuditableEntity {
   @Column(nullable = false)
   private boolean active = true;
 
-  /** RG-10-01 : au plus une équipe, facultative (projet commun) ; lue avec le projet. */
+  /** RG-10-01: at most one team, optional (shared project); loaded with the project. */
   @ManyToOne(fetch = FetchType.EAGER)
   @JoinColumn(name = "team_id")
   private Team team;

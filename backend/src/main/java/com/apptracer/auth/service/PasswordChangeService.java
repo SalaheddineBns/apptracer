@@ -24,9 +24,9 @@ public class PasswordChangeService {
   }
 
   /**
-   * RG-03-15 : l'utilisateur connecté change son mot de passe en fournissant l'ancien ; ses autres
-   * sessions sont révoquées. Le format du nouveau mot de passe (RG-03-02) est contrôlé par Bean
-   * Validation sur le DTO.
+   * RG-03-15: the signed-in user changes their password by providing the old one; their other
+   * sessions are revoked. The format of the new password (RG-03-02) is checked by Bean Validation
+   * on the DTO.
    */
   @Transactional
   public void changePassword(

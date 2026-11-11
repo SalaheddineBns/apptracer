@@ -17,9 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /**
- * RG-03-16 : crée le compte ADMIN initial au démarrage (après Flyway), à partir de la
- * configuration. Idempotent : rien n'est fait si un compte ADMIN existe déjà, et aucun compte
- * existant n'est jamais modifié. Le mot de passe n'apparaît dans aucun message ni log.
+ * RG-03-16: creates the initial ADMIN account at start-up (after Flyway), from the configuration.
+ * Idempotent: nothing is done if an ADMIN account already exists, and no existing account is ever
+ * changed. The password appears in no message or log.
  */
 @Component
 @Order(0)
@@ -49,7 +49,7 @@ public class InitialAdminInitializer implements ApplicationRunner {
     createIfAbsent();
   }
 
-  /** Renvoie vrai si le compte ADMIN a été créé. */
+  /** Returns true if the ADMIN account was created. */
   public boolean createIfAbsent() {
     // RG-03-16 : création seulement si aucun compte ADMIN n'existe
     if (users.existsByRole(Role.ADMIN)) {

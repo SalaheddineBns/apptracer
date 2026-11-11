@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/** RG-05-08 : toute la gestion des équipes est réservée à l'ADMIN. */
+/** RG-05-08: all team management is ADMIN only. */
 @RestController
 @RequestMapping("/api/v1/teams")
 @Tag(name = "Teams")

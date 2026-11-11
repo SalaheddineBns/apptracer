@@ -7,10 +7,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 
 /**
- * RG-08-06 : messages serveur en français et en anglais ({@code messages_fr.properties}, {@code
- * messages_en.properties}, UTF-8). Pas de {@code messages.properties} : Spring Boot ne configure
- * donc pas le {@code MessageSource} lui-même. Jamais de repli sur la langue du système : l'anglais
- * est la langue par défaut, fixée par {@link RequestLocaleResolver}.
+ * RG-08-06: server messages in French and English ({@code messages_fr.properties}, {@code
+ * messages_en.properties}, UTF-8). No {@code messages.properties}: Spring Boot therefore does not
+ * configure the {@code MessageSource} itself. Never a fallback to the system language: English is
+ * the default language, set by {@link RequestLocaleResolver}.
  */
 @Configuration
 public class MessageSourceConfig {

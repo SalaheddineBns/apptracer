@@ -3,7 +3,7 @@ package com.apptracer.settings.api;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.Instant;
 
-/** Paramètres de l'application. */
+/** Application settings. */
 public record AppSettingsResponse(
     @Schema(
             requiredMode = Schema.RequiredMode.REQUIRED,

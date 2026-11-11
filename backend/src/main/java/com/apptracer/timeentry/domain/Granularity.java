@@ -1,6 +1,6 @@
 package com.apptracer.timeentry.domain;
 
-/** Granularité d'une saisie (SFD-01 §2) : une heure, une journée ou une plage de jours. */
+/** Granularity of a time entry (SFD-01 §2): one hour slot, one day or a range of days. */
 public enum Granularity {
   HOUR,
   DAY,

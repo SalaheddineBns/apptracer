@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Lecture d'une semaine de saisies pour un compte donné en paramètre (jamais lu dans le contexte de
- * sécurité), réutilisée par le journal (SFD-01) et la vue équipe (SFD-04, RG-04-05).
+ * Reads one week of time entries for an account passed as a parameter (never read from the security
+ * context), reused by the journal (SFD-01) and the team view (SFD-04, RG-04-05).
  */
 @Component
 public class WeeklyEntriesReader {
@@ -21,9 +21,9 @@ public class WeeklyEntriesReader {
   }
 
   /**
-   * RG-01-11 : saisies non supprimées du compte qui coupent la semaine {@code [weekStart, weekStart
-   * + 6 jours]}, PLAGE à cheval incluse (RG-01-13), type et projet embarqués même désactivés
-   * (RG-02-05). {@code weekStart} est supposé être un lundi.
+   * RG-01-11: the account's non-deleted time entries that intersect the week {@code [weekStart,
+   * weekStart + 6 days]}, RANGE spanning the boundary included (RG-01-13), with type and project
+   * embedded even when deactivated (RG-02-05). {@code weekStart} is assumed to be a Monday.
    */
   @Transactional(readOnly = true)
   public List<TimeEntry> read(Long userId, LocalDate weekStart) {
@@ -31,8 +31,8 @@ public class WeeklyEntriesReader {
   }
 
   /**
-   * RG-04-05 : mêmes saisies que {@link #read} pour plusieurs comptes, en une requête, regroupées
-   * par compte (un compte sans saisie n'a pas de clé).
+   * RG-04-05: same time entries as {@link #read} for several accounts, in one query, grouped by
+   * account (an account without entries has no key).
    */
   @Transactional(readOnly = true)
   public java.util.Map<Long, List<TimeEntry>> readAll(

@@ -7,14 +7,14 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * RG-01-13, RG-04-05 : durée de chacun des sept jours d'une semaine et total de la semaine (leur
- * somme). Composant pur : il reçoit des saisies non supprimées et ne lit ni paramètre ni base.
+ * RG-01-13, RG-04-05: duration of each of the seven days of a week, and the week total (their sum).
+ * Pure component: it receives non-deleted time entries and reads neither settings nor the database.
  */
 public final class WeeklyTotalCalculator {
 
   /**
-   * @param minutesPerDay durée de chaque jour, lundi (index 0) à dimanche (index 6)
-   * @param totalMinutes somme des sept jours
+   * @param minutesPerDay duration of each day, Monday (index 0) to Sunday (index 6)
+   * @param totalMinutes sum of the seven days
    */
   public record WeekTotals(List<Integer> minutesPerDay, int totalMinutes) {}
 

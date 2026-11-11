@@ -12,14 +12,14 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Socle de sécurité : API sans session, tout est protégé sauf la documentation OpenAPI.
- * Authentification par access token JWT (RG-03-06, RG-03-09).
+ * Security foundation: stateless API, everything is protected except the OpenAPI documentation.
+ * Authentication by JWT access token (RG-03-06, RG-03-09).
  */
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-  /** RG-03-03 : mots de passe hachés en BCrypt. */
+  /** RG-03-03: passwords hashed with BCrypt. */
   @Bean
   PasswordEncoder passwordEncoder() {
     return new BCryptPasswordEncoder();

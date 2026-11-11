@@ -6,7 +6,7 @@ import java.util.Locale;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** RG-08-06 : français si la langue préférée est le français, anglais sinon. */
+/** RG-08-06: French if the preferred language is French, English otherwise. */
 class RequestLocaleResolverTest {
 
   @Test

@@ -19,8 +19,8 @@ import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
- * Rattachement d'un compte à une équipe. RG-05-04 : la clé primaire est le compte, un compte
- * appartient donc à au plus une équipe. RG-05-14 : qui a rattaché, et quand.
+ * Link between an account and a team. RG-05-04: the primary key is the account, so an account
+ * belongs to at most one team. RG-05-14: who created the link, and when.
  */
 @Entity
 @Table(name = "team_members")

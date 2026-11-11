@@ -8,7 +8,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/** Champs requis ou interdits selon la granularité (RG-01-01 à RG-01-03) : 400 par champ. */
+/**
+ * Fields required or forbidden depending on the granularity (RG-01-01 to RG-01-03): 400 per field.
+ */
 @Documented
 @Constraint(validatedBy = ValidGranularityFieldsValidator.class)
 @Target(ElementType.TYPE)

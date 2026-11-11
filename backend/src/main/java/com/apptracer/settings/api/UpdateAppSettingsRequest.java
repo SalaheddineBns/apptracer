@@ -3,7 +3,7 @@ package com.apptracer.settings.api;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 
-/** Ni auteur ni date dans la requête : ils viennent du jeton et de l'horloge (RG-06-05). */
+/** Neither author nor date in the request: they come from the token and the clock (RG-06-05). */
 public record UpdateAppSettingsRequest(
     @Schema(
             requiredMode = Schema.RequiredMode.REQUIRED,

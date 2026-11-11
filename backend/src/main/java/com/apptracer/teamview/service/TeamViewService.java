@@ -17,7 +17,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Vue équipe en lecture seule (SFD-04). Aucune écriture (RG-04-03). */
+/** Read-only team view (SFD-04). No writes (RG-04-03). */
 @Service
 public class TeamViewService {
 
@@ -40,7 +40,7 @@ public class TeamViewService {
 
   public record MemberJournal(Team team, User member, WeeklyTimeEntries week) {}
 
-  /** RG-04-01, RG-04-08 : équipes du manager du token, vide s'il n'en a aucune. */
+  /** RG-04-01, RG-04-08: teams of the token's manager, empty if they manage none. */
   @Transactional(readOnly = true)
   public List<Team> listMyManagedTeams(Long managerId) {
     return scope.teamsOf(managerId);

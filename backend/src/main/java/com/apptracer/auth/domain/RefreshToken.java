@@ -14,8 +14,8 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 /**
- * Refresh token stocké côté serveur (RG-03-07). Seul le SHA-256 du jeton opaque est conservé. Table
- * technique : elle porte ses propres dates, pas les colonnes d'audit.
+ * Refresh token stored on the server (RG-03-07). Only the SHA-256 of the opaque token is kept.
+ * Technical table: it carries its own dates, not the audit columns.
  */
 @Entity
 @Table(name = "refresh_tokens")

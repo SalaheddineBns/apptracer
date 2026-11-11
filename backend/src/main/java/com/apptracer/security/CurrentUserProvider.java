@@ -7,11 +7,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
-/** L'utilisateur courant vient toujours du token (claim {@code sub}), jamais d'un paramètre. */
+/** The current user always comes from the token (claim {@code sub}), never from a parameter. */
 @Component
 public class CurrentUserProvider {
 
-  /** Identifiant de l'utilisateur authentifié. */
+  /** Identifier of the authenticated user. */
   public Long currentUserId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null) {
@@ -20,7 +20,7 @@ public class CurrentUserProvider {
     return Long.valueOf(authentication.getName());
   }
 
-  /** Vrai si l'utilisateur authentifié a le rôle ADMIN (authority {@code ROLE_ADMIN}). */
+  /** True if the authenticated user has the ADMIN role (authority {@code ROLE_ADMIN}). */
   public boolean isAdmin() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     return authentication != null
@@ -28,7 +28,7 @@ public class CurrentUserProvider {
             .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
   }
 
-  /** Identifiant de la session courante (claim {@code sid} de l'access token), s'il est présent. */
+  /** Identifier of the current session (claim {@code sid} of the access token), if present. */
   public Optional<UUID> currentSessionId() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication instanceof JwtAuthenticationToken jwt) {

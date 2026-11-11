@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/** RG-01-14 : saisie ouverte aux rôles USER et MANAGER (un ADMIN n'a pas de journal). */
+/** RG-01-14: time entries are open to the USER and MANAGER roles (an ADMIN has no journal). */
 @RestController
 @RequestMapping("/api/v1/time-entries")
 @Tag(name = "TimeEntries")

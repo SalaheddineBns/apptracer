@@ -2,7 +2,7 @@ package com.apptracer.teamview.api;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** Membre vu par son manager. RG-04-07 : {@code active} signale un compte inactif. */
+/** Member as seen by their manager. RG-04-07: {@code active} flags an inactive account. */
 public record TeamViewMember(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Long id,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String firstName,

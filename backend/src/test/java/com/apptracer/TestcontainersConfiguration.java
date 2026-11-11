@@ -5,7 +5,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-/** PostgreSQL 16 partagé par tous les tests d'intégration (un conteneur par contexte Spring). */
+/** PostgreSQL 16 shared by all the integration tests (one container per Spring context). */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 

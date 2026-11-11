@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(AppTimeProperties.class)
 public class TimeConfig {
 
-  /** RG-00-01 : horloge sur le fuseau métier, injectée dans les services (figée dans les tests). */
+  /** RG-00-01: clock on the business time zone, injected into the services (fixed in the tests). */
   @Bean
   Clock clock(AppTimeProperties properties) {
     return Clock.system(properties.zone());

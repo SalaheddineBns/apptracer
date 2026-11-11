@@ -3,12 +3,12 @@ package com.apptracer.settings.service;
 import java.time.Instant;
 
 /**
- * Lecture des paramètres pour l'API. {@code lastModifiedAt} et {@code lastModifiedBy} sont nuls
- * tant que la valeur n'a jamais été modifiée (RG-06-05), et pour tout autre rôle que l'ADMIN (H7).
+ * Settings as read by the API. {@code lastModifiedAt} and {@code lastModifiedBy} are null as long
+ * as the value has never been changed (RG-06-05), and for any role other than ADMIN (H7).
  */
 public record AppSettingsView(
     int standardDayMinutes, long version, Instant lastModifiedAt, Author lastModifiedBy) {
 
-  /** Auteur de la dernière modification : le strict nécessaire sur le compte. */
+  /** Author of the last change: only what is needed from the account. */
   public record Author(long id, String firstName, String lastName) {}
 }

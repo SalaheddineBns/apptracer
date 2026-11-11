@@ -3,7 +3,7 @@ package com.apptracer.account.api;
 import com.apptracer.account.domain.Role;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-/** Compte vu par l'ADMIN. Jamais de mot de passe ni de hachage (CA-03-15). */
+/** Account as seen by the ADMIN. Never a password or a hash (CA-03-15). */
 public record UserResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Long id,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String email,

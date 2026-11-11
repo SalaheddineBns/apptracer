@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-/** RG-09-07 : lecture des actives ouverte à tout connecté, écriture réservée à l'ADMIN. */
+/** RG-09-07: active ones are readable by anyone signed in; writing is ADMIN only. */
 @RestController
 @RequestMapping("/api/v1/job-titles")
 @Tag(name = "JobTitles")

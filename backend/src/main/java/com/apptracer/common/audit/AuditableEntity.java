@@ -11,8 +11,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 /**
- * RG-00-04 : traçabilité (qui, quand) de la création et de la dernière modification. {@code
- * createdBy} / {@code updatedBy} sont nuls pour les lignes créées par le système.
+ * RG-00-04: traceability (who, when) of the creation and of the last change. {@code createdBy} /
+ * {@code updatedBy} are null for rows created by the system.
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -35,8 +35,8 @@ public abstract class AuditableEntity {
   private Long updatedBy;
 
   /**
-   * Marque explicitement l'entité comme modifiée (RG-00-04) quand le changement porte sur des
-   * données hors de l'entité, par exemple ses rattachements.
+   * Explicitly marks the entity as modified (RG-00-04) when the change concerns data outside the
+   * entity, for example its links.
    */
   public void touch(Instant at, Long by) {
     this.updatedAt = at;

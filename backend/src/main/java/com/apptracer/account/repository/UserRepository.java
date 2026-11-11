@@ -23,20 +23,23 @@ public interface UserRepository extends JpaRepository<User, Long> {
   boolean existsByRole(Role role);
 
   /**
-   * RG-05-02, RG-05-03 : comptes chargés avec un verrou partagé ({@code FOR SHARE}) par la gestion
-   * des équipes, dans l'ordre des identifiants. Un {@code UserService.update / deactivate}
-   * concurrent attend la fin de la transaction.
+   * RG-05-02, RG-05-03: accounts loaded with a shared lock ({@code FOR SHARE}) by team management,
+   * in identifier order. A concurrent {@code UserService.update / deactivate} waits for the
+   * transaction to end.
    */
   @Lock(LockModeType.PESSIMISTIC_READ)
   @Query("select u from User u where u.id in :ids order by u.id")
   List<User> findAllByIdForShare(@Param("ids") Collection<Long> ids);
 
-  /** RG-05-10, RG-05-12 : compte chargé avec un verrou exclusif ({@code FOR UPDATE}). */
+  /** RG-05-10, RG-05-12: account loaded with an exclusive lock ({@code FOR UPDATE}). */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select u from User u where u.id = :id")
   Optional<User> findByIdForUpdate(@Param("id") Long id);
 
-  /** RG-05-02 : candidats managers, comptes actifs du rôle donné, triés par nom puis prénom. */
+  /**
+   * RG-05-02: manager candidates, active accounts with the given role, sorted by last name then
+   * first name.
+   */
   @Query(
       """
       select u from User u
@@ -45,7 +48,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
       """)
   List<User> findActiveByRoleSorted(@Param("role") Role role);
 
-  /** RG-05-03 : candidats membres, actifs ou non, des rôles donnés, triés par nom puis prénom. */
+  /**
+   * RG-05-03: member candidates, active or not, with the given roles, sorted by last name then
+   * first name.
+   */
   @Query(
       """
       select u from User u

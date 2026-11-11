@@ -41,9 +41,7 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-/**
- * RG-04-03, RG-01-10 : la vue équipe est en lecture seule, y compris pour les saisies d'un membre.
- */
+/** RG-04-03, RG-01-10: the team view is read-only, including for a member's time entries. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

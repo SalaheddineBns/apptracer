@@ -14,7 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-/** L'API sert l'application Angular (image de démo) sans ouvrir l'API aux appels anonymes. */
+/** The API serves the Angular app (demo image) without opening the API to anonymous calls. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)

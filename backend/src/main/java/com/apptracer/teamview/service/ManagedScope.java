@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * RG-04-02, RG-04-06 : périmètre d'un MANAGER, calculé à chaque requête à partir de son identifiant
- * (celui du token) : équipes non supprimées dont il est manager et leurs membres actuels.
+ * RG-04-02, RG-04-06: scope of a MANAGER, computed on each request from their identifier (the
+ * token's): the non-deleted teams they manage and their current members.
  */
 @Component
 public class ManagedScope {
@@ -28,9 +28,9 @@ public class ManagedScope {
   }
 
   /**
-   * RG-04-02, RG-04-06 : le compte doit être, à cet instant, membre d'une équipe du manager. Le
-   * manager lui-même n'est pas membre de son équipe (RG-04-10, RG-05-05). 403 que le compte existe
-   * ou non (H11).
+   * RG-04-02, RG-04-06: the account must, at this moment, belong to one of the manager's teams. The
+   * manager is not a member of their own team (RG-04-10, RG-05-05). 403 whether the account exists
+   * or not (H11).
    */
   @Transactional(readOnly = true)
   public TeamMember requireMember(Long managerId, Long userId) {
@@ -39,7 +39,7 @@ public class ManagedScope {
         .orElseThrow(() -> new ForbiddenOperationException(RG, DENIED));
   }
 
-  /** RG-04-02 : 403 que l'équipe existe ou non (H11). */
+  /** RG-04-02: 403 whether the team exists or not (H11). */
   @Transactional(readOnly = true)
   public Team requireTeam(Long managerId, Long teamId) {
     return teams
@@ -48,7 +48,7 @@ public class ManagedScope {
         .orElseThrow(() -> new ForbiddenOperationException(RG, DENIED));
   }
 
-  /** RG-04-08 : équipes du manager triées par nom (la première est celle par défaut). */
+  /** RG-04-08: the manager's teams sorted by name (the first one is the default). */
   @Transactional(readOnly = true)
   public List<Team> teamsOf(Long managerId) {
     return teams.findActiveByManagerId(managerId);

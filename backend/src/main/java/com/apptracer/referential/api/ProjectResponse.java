@@ -4,9 +4,9 @@ import com.apptracer.team.api.TeamRef;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Projet.
+ * Project.
  *
- * @param team RG-10-01 : équipe du projet, absente pour un projet sans équipe
+ * @param team RG-10-01: the project's team, absent for a project without a team
  */
 public record ProjectResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) Long id,

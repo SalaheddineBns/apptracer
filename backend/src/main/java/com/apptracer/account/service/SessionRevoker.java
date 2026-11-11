@@ -1,15 +1,15 @@
 package com.apptracer.account.service;
 
 /**
- * Port de révocation des sessions d'un compte, déclaré côté comptes et implémenté par {@code auth}
- * (les comptes ne dépendent pas du domaine d'authentification). Les appels se font dans la
- * transaction de la modification du compte.
+ * Port for revoking an account's sessions, declared on the accounts side and implemented by {@code
+ * auth} (accounts do not depend on the authentication domain). Calls run within the transaction of
+ * the account change.
  */
 public interface SessionRevoker {
 
-  /** RG-03-14 : révoque tous les refresh tokens actifs du compte désactivé. */
+  /** RG-03-14: revokes all the active refresh tokens of the deactivated account. */
   void revokeAllOnDeactivation(Long userId);
 
-  /** RG-03-14 : révoque tous les refresh tokens actifs du compte dont le rôle change. */
+  /** RG-03-14: revokes all the active refresh tokens of the account whose role changes. */
   void revokeAllOnRoleChange(Long userId);
 }
