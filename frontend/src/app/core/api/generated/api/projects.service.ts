@@ -220,7 +220,7 @@ export class ProjectsService extends BaseService {
     }
 
     /**
-     * Lister les projets (actifs, ou tous pour un ADMIN)
+     * Lister les projets : tous pour un ADMIN, les projets autorisés à la saisie sinon (RG-10-03)
      * @endpoint get /api/v1/projects
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -328,7 +328,7 @@ export class ProjectsService extends BaseService {
     }
 
     /**
-     * Modifier le nom d\&#39;un projet
+     * Modifier le nom et l\&#39;équipe d\&#39;un projet
      * @endpoint put /api/v1/projects/{id}
      * @param id 
      * @param updateProjectRequest 

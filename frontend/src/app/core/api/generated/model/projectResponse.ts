@@ -7,6 +7,7 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { TeamRef } from './teamRef';
 
 
 export interface ProjectResponse { 
@@ -14,6 +15,10 @@ export interface ProjectResponse {
     code: string;
     name: string;
     active: boolean;
+    /**
+     * Équipe du projet, absente pour un projet commun
+     */
+    team?: TeamRef;
     version: number;
 }
 

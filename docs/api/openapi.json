@@ -598,7 +598,7 @@
       },
       "put" : {
         "tags" : [ "Projects" ],
-        "summary" : "Modifier le nom d'un projet",
+        "summary" : "Modifier le nom et l'équipe d'un projet",
         "operationId" : "updateProject",
         "parameters" : [ {
           "name" : "id",
@@ -671,7 +671,7 @@
             }
           },
           "409" : {
-            "description" : "Projet modifié entre-temps (conflit de version)",
+            "description" : "Projet modifié entre-temps (conflit de version) ou équipe inconnue (RG-10-01)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -1633,7 +1633,7 @@
     "/api/v1/projects" : {
       "get" : {
         "tags" : [ "Projects" ],
-        "summary" : "Lister les projets (actifs, ou tous pour un ADMIN)",
+        "summary" : "Lister les projets : tous pour un ADMIN, les projets autorisés à la saisie sinon (RG-10-03)",
         "operationId" : "listProjects",
         "responses" : {
           "200" : {
@@ -1717,7 +1717,7 @@
             }
           },
           "409" : {
-            "description" : "Code déjà utilisé (RG-02-01)",
+            "description" : "Code déjà utilisé (RG-02-01) ou équipe inconnue (RG-10-01)",
             "content" : {
               "application/json" : {
                 "schema" : {
@@ -3031,6 +3031,11 @@
             "maxLength" : 100,
             "minLength" : 0
           },
+          "teamId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Équipe du projet ; absente, l'équipe est retirée"
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
@@ -3054,12 +3059,29 @@
           "active" : {
             "type" : "boolean"
           },
+          "team" : {
+            "$ref" : "#/components/schemas/TeamRef",
+            "description" : "Équipe du projet, absente pour un projet commun"
+          },
           "version" : {
             "type" : "integer",
             "format" : "int64"
           }
         },
         "required" : [ "active", "code", "id", "name", "version" ]
+      },
+      "TeamRef" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer",
+            "format" : "int64"
+          },
+          "name" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "id", "name" ]
       },
       "UpdateJobTitleRequest" : {
         "type" : "object",
@@ -3331,6 +3353,11 @@
             "type" : "string",
             "maxLength" : 100,
             "minLength" : 0
+          },
+          "teamId" : {
+            "type" : "integer",
+            "format" : "int64",
+            "description" : "Équipe du projet ; absente pour un projet commun"
           }
         },
         "required" : [ "code", "name" ]
@@ -3542,19 +3569,6 @@
           }
         },
         "required" : [ "active", "email", "firstName", "id", "lastName", "role" ]
-      },
-      "TeamRef" : {
-        "type" : "object",
-        "properties" : {
-          "id" : {
-            "type" : "integer",
-            "format" : "int64"
-          },
-          "name" : {
-            "type" : "string"
-          }
-        },
-        "required" : [ "id", "name" ]
       },
       "ManagedTeamResponse" : {
         "type" : "object",

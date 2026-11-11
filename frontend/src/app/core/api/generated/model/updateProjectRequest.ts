@@ -11,6 +11,10 @@
 
 export interface UpdateProjectRequest { 
     name: string;
+    /**
+     * Équipe du projet ; absente, l\'équipe est retirée
+     */
+    teamId?: number;
     version: number;
 }
 

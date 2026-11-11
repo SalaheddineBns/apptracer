@@ -12,5 +12,9 @@
 export interface CreateProjectRequest { 
     code: string;
     name: string;
+    /**
+     * Équipe du projet ; absente pour un projet commun
+     */
+    teamId?: number;
 }
 
