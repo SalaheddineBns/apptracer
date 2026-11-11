@@ -43,4 +43,4 @@ First complete version: employees log their time, managers follow their team, ad
   and in the test names.
 - Screens reviewed for accessibility (keyboard, screen readers, AA contrast) and usable from 375 px wide.
 
-[1.0.0]: https://github.com/SalaheddineBns/tracker-app/releases/tag/v1.0.0
+[1.0.0]: https://github.com/SalaheddineBns/apptracer/releases/tag/v1.0.0

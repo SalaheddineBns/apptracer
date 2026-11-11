@@ -3,7 +3,7 @@
 **Employees log what they worked on — by the hour, the day or a range of days — and managers see their team's week
 at a glance.**
 
-[![CI](https://github.com/SalaheddineBns/tracker-app/actions/workflows/ci.yml/badge.svg)](https://github.com/SalaheddineBns/tracker-app/actions/workflows/ci.yml)
+[![CI](https://github.com/SalaheddineBns/apptracer/actions/workflows/ci.yml/badge.svg)](https://github.com/SalaheddineBns/apptracer/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Java 21](https://img.shields.io/badge/Java-21-blue) ![Spring Boot 3](https://img.shields.io/badge/Spring%20Boot-3-green)
 ![Angular 22](https://img.shields.io/badge/Angular-22-red) ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-blue)

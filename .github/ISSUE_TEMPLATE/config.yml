@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: Report a security problem
-    url: https://github.com/SalaheddineBns/tracker-app/blob/main/SECURITY.md
+    url: https://github.com/SalaheddineBns/apptracer/blob/main/SECURITY.md
     about: Please do not open a public issue for a vulnerability.
   - name: Try the live demo
     url: https://apptracer-demo.onrender.com
