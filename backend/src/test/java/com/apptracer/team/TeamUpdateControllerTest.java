@@ -132,7 +132,7 @@ class TeamUpdateControllerTest {
         .andExpect(jsonPath("$.members[1].id").value(carol.getId()))
         .andExpect(jsonPath("$.version").value(1));
 
-    // alice est retirée, bob garde sa ligne d'origine, carol en reçoit une
+    // alice is removed, bob keeps his original row, carol gets one
     assertThat(members.findByUserId(alice.getId())).isEmpty();
     assertThat(members.findByUserId(bob.getId()).orElseThrow().getTeamId())
         .isEqualTo(produit.getId());
@@ -191,8 +191,8 @@ class TeamUpdateControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.manager.id").value(newManager.getId()));
 
-    // la consultation elle-même relève de SFD-04 (T-04-3, T-04-9) : ici, la donnée sur laquelle
-    // le périmètre du MANAGER est calculé
+    // viewing itself belongs to SFD-04 (T-04-3, T-04-9): here, the data from which the MANAGER's
+    // scope is computed
     assertThat(teams.findActiveNamesByManagerId(manager.getId())).isEmpty();
     assertThat(teams.findActiveNamesByManagerId(newManager.getId())).containsExactly("Produit");
   }

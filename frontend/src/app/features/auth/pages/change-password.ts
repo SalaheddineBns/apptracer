@@ -25,12 +25,12 @@ export class ChangePasswordPage {
 
   protected readonly submitting = signal(false);
 
-  // Les noms des contrôles `currentPassword` / `newPassword` sont ceux des `errors[].field` de l'API.
+  // The names of the controls `currentPassword` / `newPassword` are those of the API's `errors[].field`.
   protected readonly form = inject(FormBuilder).nonNullable.group({
     currentPassword: ['', [Validators.required]],
     // RG-03-02
     newPassword: ['', [Validators.required, passwordPolicyValidator]],
-    // Validation côté formulaire uniquement : la confirmation n'est pas envoyée à l'API.
+    // Form-side validation only: the confirmation is not sent to the API.
     confirmation: ['', [Validators.required, sameAs('newPassword')]],
   });
 
@@ -58,8 +58,8 @@ export class ChangePasswordPage {
     this.auth.changePassword(currentPassword, newPassword).subscribe({
       next: () => {
         this.submitting.set(false);
-        // Le blur du champ actif marque le contrôle « touched » : on le retire avant de réinitialiser, sinon
-        // « La confirmation est obligatoire. » apparaît à la première tabulation suivant le succès.
+        // Blurring the active field marks the control as touched: it is removed before resetting, otherwise 'La
+        // confirmation est obligatoire.' appears on the first Tab after success.
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
         }
@@ -68,7 +68,8 @@ export class ChangePasswordPage {
       },
       error: (error: unknown) => {
         this.submitting.set(false);
-        // RG-03-15 / RG-03-02 : les errors[] de l'API s'affichent sous le champ ; sans errors[], le toast vient de l'intercepteur.
+        // RG-03-15 / RG-03-02: the API's errors[] are shown under the field; without errors[], the toast comes from the
+        // interceptor.
         const unmatched = applyFieldErrors(this.form, toProblem(error).fieldErrors);
         for (const e of unmatched) {
           this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });

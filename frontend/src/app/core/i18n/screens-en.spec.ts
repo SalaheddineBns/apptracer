@@ -45,7 +45,7 @@ const FRENCH = new RegExp(`[àâçéèêëîïôûùüœ]|\\b(${FRENCH_WORDS.joi
 /** Everything a user or a screen reader receives: text, `aria-label`, `placeholder`, `title`. */
 function shownTexts(): string[] {
   const texts: string[] = [];
-  // Les noms des langues (« Français », « English ») sont écrits dans leur propre langue (marqués `lang`) : hors contrôle.
+  // The language names ('Français', 'English') are written in their own language (marked `lang`): not checked.
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (!node.parentElement?.closest('[lang]')) {
@@ -59,7 +59,7 @@ function shownTexts(): string[] {
 }
 
 function frenchLeaks(): string[] {
-  // « Français » est le nom de la langue, écrit dans sa propre langue dans le sélecteur (RG-08-10) : seule exception.
+  // 'Français' is the language's name, written in its own language in the selector (RG-08-10): the only exception.
   return shownTexts().filter((word) => word !== 'Français' && FRENCH.test(word));
 }
 
@@ -262,7 +262,7 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
         ...overrides,
       ],
     });
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     TestBed.inject(I18n).setLang('en');
     await TestBed.inject(AuthStore).init();
@@ -362,7 +362,8 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
 
     it('confirmation de désactivation d’un compte', async () => {
       await start(Role.Admin, '/admin/accounts');
-      // Ada est connectée : seul Bob (inactif) est réactivable ; la désactivation d’un autre compte actif est vérifiée par la clé.
+      // Ada is signed in: only Bob (inactive) can be reactivated; deactivating another active account is checked by the
+      // key.
       TestBed.inject(ConfirmationService).confirm({
         header: TestBed.inject(I18n).t('accounts.deactivate.header'),
         message: TestBed.inject(I18n).t('accounts.deactivate.message', { name: 'Bob Stone', email: 'bob@x.com' }),

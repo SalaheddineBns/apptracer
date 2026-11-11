@@ -30,7 +30,7 @@ class AppSettingsPersistenceTest {
 
   @AfterEach
   void cleanUp() {
-    // remet la ligne dans l'état d'installation avant de supprimer les comptes (clé étrangère)
+    // resets the row to its installation state before deleting the accounts (foreign key)
     jdbc.update(
         "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL WHERE id = 1");
@@ -50,7 +50,7 @@ class AppSettingsPersistenceTest {
     AppSettings s = all.get(0);
     assertThat(s.getId()).isEqualTo(AppSettings.SINGLETON_ID);
     assertThat(s.getStandardDayMinutes()).isEqualTo(480);
-    // RG-06-05 : pas de trace tant que jamais modifié
+    // RG-06-05: no trace as long as it has never been changed
     assertThat(s.getUpdatedAt()).isNull();
     assertThat(s.getUpdatedBy()).isNull();
   }

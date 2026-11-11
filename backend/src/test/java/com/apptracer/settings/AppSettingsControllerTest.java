@@ -52,7 +52,7 @@ class AppSettingsControllerTest {
 
   @AfterEach
   void cleanUp() {
-    // la ligne est remise à l'état d'installation avant de supprimer les comptes (clé étrangère)
+    // the row is reset to its installation state before deleting the accounts (foreign key)
     jdbc.update(
         "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
             + " updated_at = NULL, updated_by = NULL WHERE id = 1");
@@ -152,7 +152,7 @@ class AppSettingsControllerTest {
         jdbc.queryForObject("SELECT updated_at FROM app_settings", java.sql.Timestamp.class)
             .toInstant();
     assertThat(Duration.between(before, at).abs()).isLessThan(Duration.ofMinutes(1));
-    // RG-06-04 : un USER lit la nouvelle valeur, sans la trace
+    // RG-06-04: a USER reads the new value, without the trace
     mockMvc
         .perform(get(URL).header(HttpHeaders.AUTHORIZATION, bearer(plainUser)))
         .andExpect(jsonPath("$.standardDayMinutes").value(450))

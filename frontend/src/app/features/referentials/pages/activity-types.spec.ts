@@ -48,7 +48,7 @@ describe('ActivityTypesPage', () => {
   };
 
   beforeEach(() => {
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     for (const fn of [listActivityTypes, deactivateActivityType, reactivateActivityType, confirm, add]) {
       fn.mockReset();
@@ -103,7 +103,7 @@ describe('ActivityTypesPage', () => {
     await click('btn-desactiver-type-1');
     expect(confirm).toHaveBeenCalledTimes(1);
     const options = confirm.mock.calls[0][0];
-    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    // Escape must cancel: the confirmation must never disable `closable`.
     expect(options.closable).not.toBe(false);
     expect(options.message).toContain('Réunion');
     expect(options.message).toContain('plus proposé pour une nouvelle saisie');

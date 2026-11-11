@@ -34,7 +34,7 @@ export class ActivityTypesPage {
   protected readonly editing = signal<ActivityTypeResponse | null>(null);
 
   constructor() {
-    // Une seule requête par ouverture de l'écran : la liste de l'ADMIN (avec les inactifs) est toujours relue.
+    // One request per opening of the screen: the ADMIN's list (inactive ones included) is always re-read.
     this.store.load();
   }
 
@@ -71,7 +71,7 @@ export class ActivityTypesPage {
 
   /** RG-02-05: reversible, without confirmation. */
   protected reactivate(type: ActivityTypeResponse): void {
-    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    // The button is disabled during the call, then replaced by Deactivate: the focus follows it.
     const anchor = this.focus.capture();
     this.store.reactivate(type.id)
       .pipe(finalize(() => this.focus.restore(anchor)))

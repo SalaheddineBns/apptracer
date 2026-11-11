@@ -36,7 +36,7 @@ import { TPipe } from './t.pipe';
 })
 export class LanguageSelector {
   protected readonly i18n = inject(I18n);
-  // Chaque libellé est écrit dans sa propre langue : « Français » et « English » sont identiques dans les deux dictionnaires.
+  // Each label is written in its own language: 'Français' and 'English' are identical in both dictionaries.
   protected readonly options = computed(() => LANGS.map((lang) => ({ lang, label: this.i18n.t(`language.${lang}`) })));
 
   /**

@@ -49,7 +49,7 @@ public class TeamViewController {
       description = "Rôle insuffisant (RG-04-01)",
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public List<ManagedTeamResponse> listMyManagedTeams() {
-    // RG-00-03 : toujours le compte du jeton
+    // RG-00-03: always the token's account
     return service.listMyManagedTeams(currentUser.currentUserId()).stream()
         .map(mapper::toResponse)
         .toList();
@@ -103,7 +103,7 @@ public class TeamViewController {
       @PathVariable Long userId,
       @RequestParam @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Un lundi")
           LocalDate weekStart) {
-    // RG-00-03 : le manager vient du jeton
+    // RG-00-03: the manager comes from the token
     return mapper.toResponse(
         service.listTeamMemberTimeEntries(currentUser.currentUserId(), userId, weekStart));
   }

@@ -2,7 +2,7 @@ import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import type { FieldMessages } from '../components/field-error';
 
 export const PASSWORD_MIN_LENGTH = 12;
-// Messages équivalents à ceux du back (PasswordPolicy), dans les deux langues.
+// Messages equivalent to the back end's (PasswordPolicy), in both languages.
 export const PASSWORD_MESSAGES: FieldMessages = {
   required: 'password.errors.required',
   passwordLength: { key: 'password.errors.length', params: { min: PASSWORD_MIN_LENGTH } },

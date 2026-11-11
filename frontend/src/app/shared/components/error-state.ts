@@ -20,8 +20,9 @@ export class ErrorState {
   /** Message to show; by default, the generic loading message in the language in force. */
   readonly message = input<string | null>(null);
   private readonly i18n = inject(I18n);
-  // RG-08-04 : le message du serveur est dans la langue de la requête. Si la langue change tant qu'il est affiché, on le
-  // remplace par le message générique traduit ; « Réessayer » relance la requête, dont la réponse sera dans la nouvelle langue.
+  // RG-08-04: the server's message is in the request's language. If the language changes while it is shown, it is
+  // replaced by the translated generic message; Retry sends the request again, and its response will be in the new
+  // language.
   private readonly received = linkedSignal(() => ({ message: this.message(), lang: untracked(this.i18n.lang) }));
   protected readonly text = computed(() => {
     const { message, lang } = this.received();

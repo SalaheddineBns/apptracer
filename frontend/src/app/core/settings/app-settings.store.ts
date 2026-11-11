@@ -48,7 +48,7 @@ export class AppSettingsStore {
     const id = ++this.requestId;
     this.loading.set(true);
     this.error.set(null);
-    // L'erreur est affichée par l'appelant (état d'erreur « Réessayer »), pas dans un toast.
+    // The error is shown by the caller (error state with Retry), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     this.api.getAppSettings('body', false, { context }).subscribe({
       next: (response) => {
@@ -89,7 +89,7 @@ export class AppSettingsStore {
         })
         .pipe(
           tap((response) => {
-            // Une lecture partie avant cette réponse ne doit pas la remplacer par une valeur plus ancienne.
+            // A read that started before this response must not replace it with an older value.
             this.requestId++;
             this.settings.set(response);
             this.loaded.set(true);

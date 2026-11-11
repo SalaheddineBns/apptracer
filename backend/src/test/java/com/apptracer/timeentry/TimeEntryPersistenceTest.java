@@ -55,7 +55,7 @@ class TimeEntryPersistenceTest {
   @AfterEach
   void cleanUp() {
     SecurityContextHolder.clearContext();
-    // saisies avant comptes, projets de test avant comptes ; types initiaux conservés
+    // time entries before accounts, test projects before accounts; initial types kept
     jdbc.execute("DELETE FROM time_entries");
     jdbc.execute("DELETE FROM projects");
     jdbc.execute("DELETE FROM users WHERE email = 'te-owner@example.com'");
@@ -180,7 +180,7 @@ class TimeEntryPersistenceTest {
     TimeEntry noStandard = hour(LocalTime.of(9, 0), LocalTime.of(10, 0));
     noStandard.setDuration(0, 0);
     rejected(noStandard);
-    TimeEntry zeroDuration = range(D, D.plusDays(1)); // plage sans jour ouvré : 0 min
+    TimeEntry zeroDuration = range(D, D.plusDays(1)); // range without a working day: 0 min
     zeroDuration.setDuration(0, 480);
     entries.saveAndFlush(zeroDuration);
   }
@@ -225,7 +225,7 @@ class TimeEntryPersistenceTest {
     TimeEntry deleted = entries.saveAndFlush(saved);
     assertThat(deleted.isDeleted()).isTrue();
     assertThat(deleted.getDeletedBy()).isEqualTo(owner.getId());
-    assertThat(entries.findById(saved.getId())).isPresent(); // la ligne reste en base
+    assertThat(entries.findById(saved.getId())).isPresent(); // the row stays in the database
 
     Long id = saved.getId();
     assertThatThrownBy(
@@ -259,7 +259,7 @@ class TimeEntryPersistenceTest {
                     "UPDATE time_entries SET project_id = 999999 WHERE id = ?", saved.getId()))
         .isInstanceOf(DataIntegrityViolationException.class);
     assertThatThrownBy(() -> jdbc.update("DELETE FROM projects WHERE id = ?", p.getId()))
-        .isInstanceOf(DataIntegrityViolationException.class); // pas de ON DELETE
+        .isInstanceOf(DataIntegrityViolationException.class); // no ON DELETE
   }
 
   @Test

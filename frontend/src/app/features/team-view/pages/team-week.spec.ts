@@ -62,10 +62,10 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
   const url = () => TestBed.inject(Router).url;
 
   beforeEach(() => {
-    // jsdom n'a pas matchMedia, utilisé par les panneaux déroulants de PrimeNG (p-select), ni scrollIntoView.
+    // jsdom has no matchMedia, used by the PrimeNG dropdown panels (p-select), nor scrollIntoView.
     vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
     HTMLElement.prototype.scrollIntoView = vi.fn();
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     listMyManagedTeams.mockReset();
     getTeamWeekSummary.mockReset();
@@ -183,7 +183,7 @@ describe('TeamWeekPage (SFD-04 E1)', () => {
 
   it('CA-04-07 : le total d’un membre ayant une PLAGE à cheval est celui de l’API (16 h), pas une somme refaite côté écran', async () => {
     listMyManagedTeams.mockReturnValue(of([alpha]));
-    // Jeudi 08 et vendredi 09/10 : 8 h chacun ; samedi et dimanche non comptés (RG-04-05). L'API renvoie 960 min.
+    // Thursday 08 and Friday 09/10: 8 h each; Saturday and Sunday not counted (RG-04-05). The API returns 960 min.
     getTeamWeekSummary.mockReturnValue(of(summary(alpha, [member(10, 'Durand', [0, 0, 0, 480, 480], 960)])));
     await open();
     expect(cy('total-membre-10')?.textContent?.trim()).toBe('16 h');

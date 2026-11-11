@@ -372,7 +372,7 @@ describe('TimeEntryDialog', () => {
       expect(saved).not.toHaveBeenCalled();
       expect(form().get('activityTypeCode')?.value).toBe('REUNION');
       expect(document.body.querySelector('[data-cy^="erreur-"]')).toBeNull();
-      // Le message de chevauchement est affiché une seule fois, par l'intercepteur d'erreurs (toast).
+      // The overlap message is shown only once, by the error interceptor (toast).
       expect(add).not.toHaveBeenCalled();
     });
 
@@ -518,7 +518,7 @@ describe('TimeEntryDialog', () => {
       const proposed = dialog.defaultEndTime();
       await fill({ endTime: time('15:15') });
       await fill({ endTime: time('15:30'), comment: 'autre saisie' });
-      // Même objet : PrimeNG ne réinitialise son panneau que sur une nouvelle `defaultDate`.
+      // Same object: PrimeNG only resets its panel on a new `defaultDate`.
       expect(dialog.defaultEndTime()).toBe(proposed);
       await fill({ startTime: time('10:00') });
       expect(toTime(dialog.defaultEndTime())).toBe('10:00');

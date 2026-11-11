@@ -63,7 +63,7 @@ class TeamWeekSummaryControllerTest {
     plainUser = users.save(new User("tv2-user@example.com", "U", "User", "hash", Role.USER));
     manager = users.save(new User("tv2-mgr@example.com", "Mia", "Manager", "hash", Role.MANAGER));
     otherManager = users.save(new User("tv2-mgr2@example.com", "O", "Other", "hash", Role.MANAGER));
-    // Paul est créé avant Anne : l'ordre d'insertion ne doit pas dicter l'ordre de la réponse
+    // Paul is created before Anne: the insertion order must not dictate the order of the response
     paul = users.save(new User("tv2-paul@example.com", "Paul", "Petit", "hash", Role.USER));
     anne = users.save(new User("tv2-anne@example.com", "Anne", "Adam", "hash", Role.USER));
     outsider = users.save(new User("tv2-out@example.com", "Otto", "Outside", "hash", Role.USER));
@@ -89,7 +89,7 @@ class TeamWeekSummaryControllerTest {
   }
 
   private Team team(String name, User teamManager, User... teamMembers) {
-    // RG-00-04 : les écritures de mise en place sont attribuées à l'ADMIN
+    // RG-00-04: the set-up writes are attributed to the ADMIN
     SecurityContextHolder.getContext()
         .setAuthentication(
             UsernamePasswordAuthenticationToken.authenticated(
@@ -169,7 +169,7 @@ class TeamWeekSummaryControllerTest {
         .andExpect(jsonPath("$.weekStart").value(WEEK))
         .andExpect(jsonPath("$.weekEnd").value("2026-10-11"))
         .andExpect(jsonPath("$.members.length()").value(2))
-        // RG-04-09 : Adam avant Petit, malgré l'ordre de création
+        // RG-04-09: Adam before Petit, despite the creation order
         .andExpect(jsonPath("$.members[0].member.id").value(anne.getId()))
         .andExpect(jsonPath("$.members[0].totalMinutes").value(90))
         .andExpect(jsonPath("$.members[1].member.id").value(paul.getId()))

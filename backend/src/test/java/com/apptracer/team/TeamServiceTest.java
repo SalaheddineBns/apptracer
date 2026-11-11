@@ -155,7 +155,7 @@ class TeamServiceTest {
   @DisplayName("RG-05-06 : un manager qui l'est déjà d'une autre équipe peut en créer une autre")
   void managerOfSeveralTeams() {
     User m = manager();
-    // l'équipe existante du même manager n'est un obstacle à aucun contrôle
+    // the same manager's existing team does not block any check
     when(teams.findActiveNamesByManagerId(m.getId())).thenReturn(List.of("Technique"));
 
     TeamDetails created = service.create(ADMIN_ID, "Produit", m.getId(), List.of());

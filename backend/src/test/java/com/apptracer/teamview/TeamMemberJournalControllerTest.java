@@ -86,7 +86,7 @@ class TeamMemberJournalControllerTest {
   }
 
   private Team team(String name, User teamManager, User... teamMembers) {
-    // RG-00-04 : les écritures de mise en place sont attribuées à l'ADMIN
+    // RG-00-04: the set-up writes are attributed to the ADMIN
     SecurityContextHolder.getContext()
         .setAuthentication(
             UsernamePasswordAuthenticationToken.authenticated(

@@ -156,7 +156,7 @@ class TimeEntryDeleteTest {
     remove(user, id).andExpect(status().isNotFound());
     remove(user, 999999).andExpect(status().isNotFound());
     assertThat(row(id).get("deleted_at")).isEqualTo(firstDeletedAt);
-    // la saisie supprimée d'un autre reste 404 (et non 403) pour tout le monde
+    // someone else's deleted time entry stays 404 (not 403) for everyone
     remove(manager, id).andExpect(status().isNotFound());
   }
 
@@ -165,7 +165,7 @@ class TimeEntryDeleteTest {
       "RG-01-06 : après suppression, le même créneau peut être recréé (service et contrainte)")
   void slotCanBeRecreated() throws Exception {
     long id = create(user, HOUR_BODY);
-    // tant qu'elle existe, le créneau est occupé
+    // as long as it exists, the slot is taken
     mockMvc
         .perform(
             post(URL)

@@ -13,7 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
-  // RG-03-01 : recherche insensible à la casse (index ux_users_email_lower)
+  // RG-03-01: case-insensitive lookup (index ux_users_email_lower)
   @Query("select u from User u where lower(u.email) = lower(:email)")
   Optional<User> findByEmail(@Param("email") String email);
 

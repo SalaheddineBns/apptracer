@@ -29,7 +29,7 @@ export class TeamsPage {
   protected readonly editing = signal<TeamResponse | null>(null);
 
   constructor() {
-    // Une seule requête par ouverture de l'écran.
+    // A single request per opening of the screen.
     this.store.load();
   }
 
@@ -75,10 +75,10 @@ export class TeamsPage {
         this.store.remove(team.id).subscribe({
           next: () => {
             this.messages.add({ severity: 'success', summary: this.i18n.t('teams.delete.deleted'), detail: this.i18n.t('teams.delete.deletedDetail', { name: team.name }), life: 3000 });
-            // La ligne a disparu : le focus passe à l'action principale de la page plutôt que de tomber sur <body>.
+            // The row is gone: the focus moves to the page's main action rather than falling onto <body>.
             setTimeout(() => document.querySelector<HTMLElement>('[data-cy="btn-nouvelle-equipe"] button')?.focus());
           },
-          // Déjà supprimée par quelqu'un d'autre (404, message affiché par l'intercepteur) : la liste est relue.
+          // Already deleted by someone else (404, message shown by the interceptor): the list is re-read.
           error: () => this.store.load(),
         }),
     });

@@ -21,7 +21,7 @@ public final class PasswordPolicy {
       violations.add("password.required");
       return violations;
     }
-    // RG-03-02 : au moins 12 caractères, au moins une lettre et un chiffre
+    // RG-03-02: at least 12 characters, at least one letter and one digit
     if (password.codePointCount(0, password.length()) < MIN_LENGTH) {
       violations.add("password.min-length");
     }

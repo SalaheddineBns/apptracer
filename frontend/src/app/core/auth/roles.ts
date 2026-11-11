@@ -8,7 +8,7 @@ export const ROLE_LABEL_KEYS: Record<Role, TranslationKey> = {
   [Role.Admin]: 'roles.admin',
 };
 
-// RG-03-10 : MANAGER inclut les droits USER ; ADMIN n'inclut ni USER ni MANAGER (comme côté back).
+// RG-03-10: MANAGER includes the USER rights; ADMIN includes neither USER nor MANAGER (as on the back end).
 const GRANTED: Record<Role, readonly Role[]> = {
   [Role.User]: [Role.User],
   [Role.Manager]: [Role.Manager, Role.User],

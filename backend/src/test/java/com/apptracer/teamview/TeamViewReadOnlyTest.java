@@ -118,7 +118,7 @@ class TeamViewReadOnlyTest {
                 .content(UPDATE_BODY))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("RG-01-10"));
-    // la saisie du membre est intacte
+    // the member's time entry is intact
     assertThat(
             jdbc.queryForObject(
                 "SELECT start_date FROM time_entries WHERE id = ?",

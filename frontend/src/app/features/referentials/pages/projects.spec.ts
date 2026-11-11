@@ -47,7 +47,7 @@ describe('ProjectsPage', () => {
   };
 
   beforeEach(() => {
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     for (const fn of [listProjects, deactivateProject, reactivateProject, confirm, add]) {
       fn.mockReset();

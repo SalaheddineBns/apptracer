@@ -64,7 +64,7 @@ export class I18n {
     try {
       localStorage.setItem(LANG_STORAGE_KEY, lang);
     } catch {
-      // Stockage indisponible : la langue vaut pour la session seulement.
+      // Storage unavailable: the language applies to the session only.
     }
     this.current.set(lang);
     this.apply(lang);

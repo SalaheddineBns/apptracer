@@ -55,7 +55,7 @@ describe('AccountsPage', () => {
   };
 
   beforeEach(() => {
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     for (const fn of [listUsers, listJobTitles, deactivateUser, reactivateUser, confirm, add]) {
       fn.mockReset();
@@ -153,7 +153,7 @@ describe('AccountsPage', () => {
     await open();
     await click('btn-desactiver-2');
     expect(confirm).toHaveBeenCalledTimes(1);
-    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    // Escape must cancel: the confirmation must never disable `closable`.
     expect(confirm.mock.calls[0][0].closable).not.toBe(false);
     expect(confirm.mock.calls[0][0].message).toContain('Prénom2 Nom2');
     expect(deactivateUser).not.toHaveBeenCalled();
@@ -231,7 +231,7 @@ describe('AccountsPage', () => {
     root.querySelectorAll<HTMLElement>('th')[1]?.click();
     await whenStable();
     expect(listUsers).toHaveBeenCalledTimes(2);
-    // Un événement identique à l'état courant (réémission de p-table) ne recharge pas.
+    // An event identical to the current state (p-table re-emitting) does not reload.
     page['onLazyLoad']({ first: 0, rows: 20, sortField: 'email', sortOrder: 1 });
     expect(listUsers).toHaveBeenCalledTimes(2);
   });

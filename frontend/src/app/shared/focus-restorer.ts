@@ -42,7 +42,7 @@ export class FocusRestorer {
     if (!anchor) {
       return;
     }
-    // Après la fermeture du dialogue (le piège à focus de PrimeNG reprend sinon le focus).
+    // After the dialog closes (otherwise PrimeNG's focus trap takes the focus back).
     setTimeout(() => {
       if (this.tryFocus(anchor)) {
         return;

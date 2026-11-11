@@ -24,14 +24,13 @@ public class ActivityTypeService {
   /** RG-02-08: ADMIN only (checked by the controller). */
   @Transactional
   public ActivityType create(String code, String label, boolean projectRequired, TagColor color) {
-    // RG-02-01 : code unique dans le référentiel (l'index unique couvre les créations concurrentes
-    // ;
-    // sa violation est traduite en 409 RG-02-01 par le handler global)
+    // RG-02-01: code unique within the reference data (the unique index covers concurrent
+    // creations; its violation is translated into a 409 RG-02-01 by the global handler)
     if (types.existsByCode(code)) {
       throw BusinessException.onField(
           "RG-02-01", "error.activity-type.code-duplicate", "code", "field.code-duplicate");
     }
-    // RG-02-05 : actif à la création ; RG-00-04 : created_by / updated_by via l'audit JPA
+    // RG-02-05: active on creation; RG-00-04: created_by / updated_by through JPA auditing
     return types.saveAndFlush(new ActivityType(code, label.strip(), projectRequired, color));
   }
 
@@ -47,11 +46,11 @@ public class ActivityTypeService {
   public ActivityType update(
       Long id, String label, boolean projectRequired, TagColor color, long version) {
     ActivityType type = get(id);
-    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    // Concurrent change: the version read by the ADMIN is no longer the version in the database
     if (type.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(ActivityType.class, id);
     }
-    // RG-02-07 : projectRequired n'est plus modifiable dès qu'une saisie utilise le type
+    // RG-02-07: projectRequired can no longer be changed once a time entry uses the type
     if (type.isProjectRequired() != projectRequired && usageChecker.isUsed(id)) {
       throw BusinessException.onField(
           "RG-02-07",

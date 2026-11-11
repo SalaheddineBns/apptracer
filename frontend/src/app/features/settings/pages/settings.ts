@@ -53,7 +53,7 @@ export class SettingsPage {
   private readonly messages = inject(MessageService);
   private readonly i18n = inject(I18n);
 
-  // Le formulaire porte la durée en heures et minutes ; l'API reçoit le total en minutes (`standardDayMinutes`).
+  // The form holds the duration in hours and minutes; the API receives the total in minutes (`standardDayMinutes`).
   protected readonly form = new FormGroup(
     { hours: new FormControl<number | null>(null), minutes: new FormControl<number | null>(null) },
     // RG-06-02
@@ -82,14 +82,14 @@ export class SettingsPage {
   );
 
   constructor() {
-    // Le formulaire reprend la valeur du store à chaque chargement, enregistrement ou rechargement après conflit.
+    // The form takes the store's value on each load, save or reload after a conflict.
     effect(() => {
       const settings = this.store.settings();
       if (settings) {
         untracked(() => this.form.reset(fromMinutes(settings.standardDayMinutes)));
       }
     });
-    // Lecture fraîche à chaque ouverture : la version envoyée à l'enregistrement est celle du back.
+    // Fresh read on each opening: the version sent on save is the back end's.
     this.store.load();
   }
 
@@ -119,13 +119,13 @@ export class SettingsPage {
     if (this.store.saving()) {
       return;
     }
-    // RG-06-06 : valeur identique = rien à envoyer.
+    // RG-06-06: identical value = nothing to send.
     if (this.unchanged() && this.form.valid) {
       return;
     }
     this.form.markAllAsTouched();
     const minutes = toMinutes(this.form.getRawValue());
-    // CA-06-05 : valeur refusée par RG-06-02, aucune requête.
+    // CA-06-05: value refused by RG-06-02, no request.
     if (this.form.invalid || minutes === null) {
       return;
     }
@@ -142,11 +142,11 @@ export class SettingsPage {
         const problem = toProblem(error);
         const field = problem.fieldErrors.find((e) => e.field === 'standardDayMinutes');
         if (field) {
-          // Le back reste la référence : son message s'affiche sous le champ, sans toast.
+          // The back end remains the reference: its message is shown under the field, without a toast.
           this.form.setErrors({ [SERVER_ERROR_KEY]: field.message });
           this.form.markAllAsTouched();
         } else if (problem.status === 409 && problem.code === null) {
-          // Modification concurrente : le store se recharge et le formulaire reprend la valeur rechargée.
+          // Concurrent change: the store reloads and the form takes the reloaded value.
           this.conflict.set(true);
         }
       },

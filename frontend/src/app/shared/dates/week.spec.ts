@@ -34,7 +34,7 @@ describe('shared/dates/week', () => {
   it('les calculs traversent un changement de mois, d’année et d’heure sans décalage', () => {
     expect(addDays('2026-10-31', 1)).toBe('2026-11-01');
     expect(addDays('2026-01-01', -1)).toBe('2025-12-31');
-    // Passage à l'heure d'hiver à Paris le 25/10/2026.
+    // Switch to winter time in Paris on 25/10/2026.
     expect(addDays('2026-10-24', 2)).toBe('2026-10-26');
     expect(daysBetween('2026-10-05', '2026-11-04')).toBe(30);
     expect(daysBetween('2026-10-05', '2026-10-04')).toBe(-1);
@@ -56,7 +56,7 @@ describe('shared/dates/week', () => {
   });
 
   it('RG-00-01 : la date du jour est celle de Paris, pas celle du navigateur', () => {
-    // 23:30 UTC le 04/10 : déjà le 05/10 à Paris (UTC+2).
+    // 23:30 UTC on 04/10: already 05/10 in Paris (UTC+2).
     expect(todayInParis(new Date('2026-10-04T23:30:00Z'))).toBe('2026-10-05');
     expect(todayInParis(new Date('2026-10-05T10:00:00Z'))).toBe('2026-10-05');
   });

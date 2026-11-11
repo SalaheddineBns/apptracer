@@ -22,8 +22,8 @@ public final class WeeklyTotalCalculator {
     int[] days = new int[7];
     for (TimeEntry e : entries) {
       if (e.getGranularity() == Granularity.RANGE) {
-        // RG-01-13, RG-01-08 : jours ouvrés de la plage compris dans la semaine x journée
-        // standard figée sur la saisie (pas le paramètre en vigueur)
+        // RG-01-13, RG-01-08: working days of the range within the week x the standard day frozen
+        // on the entry (not the setting in force)
         for (int i = 0; i < 7; i++) {
           LocalDate day = weekStart.plusDays(i);
           if (!day.isBefore(e.getStartDate()) && !day.isAfter(e.getEndDate()) && isWeekday(day)) {
@@ -31,7 +31,7 @@ public final class WeeklyTotalCalculator {
           }
         }
       } else {
-        // HOUR, DAY : durée figée de la saisie, comptée sur sa date
+        // HOUR, DAY: the entry's frozen duration, counted on its date
         int index = (int) java.time.temporal.ChronoUnit.DAYS.between(weekStart, e.getStartDate());
         if (index >= 0 && index < 7) {
           days[index] += e.getDurationMinutes();

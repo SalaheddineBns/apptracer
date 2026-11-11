@@ -208,7 +208,7 @@ class TeamUpdateServiceTest {
     TeamMember link = new TeamMember(bob.getId(), 77L);
     set(link, "team", other);
     current.add(link);
-    // le lien de bob est en base dans l'équipe 77, pas dans l'équipe 50
+    // bob's link is stored in team 77, not in team 50
     when(members.findByTeamIdsSorted(anyCollection())).thenReturn(List.of(current.get(0)));
     when(members.findWithTeamByUserIds(anyCollection())).thenReturn(List.of(link));
 

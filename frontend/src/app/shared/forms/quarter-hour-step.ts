@@ -26,7 +26,7 @@ export class QuarterHourStep implements OnInit {
         this.move(key === 'ArrowUp' ? 1 : -1);
       }
     };
-    // Souris et toucher : PrimeNG fait tourner la valeur dès l'appui ; on l'en empêche et on agit au clic.
+    // Mouse and touch: PrimeNG spins the value as soon as it is pressed; we prevent that and act on click.
     const onPress = (event: Event): void => {
       if (this.direction(event) !== 0) {
         this.stop(event);
@@ -46,7 +46,7 @@ export class QuarterHourStep implements OnInit {
       ['click', onClick],
     ];
     for (const [name, handler] of handlers) {
-      // Capture : le gestionnaire de PrimeNG, sur l'élément interne, ne reçoit pas l'événement.
+      // Capture: PrimeNG's handler, on the inner element, does not receive the event.
       this.host.addEventListener(name, handler, true);
     }
     this.destroyRef.onDestroy(() =>
@@ -73,8 +73,8 @@ export class QuarterHourStep implements OnInit {
       return;
     }
     const step = this.step();
-    // Valeur affichée (tapée ou non encore validée) : « 10 min » donne 10, rien de lisible donne 0.
-    // Une pression qui suit de près la précédente part de la valeur déjà posée, pas d'un affichage en retard.
+    // Displayed value (typed or not yet validated): '10 min' gives 10, nothing readable gives 0. A press that closely
+    // follows the previous one starts from the value already set, not from a lagging display.
     const digits = input.value.replace(/[^\d]/g, '');
     const displayed = digits === '' ? 0 : Number(digits);
     const current =

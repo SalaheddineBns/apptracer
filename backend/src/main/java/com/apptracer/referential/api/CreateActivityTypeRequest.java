@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateActivityTypeRequest(
-    // RG-02-01 : contrôlé tel que saisi, jamais transformé (CA-02-04)
+    // RG-02-01: checked as entered, never transformed (CA-02-04)
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[A-Z0-9_]{2,30}$")
         @NotNull
         @Pattern(regexp = "^[A-Z0-9_]{2,30}$", message = "{validation.code.pattern}")

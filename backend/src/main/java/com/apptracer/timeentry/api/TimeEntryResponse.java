@@ -20,6 +20,6 @@ public record TimeEntryResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) ActivityTypeSummary activityType,
     @Schema(nullable = true) ProjectSummary project,
     @Schema(nullable = true) String comment,
-    // RG-01-08 : durée figée à l'enregistrement
+    // RG-01-08: duration frozen on save
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) int durationMinutes,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) long version) {}

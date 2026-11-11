@@ -15,10 +15,10 @@ public record CreateUserRequest(
         String firstName,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String lastName,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, enumAsRef = true) @NotNull Role role,
-    // RG-03-02 : 12 caractères, une lettre, un chiffre ; RG-03-12 : défini par l'ADMIN
+    // RG-03-02: 12 characters, one letter, one digit; RG-03-12: set by the ADMIN
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @ValidPassword
         String initialPassword,
-    // RG-09-02, RG-09-04 : fonction facultative (code), pour un USER ou un MANAGER
+    // RG-09-02, RG-09-04: optional job title (code), for a USER or a MANAGER
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true) String jobTitleCode) {
 
   /** The password must never appear in a log. */

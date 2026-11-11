@@ -148,7 +148,7 @@ class JobTitleControllerTest {
   @DisplayName(
       "CA-09-03 : la violation de l'index unique en base (course) donne aussi 409 RG-09-05")
   void raceOnUniqueIndexIs409() throws Exception {
-    // le contrôle de service ne voit pas le doublon : seul l'index unique le refuse
+    // the service check does not see the duplicate: only the unique index refuses it
     org.mockito.Mockito.doReturn(false).when(titles).existsByCode("TECH_LEAD");
     mockMvc
         .perform(as(post(URL), admin, createBody("TECH_LEAD", "Autre")))
@@ -166,7 +166,7 @@ class JobTitleControllerTest {
           .andExpect(status().isBadRequest())
           .andExpect(jsonPath("$.errors[0].field").value("code"));
     }
-    // RG-09-05 : un code libre mais en minuscules est refusé, jamais enregistré
+    // RG-09-05: a free code written in lower case is refused, never saved
     mockMvc
         .perform(as(post(URL), admin, createBody("ux_designer", "x")))
         .andExpect(status().isBadRequest())

@@ -47,7 +47,7 @@ export class AccountsPage {
 
   constructor() {
     this.store.load();
-    // RG-09-06 : les fonctions (avec les inactives, pour l'ADMIN) alimentent la liste déroulante du dialogue.
+    // RG-09-06: the job titles (inactive ones included, for the ADMIN) feed the dialog's dropdown.
     inject(JobTitlesStore).load();
   }
 
@@ -105,8 +105,8 @@ export class AccountsPage {
       accept: () =>
         this.store.deactivate(user.id).subscribe({
           next: () => this.notify(this.i18n.t('accounts.toast.updated'), this.i18n.t('accounts.toast.deactivatedDetail', { name: this.fullName(user) })),
-          // RG-05-10 (manager d'une équipe, 409 nommant l'équipe), RG-03-13 : le refus est affiché en toast par l'intercepteur
-          // d'erreurs, la ligne reste inchangée (« Actif ») et son bouton est de nouveau disponible.
+          // RG-05-10 (a team's manager, 409 naming the team), RG-03-13: the refusal is shown as a toast by the error
+          // interceptor, the row stays unchanged (Active) and its button is available again.
           error: () => undefined,
         }),
     });
@@ -114,7 +114,7 @@ export class AccountsPage {
 
   /** Reactivation: reversible, without confirmation. */
   protected reactivate(user: UserResponse): void {
-    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    // The button is disabled during the call, then replaced by Deactivate: the focus follows it.
     const anchor = this.focus.capture();
     this.store.reactivate(user.id)
       .pipe(finalize(() => this.focus.restore(anchor)))

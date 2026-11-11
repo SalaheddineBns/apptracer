@@ -124,13 +124,13 @@ class TeamDeleteControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Produit')]").doesNotExist());
     mockMvc.perform(as(get(url()), admin, null)).andExpect(status().isNotFound());
-    // les trois comptes existent toujours, actifs, sans équipe
+    // the three accounts still exist, active, without a team
     assertThat(users.count()).isEqualTo(usersBefore);
     for (User m : new User[] {alice, bob, carol}) {
       assertThat(users.findById(m.getId()).orElseThrow().isActive()).isTrue();
       assertThat(members.findByUserId(m.getId())).isEmpty();
     }
-    // leurs saisies ne sont pas modifiées
+    // their time entries are not changed
     assertThat(
             jdbc.queryForObject(
                 "SELECT count(*) FROM time_entries WHERE user_id IN (?, ?) AND deleted_at IS NULL",

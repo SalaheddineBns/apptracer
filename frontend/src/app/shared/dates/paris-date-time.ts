@@ -1,4 +1,4 @@
-// RG-00-01 : le fuseau horaire métier est Europe/Paris. `DatePipe` n'accepte pas de nom de fuseau IANA, on passe par Intl.
+// RG-00-01: the business time zone is Europe/Paris. `DatePipe` does not accept an IANA zone name, so Intl is used.
 const DATE = new Intl.DateTimeFormat('fr-FR', {
   timeZone: 'Europe/Paris',
   day: '2-digit',

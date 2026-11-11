@@ -83,20 +83,20 @@ class UserPersistenceTest {
   @Test
   @DisplayName("RG-00-04 : created_at/by et updated_at/by sont alimentées via JPA sur User")
   void auditColumnsArePopulated() {
-    // création par le système : pas d'auditeur
+    // created by the system: no auditor
     User admin = users.saveAndFlush(new User("admin@example.com", "Ad", "Min", "hash", Role.ADMIN));
     assertThat(admin.getCreatedAt()).isNotNull();
     assertThat(admin.getUpdatedAt()).isNotNull();
     assertThat(admin.getCreatedBy()).isNull();
     assertThat(admin.getUpdatedBy()).isNull();
 
-    // création par un utilisateur authentifié
+    // created by an authenticated user
     authenticateAs(admin.getId());
     User bob = users.saveAndFlush(new User("bob@example.com", "Bob", "Dupont", "hash", Role.USER));
     assertThat(bob.getCreatedBy()).isEqualTo(admin.getId());
     assertThat(bob.getUpdatedBy()).isEqualTo(admin.getId());
 
-    // modification par un autre utilisateur : seuls updated_* changent
+    // change by another user: only updated_* change
     authenticateAs(bob.getId());
     User loaded = users.findById(bob.getId()).orElseThrow();
     loaded.setLastName("Martin");

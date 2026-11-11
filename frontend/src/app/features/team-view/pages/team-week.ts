@@ -74,7 +74,7 @@ export class TeamWeekPage {
   });
 
   constructor() {
-    // Une seule requête d'équipes par ouverture de l'écran.
+    // A single teams request per opening of the screen.
     this.store.loadTeams();
     effect(() => {
       const teamId = this.teamId();
@@ -108,7 +108,7 @@ export class TeamWeekPage {
       queryParams: { team: null, week: this.weekStart() },
       queryParamsHandling: 'merge',
     });
-    // Le bouton cliqué disparaît avec le message de refus : le focus passe au titre de la page.
+    // The clicked button disappears with the refusal message: the focus moves to the page title.
     this.title().nativeElement.focus();
   }
 

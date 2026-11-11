@@ -128,7 +128,7 @@ class ActivityTypeControllerTest {
   @DisplayName(
       "CA-02-03 : la violation de la contrainte unique en base (course) donne aussi 409 RG-02-01")
   void raceOnUniqueIndexIs409() throws Exception {
-    // le contrôle de service ne voit pas le doublon : seul l'index unique le refuse
+    // the service check does not see the duplicate: only the unique index refuses it
     org.mockito.Mockito.doReturn(false).when(types).existsByCode("REUNION");
     mockMvc
         .perform(as(post("/api/v1/activity-types"), admin, createBody("REUNION")))
@@ -201,8 +201,8 @@ class ActivityTypeControllerTest {
   @Test
   @DisplayName("RG-02-07 : sans saisie, projectRequired reste modifiable")
   void updateWithDefaultCheckerAllowsChange() throws Exception {
-    // aucune saisie en base : le port répond « non utilisé » ; le cas « utilisé » est testé dans
-    // ActivityTypeServiceTest et TimeEntryActivityTypeUsageTest
+    // no time entry in the database: the port answers not used; the used case is tested in
+    // ActivityTypeServiceTest and TimeEntryActivityTypeUsageTest
     assertThat(usageChecker.isUsed(1L)).isFalse();
     ActivityType t = types.saveAndFlush(new ActivityType("LIBRE", "Libre", false, TagColor.INFO));
     mockMvc

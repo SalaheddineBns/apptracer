@@ -38,19 +38,19 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
                     .permitAll()
-                    // Le refresh token est lui-même le justificatif (RG-03-07, RG-03-08)
+                    // The refresh token is itself the credential (RG-03-07, RG-03-08)
                     .requestMatchers(
                         "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout")
                     .permitAll()
                     .requestMatchers("/api/**")
                     .authenticated()
-                    // Application Angular servie par l'API (fichiers statiques et routes du front)
+                    // Angular app served by the API (static files and front-end routes)
                     .anyRequest()
                     .permitAll())
         .oauth2ResourceServer(
             o ->
                 o.jwt(j -> j.jwtAuthenticationConverter(jwtAuthenticationConverter))
-                    // RG-03-09 : token absent, invalide ou expiré, 401 / 403 en ProblemDetail
+                    // RG-03-09: missing, invalid or expired token, 401 / 403 as a ProblemDetail
                     .authenticationEntryPoint(entryPoint)
                     .accessDeniedHandler(accessDeniedHandler))
         .exceptionHandling(

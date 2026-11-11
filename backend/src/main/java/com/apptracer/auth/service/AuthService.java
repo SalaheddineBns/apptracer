@@ -17,7 +17,7 @@ public class AuthService {
   private final PasswordEncoder passwordEncoder;
   private final AccessTokenService accessTokens;
   private final RefreshTokenService refreshTokens;
-  // Haché factice : une comparaison BCrypt est toujours effectuée, même pour un e-mail inconnu
+  // Dummy hash: a BCrypt comparison always runs, even for an unknown e-mail
   private final String dummyHash;
 
   public AuthService(
@@ -35,19 +35,19 @@ public class AuthService {
   @Transactional
   public LoginResult login(String email, String password) {
     User user = users.findByEmail(email.trim()).orElse(null);
-    // RG-03-04 : comparaison BCrypt systématique pour ne pas révéler l'existence du compte (temps)
-    // RG-03-03 : seul le haché BCrypt est comparé
+    // RG-03-04: systematic BCrypt comparison so as not to reveal whether the account exists
+    // (timing). RG-03-03: only the BCrypt hash is compared
     boolean passwordMatches =
         passwordEncoder.matches(password, user != null ? user.getPasswordHash() : dummyHash);
-    // RG-03-04 : e-mail inconnu ou mot de passe incorrect, même réponse
-    // RG-03-05 : compte inactif, même réponse que des identifiants invalides
+    // RG-03-04: unknown e-mail or wrong password, same response. RG-03-05: inactive account, same
+    // response as invalid credentials
     if (user == null || !passwordMatches || !user.isActive()) {
       throw new InvalidCredentialsException();
     }
     UUID sessionId = UUID.randomUUID();
-    // RG-03-06 : access token portant l'identifiant et le rôle
+    // RG-03-06: access token carrying the identifier and the role
     String accessToken = accessTokens.issue(user.getId(), user.getRole(), sessionId);
-    // RG-03-07 : refresh token stocké côté serveur
+    // RG-03-07: refresh token stored on the server
     String refreshToken = refreshTokens.issue(user.getId(), sessionId);
     return new LoginResult(accessToken, refreshToken, user);
   }
@@ -67,11 +67,11 @@ public class AuthService {
     RefreshToken old =
         refreshTokens.consume(rawRefreshToken).orElseThrow(InvalidCredentialsException::new);
     User user = users.findById(old.getUserId()).orElseThrow(InvalidCredentialsException::new);
-    // RG-03-05 : un compte inactif ne peut pas renouveler sa session
+    // RG-03-05: an inactive account cannot renew its session
     if (!user.isActive()) {
       throw new InvalidCredentialsException();
     }
-    // RG-03-07 : nouveau couple de jetons, même session
+    // RG-03-07: new token pair, same session
     String accessToken = accessTokens.issue(user.getId(), user.getRole(), old.getSessionId());
     String refreshToken = refreshTokens.issue(user.getId(), old.getSessionId());
     return new LoginResult(accessToken, refreshToken, user);

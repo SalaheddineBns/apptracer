@@ -32,7 +32,7 @@ export class LoginPage {
   protected readonly errorMessage = signal<string | null>(null);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    // Pas de règle de composition du mot de passe à la connexion (RG-03-02 ne s'applique pas ici).
+    // No password composition rule at sign-in (RG-03-02 does not apply here).
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });
@@ -44,8 +44,8 @@ export class LoginPage {
   protected readonly passwordMessages: FieldMessages = { required: 'password.errors.required' };
 
   constructor() {
-    // RG-08-04 : le message du serveur (« Identifiants invalides ») est dans la langue de la requête ; au changement de langue
-    // il est effacé, l'utilisateur le retrouve traduit à sa prochaine tentative.
+    // RG-08-04: the server's message (invalid credentials) is in the request's language; it is cleared when the
+    // language changes, and the user sees it translated on their next attempt.
     let previous = this.i18n.lang();
     effect(() => {
       const lang = this.i18n.lang();
@@ -69,13 +69,14 @@ export class LoginPage {
     const { email, password } = this.form.getRawValue();
     this.auth.login(email, password).subscribe({
       next: (user) => {
-        // CA-03-01 : page demandée (interne uniquement) sinon accueil du rôle.
+        // CA-03-01: the requested page (internal only), otherwise the role's home page.
         const target = safeReturnUrl(this.route.snapshot.queryParamMap.get('returnUrl')) ?? homeUrlFor(user.role);
         this.submitting.set(false);
         void this.router.navigateByUrl(target);
       },
       error: (error: unknown) => {
-        // RG-03-04 : message identique pour e-mail inconnu, mot de passe incorrect et compte inactif (detail de l'API).
+        // RG-03-04: identical message for an unknown e-mail, a wrong password and an inactive account (the API's
+        // detail).
         this.errorMessage.set(toProblem(error).detail);
         this.submitting.set(false);
       },

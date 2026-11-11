@@ -34,14 +34,14 @@ export class TimeEntriesStore {
   /** Loads the week starting on the given Monday (the most recent response wins). */
   load(weekStart: string): void {
     if (weekStart !== this.weekStart()) {
-      // Changement de semaine : les saisies de l'ancienne ne restent pas affichées sous le nouveau libellé.
+      // Week change: the old week's time entries do not stay displayed under the new label.
       this.week.set(null);
     }
     this.weekStart.set(weekStart);
     const id = ++this.requestId;
     this.loading.set(true);
     this.error.set(null);
-    // L'erreur est affichée par l'écran (état d'erreur « Réessayer »), pas dans un toast.
+    // The error is shown by the screen (error state with Retry), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     this.api.listMyTimeEntries(weekStart, 'body', false, { context }).subscribe({
       next: (week) => {

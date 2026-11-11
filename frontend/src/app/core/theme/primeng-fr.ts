@@ -43,7 +43,7 @@ export const PRIMENG_FR: Translation = {
   chooseDate: 'Choisir une date',
   prevMonth: 'Mois précédent',
   nextMonth: 'Mois suivant',
-  // Listes déroulantes (p-select, p-multiselect) : texte de repli et annonces pour les lecteurs d'écran.
+  // Dropdowns (p-select, p-multiselect): fallback text and screen reader announcements.
   emptyMessage: 'Aucun résultat.',
   emptyFilterMessage: 'Aucun résultat.',
   searchMessage: '{0} résultats disponibles',

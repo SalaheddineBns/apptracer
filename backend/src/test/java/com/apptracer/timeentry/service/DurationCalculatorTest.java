@@ -74,9 +74,9 @@ class DurationCalculatorTest {
   @Test
   @DisplayName("RG-01-08 : PLAGE, week-ends exclus du décompte")
   void rangeSkipsWeekends() {
-    // vendredi 09/10 -> lundi 12/10 : 2 jours ouvrés
+    // Friday 09/10 -> Monday 12/10: 2 working days
     assertThat(range(LocalDate.of(2026, 10, 9), LocalDate.of(2026, 10, 12), 480)).isEqualTo(960);
-    // lundi -> dimanche : 5 jours ouvrés
+    // Monday -> Sunday: 5 working days
     assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 11), 480)).isEqualTo(2400);
   }
 
@@ -89,12 +89,12 @@ class DurationCalculatorTest {
   @Test
   @DisplayName("RG-01-08 : PLAGE, bornes de 2 jours et de 31 jours")
   void rangeBounds() {
-    // 2 jours ouvrés consécutifs
+    // 2 consecutive working days
     assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 10, 6), 480)).isEqualTo(960);
-    // 31 jours du lundi 05/10 au mercredi 04/11/2026 : 23 jours ouvrés
+    // 31 days from Monday 05/10 to Wednesday 04/11/2026: 23 working days
     assertThat(range(LocalDate.of(2026, 10, 5), LocalDate.of(2026, 11, 4), 480))
         .isEqualTo(23 * 480);
-    // 31 jours du samedi 03/10 au lundi 02/11/2026 : 21 jours ouvrés
+    // 31 days from Saturday 03/10 to Monday 02/11/2026: 21 working days
     assertThat(range(LocalDate.of(2026, 10, 3), LocalDate.of(2026, 11, 2), 480))
         .isEqualTo(21 * 480);
   }

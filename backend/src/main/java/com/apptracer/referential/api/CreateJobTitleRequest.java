@@ -7,9 +7,9 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public record CreateJobTitleRequest(
-    // RG-09-05 : lettres, chiffres et _, 2 à 30 caractères, contrôlé tel que saisi. Les minuscules
-    // passent ici pour que l'unicité insensible à la casse réponde 409 (CA-09-03) ; le service
-    // refuse ensuite un code non écrit en majuscules.
+    // RG-09-05: letters, digits and _, 2 to 30 characters, checked as entered. Lower case passes
+    // here so that the case-insensitive uniqueness answers 409 (CA-09-03); the service then refuses
+    // a code not written in capitals.
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[A-Z0-9_]{2,30}$")
         @NotNull
         @Pattern(regexp = "^[A-Za-z0-9_]{2,30}$", message = "{validation.code.pattern}")

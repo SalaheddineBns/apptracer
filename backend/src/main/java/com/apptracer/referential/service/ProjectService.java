@@ -41,14 +41,13 @@ public class ProjectService {
   /** RG-10-01, RG-10-02: {@code teamId} is optional; when absent, the project has no team. */
   @Transactional
   public Project create(String code, String name, Long teamId) {
-    // RG-02-01 : code unique dans le référentiel (l'index unique couvre les créations concurrentes
-    // ;
-    // sa violation est traduite en 409 RG-02-01 par le handler global)
+    // RG-02-01: code unique within the reference data (the unique index covers concurrent
+    // creations; its violation is translated into a 409 RG-02-01 by the global handler)
     if (projects.existsByCode(code)) {
       throw BusinessException.onField(
           "RG-02-01", "error.project.code-duplicate", "code", "field.code-duplicate");
     }
-    // RG-02-05 : actif à la création ; RG-00-04 : created_by / updated_by via l'audit JPA
+    // RG-02-05: active on creation; RG-00-04: created_by / updated_by through JPA auditing
     Project project = new Project(code, name.strip());
     project.setTeam(resolveTeam(teamId));
     return projects.saveAndFlush(project);
@@ -69,7 +68,7 @@ public class ProjectService {
   @Transactional
   public Project update(Long id, String name, Long teamId, long version) {
     Project project = get(id);
-    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    // Concurrent change: the version read by the ADMIN is no longer the version in the database
     if (project.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(Project.class, id);
     }

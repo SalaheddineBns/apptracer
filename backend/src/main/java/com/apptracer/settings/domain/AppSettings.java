@@ -29,7 +29,7 @@ public class AppSettings {
   @Column(nullable = false)
   private long version;
 
-  // RG-06-05 : nuls tant que la valeur n'a jamais été modifiée
+  // RG-06-05: null as long as the value has never been changed
   @Column(name = "updated_at")
   private Instant updatedAt;
 

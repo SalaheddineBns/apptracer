@@ -39,7 +39,7 @@ class ReferentialPersistenceTest {
   @AfterEach
   void cleanUp() {
     SecurityContextHolder.clearContext();
-    // seules les lignes créées par les tests sont retirées : le jeu initial est conservé
+    // only the rows created by the tests are removed: the initial data set is kept
     jdbc.execute(
         "DELETE FROM activity_types WHERE code NOT IN ('"
             + String.join("','", INITIAL_CODES)
@@ -141,7 +141,7 @@ class ReferentialPersistenceTest {
           .as("projet %s", bad)
           .isInstanceOf(DataIntegrityViolationException.class);
     }
-    // bornes acceptées
+    // bounds accepted
     types.saveAndFlush(new ActivityType("A1", "Min", false, TagColor.INFO));
     types.saveAndFlush(new ActivityType("A_".repeat(15), "Max", false, TagColor.INFO));
   }

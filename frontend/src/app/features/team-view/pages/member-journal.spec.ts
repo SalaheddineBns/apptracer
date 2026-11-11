@@ -132,7 +132,7 @@ describe('MemberJournalPage (SFD-04 E2)', () => {
     expect(root.querySelector('[data-cy^="btn-ajouter-saisie-"]')).toBeNull();
     expect(root.querySelector('[data-cy^="btn-modifier-saisie-"]')).toBeNull();
     expect(root.querySelector('[data-cy^="btn-supprimer-saisie-"]')).toBeNull();
-    // Le seul bouton de l'écran est le retour vers l'équipe et la navigation de semaine.
+    // The screen's only buttons are the way back to the team and the week navigation.
     const buttons = Array.from(root.querySelectorAll('button')).map((b) => b.closest('[data-cy]')?.getAttribute('data-cy'));
     expect(buttons.every((name) => ['btn-retour-equipe', 'btn-semaine-precedente', 'btn-semaine-suivante'].includes(name ?? ''))).toBe(true);
   });

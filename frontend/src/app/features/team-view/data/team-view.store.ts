@@ -30,7 +30,7 @@ export class TeamViewStore {
     const id = ++this.teamsRequestId;
     this.teamsLoading.set(true);
     this.teamsError.set(null);
-    // L'erreur est affichée par l'écran (état d'erreur « Réessayer »), pas dans un toast.
+    // The error is shown by the screen (error state with Retry), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     this.api.listMyManagedTeams('body', false, { context }).subscribe({
       next: (teams) => {
@@ -62,7 +62,7 @@ export class TeamViewStore {
   /** Loads the week `weekStart` (a Monday) of the team (the most recent response wins). */
   loadSummary(teamId: number, weekStart: string): void {
     this.summaryKey = { teamId, weekStart };
-    // Changement d'équipe ou de semaine : l'ancien tableau ne reste pas affiché sous le nouveau libellé.
+    // Team or week change: the old table does not stay displayed under the new label.
     this.summary.set(null);
     this.summaryError.set(null);
     this.summaryForbidden.set(false);
@@ -103,7 +103,7 @@ export class TeamViewStore {
   /** Loads the week `weekStart` (a Monday) of the member (the most recent response wins). */
   loadMemberJournal(userId: number, weekStart: string): void {
     this.memberKey = { userId, weekStart };
-    // Changement de membre ou de semaine : l'ancien journal ne reste pas affiché sous le nouveau libellé.
+    // Member or week change: the old journal does not stay displayed under the new label.
     this.memberJournal.set(null);
     this.memberError.set(null);
     this.memberForbidden.set(false);

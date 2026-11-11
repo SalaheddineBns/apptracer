@@ -179,7 +179,7 @@ class TimeEntryOverlapTest {
   void rangeAgainstDay() throws Exception {
     send(user, day("2026-10-08")).andExpect(status().isCreated());
     conflict(user, range("2026-10-05", "2026-10-09"), "08/10/2026");
-    // bornes : la plage qui s'arrête la veille ou commence le lendemain est acceptée
+    // bounds: a range ending the day before or starting the day after is accepted
     send(user, range("2026-10-05", "2026-10-07")).andExpect(status().isCreated());
     send(user, range("2026-10-09", "2026-10-12")).andExpect(status().isCreated());
   }
@@ -190,7 +190,7 @@ class TimeEntryOverlapTest {
     send(user, range("2026-10-05", "2026-10-12")).andExpect(status().isCreated());
     conflict(user, day("2026-10-10"), "10/10/2026"); // samedi
     conflict(user, hour("2026-10-11", "09:00", "10:00"), "11/10/2026"); // dimanche
-    // la première plage couvre le 12 : une plage qui la touche par le dernier jour est refusée
+    // the first range covers the 12th: a range touching it by its last day is refused
     conflict(user, range("2026-10-12", "2026-10-14"), "12/10/2026");
     send(user, range("2026-10-13", "2026-10-14")).andExpect(status().isCreated());
   }
@@ -217,7 +217,7 @@ class TimeEntryOverlapTest {
   @DisplayName("CA-01-04 : deux requêtes simultanées, la contrainte SQL donne aussi 409 RG-01-06")
   void raceOnExclusionConstraintIs409() throws Exception {
     send(user, hour("2026-10-05", "09:00", "10:00")).andExpect(status().isCreated());
-    // le contrôle de service ne voit pas le conflit (course) : la base le refuse
+    // the service check does not see the conflict (race): the database refuses it
     Mockito.doReturn(List.of()).when(entries).findFirstOverlapDay(any(), any(), any(), anyLong());
     send(user, hour("2026-10-05", "09:30", "10:30"))
         .andExpect(status().isConflict())
@@ -233,10 +233,10 @@ class TimeEntryOverlapTest {
     login(user);
     entries.saveAndFlush(
         entry(user, Granularity.HOUR, MON, MON, LocalTime.of(9, 0), LocalTime.of(10, 0)));
-    // contiguë : acceptée
+    // adjacent: accepted
     entries.saveAndFlush(
         entry(user, Granularity.HOUR, MON, MON, LocalTime.of(10, 0), LocalTime.of(11, 0)));
-    // recoupe de 15 minutes : refusée
+    // 15-minute overlap: refused
     assertThatThrownBy(
             () ->
                 entries.saveAndFlush(
@@ -249,12 +249,12 @@ class TimeEntryOverlapTest {
                         LocalTime.of(11, 15))))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessageContaining("ex_time_entries_no_overlap");
-    // JOURNEE le même jour : refusée
+    // DAY on the same day: refused
     assertThatThrownBy(
             () -> entries.saveAndFlush(entry(user, Granularity.DAY, MON, MON, null, null)))
         .isInstanceOf(DataIntegrityViolationException.class)
         .hasMessageContaining("ex_time_entries_no_overlap");
-    // autre utilisateur : accepté
+    // another user: accepted
     login(other);
     entries.saveAndFlush(
         entry(other, Granularity.HOUR, MON, MON, LocalTime.of(9, 0), LocalTime.of(10, 0)));

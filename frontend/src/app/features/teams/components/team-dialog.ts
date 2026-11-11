@@ -59,12 +59,12 @@ export class TeamDialog {
   protected readonly isEdit = computed(() => this.team() !== null);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    // RG-05-01 : 2 à 100 caractères. La saisie n'est jamais modifiée (espaces compris) : le back retire les espaces de bord
-    // et tranche. Les contrôles portent le nom des champs de l'API pour recevoir `errors[]`.
+    // RG-05-01: 2 to 100 characters. The input is never changed (spaces included): the back end removes surrounding
+    // spaces and decides. The controls carry the API's field names to receive `errors[]`.
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
     // RG-05-02 : un manager exactement.
     managerId: [null as number | null, [Validators.required]],
-    // RG-05-07 : une équipe peut n'avoir aucun membre.
+    // RG-05-07: a team may have no members.
     memberIds: [[] as number[]],
   });
 
@@ -111,9 +111,10 @@ export class TeamDialog {
       .filter((c) => c.id !== managerId)
       .map((c) => {
         const name = `${c.firstName} ${c.lastName}`;
-        // H10 : on ne signale pas l'équipe en cours de modification (le compte en est déjà membre).
+        // H10: the team being edited is not flagged (the account is already one of its members).
         const currentTeam = c.currentTeam && c.currentTeam.id !== editedTeamId ? c.currentTeam : null;
-        // Le libellé sert d'aria-label de l'option et de texte de la pastille : l'état et l'équipe actuelle y figurent.
+        // The label is used as the option's aria-label and the chip's text: the state and the current team appear in
+        // it.
         const label = `${name}${c.active ? '' : this.i18n.t('teams.dialog.inactiveSuffix')}${currentTeam ? this.i18n.t('teams.dialog.teamSuffix', { name: currentTeam.name }) : ''}`;
         return {
           id: c.id,
@@ -129,7 +130,8 @@ export class TeamDialog {
   private originCy: string | null = null;
 
   constructor() {
-    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    // p-dialog evaluates `closeOnEscape` only on opening: while sending, Escape is intercepted before its listener
+    // (document).
     const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
       if (event.key === 'Escape' && this.submitting()) {
         event.stopImmediatePropagation();
@@ -153,7 +155,7 @@ export class TeamDialog {
     this.submitting.set(false);
     this.removedMember.set(null);
     const team = this.team();
-    // Modification : valeurs de l'équipe (membres inactifs conservés, RG-05-11). Sans événement : RG-05-05 ne s'applique qu'à un choix.
+    // Update: the team's values (inactive members kept, RG-05-11). No event: RG-05-05 only applies to a choice.
     const managerId = team?.manager.id ?? null;
     this.selectedManagerId.set(managerId);
     this.form.reset({ name: team?.name ?? '', managerId, memberIds: team?.members.map((m) => m.id) ?? [] }, { emitEvent: false });
@@ -232,11 +234,12 @@ export class TeamDialog {
       error: (error: unknown) => {
         this.submitting.set(false);
         const problem = toProblem(error);
-        // RG-05-01 (name), RG-05-02 (managerId), RG-05-03 / RG-05-04 / RG-05-05 (memberIds) : sous le champ, dialogue ouvert.
+        // RG-05-01 (name), RG-05-02 (managerId), RG-05-03 / RG-05-04 / RG-05-05 (memberIds): under the field, dialog
+        // open.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
-        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        // Concurrent change (409 without a code or errors[]): the message is shown by the interceptor; we reload.
         if (edited && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
           this.visible.set(false);
           this.conflict.emit();

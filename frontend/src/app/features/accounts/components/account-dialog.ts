@@ -81,14 +81,14 @@ export class AccountDialog {
   );
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    // RG-03-01 / SFD : prénom et nom 100 caractères au plus, e-mail au format valide.
+    // RG-03-01 / spec: first and last name 100 characters at most, e-mail in a valid format.
     firstName: ['', [Validators.required, Validators.maxLength(100)]],
     lastName: ['', [Validators.required, Validators.maxLength(100)]],
     email: ['', [Validators.required, Validators.email, Validators.maxLength(254)]],
     role: [Role.User, [Validators.required]],
-    // RG-09-02 : fonction facultative (code), réservée aux rôles USER et MANAGER ; champ nommé comme `errors[].field`.
+    // RG-09-02: optional job title (code), reserved for the USER and MANAGER roles; field named like `errors[].field`.
     jobTitleCode: [null as string | null],
-    // RG-03-02 / RG-03-12 : mot de passe initial, création uniquement (champ nommé comme `errors[].field`).
+    // RG-03-02 / RG-03-12: initial password, creation only (field named like `errors[].field`).
     initialPassword: ['', [Validators.required, passwordPolicyValidator]],
   });
 
@@ -108,7 +108,7 @@ export class AccountDialog {
       const label = current.active ? current.label : this.i18n.t('accounts.dialog.jobTitleInactiveOption', { label: current.label });
       options.push({ label, value: current.code, sortKey: current.label });
     }
-    // RG-09-08 : ordre alphabétique des libellés, la fonction inactive portée par le compte comprise.
+    // RG-09-08: alphabetical order of the labels, the inactive job title held by the account included.
     return options.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
   });
   protected readonly jobTitlesError = computed(() => this.jobTitles.error());
@@ -136,7 +136,8 @@ export class AccountDialog {
   private originCy: string | null = null;
 
   constructor() {
-    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    // p-dialog evaluates `closeOnEscape` only on opening: while sending, Escape is intercepted before its listener
+    // (document).
     const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
       if (event.key === 'Escape' && this.submitting()) {
         event.stopImmediatePropagation();
@@ -147,8 +148,8 @@ export class AccountDialog {
       window.removeEventListener('keydown', blockEscapeWhileSubmitting, true),
     );
 
-    // RG-09-02, RG-09-03 : pour le rôle Administrateur, le champ est désactivé sans perdre sa valeur (un retour à
-    // Utilisateur ou Manager avant d'enregistrer la retrouve) ; la fonction n'est pas envoyée pour un ADMIN.
+    // RG-09-02, RG-09-03: for the Administrator role, the field is disabled without losing its value (switching back to
+    // User or Manager before saving finds it again); the job title is not sent for an ADMIN.
     this.form.controls.role.valueChanges.pipe(takeUntilDestroyed()).subscribe((role) => {
       this.selectedRole.set(role);
       const jobTitle = this.form.controls.jobTitleCode;
@@ -183,7 +184,7 @@ export class AccountDialog {
       initialPassword: '',
     });
     this.selectedRole.set(account?.role ?? Role.User);
-    // Modification : e-mail non modifiable, pas de mot de passe ; sur son propre compte, rôle verrouillé (RG-03-13).
+    // Update: e-mail not editable, no password; on one's own account, the role is locked (RG-03-13).
     this.setEnabled(this.form.controls.email, !account);
     this.setEnabled(this.form.controls.initialPassword, !account);
     this.setEnabled(this.form.controls.role, !(account && this.isSelf()));
@@ -240,8 +241,8 @@ export class AccountDialog {
     this.submitting.set(true);
     const account = this.account();
     const value = this.form.getRawValue();
-    // RG-09-03 : pas de fonction pour un ADMIN (non envoyée). RG-09-04 : à la modification, un code absent retire la fonction ;
-    // le code de la fonction conservée est donc toujours envoyé, y compris lors d'un passage USER <-> MANAGER.
+    // RG-09-03: no job title for an ADMIN (not sent). RG-09-04: on update, a missing code removes the job title; the
+    // code of the kept job title is therefore always sent, including when switching USER <-> MANAGER.
     const jobTitle = value.role !== Role.Admin && value.jobTitleCode ? { jobTitleCode: value.jobTitleCode } : {};
     const request$ = account
       ? this.store.update(account.id, {
@@ -268,7 +269,7 @@ export class AccountDialog {
       error: (error: unknown) => {
         this.submitting.set(false);
         const problem = toProblem(error);
-        // CA-03-10 / RG-03-02 / RG-03-13 : les errors[] de l'API s'affichent sous le champ, le dialogue reste ouvert.
+        // CA-03-10 / RG-03-02 / RG-03-13: the API's errors[] are shown under the field; the dialog stays open.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({
             severity: 'error',
@@ -277,7 +278,7 @@ export class AccountDialog {
             life: 5000,
           });
         }
-        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        // Concurrent change (409 without a code or errors[]): the message is shown by the interceptor; we reload.
         if (
           account &&
           problem.status === 409 &&

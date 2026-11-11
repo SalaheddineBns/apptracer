@@ -258,7 +258,7 @@ describe('AccountDialog', () => {
       { id: 3, code: 'TECH_LEAD', label: 'Tech Lead', active: true, version: 0 },
     ];
     beforeEach(() => {
-      // jsdom n'a pas matchMedia, utilisé par la superposition de la liste déroulante PrimeNG.
+      // jsdom has no matchMedia, used by the PrimeNG dropdown overlay.
       vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     });
     afterEach(() => vi.unstubAllGlobals());

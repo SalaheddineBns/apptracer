@@ -33,7 +33,7 @@ class SpaWebConfigTest {
 
   @Test
   void theRootForwardsToTheAngularShell() throws Exception {
-    // Page d'accueil de Spring Boot : transfert vers index.html, suivi par le conteneur de servlets
+    // Spring Boot welcome page: forward to index.html, followed by the servlet container
     mockMvc.perform(get("/")).andExpect(status().isOk()).andExpect(forwardedUrl("index.html"));
   }
 

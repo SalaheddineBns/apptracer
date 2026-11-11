@@ -134,7 +134,7 @@ class UserControllerTest {
     User created = users.findByEmail("jean@example.com").orElseThrow();
     assertThat(result.getResponse().getHeader(HttpHeaders.LOCATION))
         .endsWith("/api/v1/users/" + created.getId());
-    // RG-03-12 / RG-03-03 : mot de passe initial haché, utilisable pour se connecter
+    // RG-03-12 / RG-03-03: initial password hashed, usable to sign in
     assertThat(created.getPasswordHash()).startsWith("$2").doesNotContain(PASSWORD);
     mockMvc
         .perform(

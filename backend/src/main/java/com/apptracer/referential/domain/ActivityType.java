@@ -20,7 +20,7 @@ public class ActivityType extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-02-01 : unique, immuable après création (pas de setter)
+  // RG-02-01: unique, cannot change after creation (no setter)
   @Column(nullable = false, updatable = false, length = 30)
   private String code;
 
@@ -36,7 +36,7 @@ public class ActivityType extends AuditableEntity {
   @Column(nullable = false, length = 10)
   private TagColor color;
 
-  // RG-02-05 : jamais supprimé, seulement désactivé
+  // RG-02-05: never deleted, only deactivated
   @Column(nullable = false)
   private boolean active = true;
 

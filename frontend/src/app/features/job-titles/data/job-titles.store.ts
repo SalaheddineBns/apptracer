@@ -37,7 +37,7 @@ export class JobTitlesStore {
     const id = ++this.requestId;
     this.loading.set(true);
     this.error.set(null);
-    // L'erreur est affichée par l'écran (état d'erreur « Réessayer »), pas dans un toast.
+    // The error is shown by the screen (error state with Retry), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     this.api.listJobTitles('body', false, { context }).subscribe({
       next: (list) => {

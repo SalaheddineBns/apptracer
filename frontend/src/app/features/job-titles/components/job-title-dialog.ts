@@ -41,9 +41,9 @@ export class JobTitleDialog {
   protected readonly isEdit = computed(() => this.jobTitle() !== null);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    // RG-09-05 : format du code (le back reste la référence), immuable après la création.
+    // RG-09-05: code format (the back end remains the reference), cannot change after creation.
     code: ['', referentialCodeValidators],
-    // RG-09-05 : libellé obligatoire, 100 caractères au plus.
+    // RG-09-05: label required, 100 characters at most.
     label: ['', [Validators.required, Validators.maxLength(100)]],
   });
 
@@ -57,7 +57,8 @@ export class JobTitleDialog {
   private originCy: string | null = null;
 
   constructor() {
-    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    // p-dialog evaluates `closeOnEscape` only on opening: while sending, Escape is intercepted before its listener
+    // (document).
     const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
       if (event.key === 'Escape' && this.submitting()) {
         event.stopImmediatePropagation();
@@ -79,7 +80,7 @@ export class JobTitleDialog {
     this.originCy = active instanceof HTMLElement ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null) : null;
     this.submitting.set(false);
     this.form.reset({ code: jobTitle?.code ?? '', label: jobTitle?.label ?? '' });
-    // RG-09-05 : le code n'est plus modifiable après la création.
+    // RG-09-05: the code can no longer be changed after creation.
     if (jobTitle) {
       this.form.controls.code.disable();
     } else {
@@ -132,11 +133,11 @@ export class JobTitleDialog {
       error: (error: unknown) => {
         this.submitting.set(false);
         const problem = toProblem(error);
-        // RG-09-05 (code unique) : les errors[] s'affichent sous le champ, le dialogue reste ouvert.
+        // RG-09-05 (unique code): the errors[] are shown under the field; the dialog stays open.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
-        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        // Concurrent change (409 without a code or errors[]): the message is shown by the interceptor; we reload.
         if (jobTitle && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
           this.visible.set(false);
           this.conflict.emit();

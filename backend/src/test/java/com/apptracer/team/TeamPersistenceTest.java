@@ -44,7 +44,7 @@ class TeamPersistenceTest {
     manager = users.save(new User("tp-mgr@example.com", "M", "Mgr", "hash", Role.MANAGER));
     alice = users.save(new User("tp-alice@example.com", "Alice", "Aa", "hash", Role.USER));
     bob = users.save(new User("tp-bob@example.com", "Bob", "Bb", "hash", Role.USER));
-    // RG-00-04 : l'auteur des écritures est l'ADMIN connecté
+    // RG-00-04: the author of the writes is the signed-in ADMIN
     SecurityContextHolder.getContext()
         .setAuthentication(
             UsernamePasswordAuthenticationToken.authenticated(
@@ -101,7 +101,7 @@ class TeamPersistenceTest {
     assertThat(teams.findActiveById(team.getId())).isEmpty();
     Team again = teams.saveAndFlush(new Team("produit", manager));
     assertThat(again.getId()).isNotEqualTo(team.getId());
-    // la ligne supprimée est conservée, avec qui et quand
+    // the deleted row is kept, with who and when
     Team kept = teams.findById(team.getId()).orElseThrow();
     assertThat(kept.getDeletedBy()).isEqualTo(admin.getId());
     assertThat(kept.getDeletedAt()).isNotNull();

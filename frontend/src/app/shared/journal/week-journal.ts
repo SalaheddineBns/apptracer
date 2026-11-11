@@ -119,14 +119,14 @@ export class WeekJournal {
     const totals = new Map(week.days.map((total) => [total.date, total.minutes]));
     return weekDays(week.weekStart).map((iso) => ({
       iso,
-      // RG-01-07 : pas de saisie à une date de début future, donc pas de « + » sur un jour à venir.
+      // RG-01-07: no time entry with a future start date, so no + on an upcoming day.
       addable: iso <= today,
       name: formatWeekdayName(iso, lang),
-      // « lun. » … « dim. » ou « Mon » … « Sun » : les trois premières lettres suffisent à distinguer les jours.
+      // 'lun.' … 'dim.' or 'Mon' … 'Sun': the first three letters are enough to tell the days apart.
       shortName: this.i18n.t('weekJournal.shortDay', { name: formatWeekdayName(iso, lang).slice(0, 3) }),
       label: formatDayMonth(iso),
       minutes: totals.get(iso) ?? 0,
-      // L'ordre de l'API (date puis heure de début) est conservé.
+      // The API's order (date, then start time) is kept.
       entries: week.entries.filter((entry) => coversDay(entry, iso)),
     }));
   });

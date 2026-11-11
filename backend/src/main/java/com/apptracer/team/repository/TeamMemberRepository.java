@@ -11,7 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
 
-  // RG-05-13 : membres triés par nom puis prénom
+  // RG-05-13: members sorted by last name then first name
   @Query(
       """
       select m from TeamMember m join fetch m.user u
@@ -20,7 +20,7 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
       """)
   List<TeamMember> findByTeamIdsSorted(@Param("teamIds") Collection<Long> teamIds);
 
-  // RG-05-04 : équipe actuelle des comptes donnés
+  // RG-05-04: current team of the given accounts
   @Query(
       """
       select m from TeamMember m join fetch m.team
@@ -28,18 +28,18 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
       """)
   List<TeamMember> findWithTeamByUserIds(@Param("userIds") Collection<Long> userIds);
 
-  // RG-05-04 : équipe actuelle de tous les comptes rattachés
+  // RG-05-04: current team of every linked account
   @Query("select m from TeamMember m join fetch m.team")
   List<TeamMember> findAllWithTeam();
 
   Optional<TeamMember> findByUserId(Long userId);
 
-  // RG-05-09 : les rattachements d'une équipe supprimée disparaissent
+  // RG-05-09: the links of a deleted team disappear
   @Modifying(flushAutomatically = true)
   @Query("delete from TeamMember m where m.teamId = :teamId")
   void deleteByTeamId(@Param("teamId") Long teamId);
 
-  // RG-04-02, RG-04-06 : rattachement actuel du compte à une équipe non supprimée de ce manager
+  // RG-04-02, RG-04-06: current link of the account to a non-deleted team of this manager
   @Query(
       """
       select m from TeamMember m join fetch m.user join fetch m.team t

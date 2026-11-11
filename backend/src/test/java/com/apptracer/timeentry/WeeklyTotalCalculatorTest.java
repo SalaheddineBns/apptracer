@@ -69,7 +69,7 @@ class WeeklyTotalCalculatorTest {
     WeekTotals second = calc.compute(List.of(r), WEEK.plusDays(7));
     assertThat(second.totalMinutes()).isEqualTo(960); // lundi + mardi
     assertThat(second.minutesPerDay()).containsExactly(480, 480, 0, 0, 0, 0, 0);
-    // la somme des semaines égale la durée enregistrée
+    // the sum of the weeks equals the recorded duration
     assertThat(first.totalMinutes() + second.totalMinutes()).isEqualTo(r.getDurationMinutes());
   }
 

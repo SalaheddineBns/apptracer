@@ -42,7 +42,7 @@ public class TimeEntryMapper {
         e.getId(),
         e.getGranularity(),
         e.getStartDate(),
-        // l'API ne renvoie endDate que pour RANGE
+        // the API returns endDate only for RANGE
         e.getGranularity() == Granularity.RANGE ? e.getEndDate() : null,
         e.getStartTime(),
         e.getEndTime(),
@@ -60,7 +60,7 @@ public class TimeEntryMapper {
         week.weekStart(),
         week.weekEnd(),
         week.totalMinutes(),
-        // RG-07-02, RG-07-03, RG-07-05 : durées par jour issues de WeeklyTotalCalculator
+        // RG-07-02, RG-07-03, RG-07-05: per-day durations from WeeklyTotalCalculator
         IntStream.range(0, 7)
             .mapToObj(
                 i -> new DailyTotal(week.weekStart().plusDays(i), week.minutesPerDay().get(i)))

@@ -56,7 +56,7 @@ class DemoAccountsIntegrationTest {
 
     int created = weekSeeder.seed();
 
-    // 10 jours ouvrés : le dev a 4 créneaux par jour (3 le vendredi), le QA 4
+    // 10 working days: the developer has 4 slots per day (3 on Friday), the QA 4
     assertThat(created).isBetween(74, 80);
     Long devId = users.findByEmail("dev@apptracer.local").orElseThrow().getId();
     assertThat(
@@ -112,7 +112,7 @@ class DemoAccountsIntegrationTest {
         .isEqualTo("QA");
     assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
 
-    // Second démarrage : rien n'est recréé
+    // Second start-up: nothing is recreated
     assertThat(initializer.createMissing()).isZero();
     assertThat(initializer.createTeamIfAbsent()).isFalse();
     assertThat(jdbc.queryForObject("SELECT count(*) FROM teams", Integer.class)).isEqualTo(1);

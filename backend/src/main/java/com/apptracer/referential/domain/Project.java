@@ -22,14 +22,14 @@ public class Project extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-02-01 : unique, immuable après création (pas de setter)
+  // RG-02-01: unique, cannot change after creation (no setter)
   @Column(nullable = false, updatable = false, length = 30)
   private String code;
 
   @Column(nullable = false, length = 100)
   private String name;
 
-  // RG-02-05 : jamais supprimé, seulement désactivé
+  // RG-02-05: never deleted, only deactivated
   @Column(nullable = false)
   private boolean active = true;
 

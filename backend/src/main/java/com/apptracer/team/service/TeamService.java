@@ -82,9 +82,9 @@ public class TeamService {
     Set<Long> ids = distinct(memberIds);
     Checked checked = checkManagerAndMembers(managerId, ids, NO_TEAM);
 
-    // RG-00-04, RG-05-14 : created_by / updated_by renseignés par l'audit JPA
+    // RG-00-04, RG-05-14: created_by / updated_by filled in by JPA auditing
     Team team = teams.saveAndFlush(new Team(teamName, checked.manager()));
-    // RG-05-04 : la clé primaire de team_members couvre les créations concurrentes
+    // RG-05-04: the primary key of team_members covers concurrent creations
     members.saveAllAndFlush(ids.stream().map(id -> new TeamMember(id, team.getId())).toList());
     return new TeamDetails(team, sorted(checked.members()));
   }
@@ -98,12 +98,12 @@ public class TeamService {
   @Transactional
   public TeamDetails update(
       Long actorId, Long id, String name, Long managerId, List<Long> memberIds, long version) {
-    // RG-05-09 : une équipe supprimée est introuvable
+    // RG-05-09: a deleted team cannot be found
     Team team =
         teams
             .findActiveById(id)
             .orElseThrow(() -> new ResourceNotFoundException("error.team.not-found"));
-    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    // Concurrent change: the version read by the ADMIN is no longer the version in the database
     if (team.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(Team.class, id);
     }
@@ -121,16 +121,16 @@ public class TeamService {
     team.setName(teamName);
     team.setManager(checked.manager());
     if (!removed.isEmpty() || !added.isEmpty()) {
-      // RG-05-14 : un changement de membres trace la modification sur l'équipe elle-même
+      // RG-05-14: a change of members records the change on the team itself
       team.touch(Instant.now(clock), actorId);
     }
     if (!removed.isEmpty()) {
       members.deleteAll(removed);
       members.flush();
     }
-    // RG-05-04 : la clé primaire de team_members couvre les modifications concurrentes
+    // RG-05-04: the primary key of team_members covers concurrent changes
     members.saveAll(added);
-    // RG-00-04 : updated_at / updated_by renseignés par l'audit JPA
+    // RG-00-04: updated_at / updated_by filled in by JPA auditing
     Team saved = teams.saveAndFlush(team);
     return new TeamDetails(saved, sorted(checked.members()));
   }
@@ -157,7 +157,7 @@ public class TeamService {
 
   @Transactional(readOnly = true)
   public TeamDetails get(Long id) {
-    // RG-05-09 : une équipe supprimée est introuvable
+    // RG-05-09: a deleted team cannot be found
     Team team =
         teams
             .findActiveById(id)
@@ -205,7 +205,7 @@ public class TeamService {
         .toList();
   }
 
-  // ---- contrôles communs à la création et à la modification ----
+  // ---- checks shared by creation and update ----
 
   /** RG-05-01: 2 to 100 characters, surrounding spaces removed. */
   private static String normalizeName(String name) {
@@ -234,12 +234,12 @@ public class TeamService {
   private Checked checkManagerAndMembers(Long managerId, Set<Long> memberIds, Long currentTeamId) {
     Set<Long> all = new LinkedHashSet<>(memberIds);
     all.add(managerId);
-    // verrou partagé sur le manager et les membres (architecture §2.11)
+    // shared lock on the manager and the members (architecture §2.11)
     Map<Long, User> accounts =
         users.findAllByIdForShare(all).stream()
             .collect(Collectors.toMap(User::getId, Function.identity()));
 
-    // RG-05-02 : un manager actif de rôle MANAGER (un identifiant inconnu n'est pas éligible)
+    // RG-05-02: an active manager with the MANAGER role (an unknown identifier is not eligible)
     User manager = accounts.get(managerId);
     if (manager == null || !manager.isActive() || manager.getRole() != Role.MANAGER) {
       throw BusinessException.onField(
@@ -249,7 +249,7 @@ public class TeamService {
           "field.team.manager-eligibility");
     }
 
-    // RG-05-03 : membres USER ou MANAGER, jamais ADMIN (un identifiant inconnu n'est pas éligible)
+    // RG-05-03: USER or MANAGER members, never ADMIN (an unknown identifier is not eligible)
     List<User> memberAccounts = new ArrayList<>();
     for (Long id : memberIds) {
       User member = accounts.get(id);
@@ -263,7 +263,7 @@ public class TeamService {
       memberAccounts.add(member);
     }
 
-    // RG-05-05 : le manager d'une équipe n'en est pas membre
+    // RG-05-05: a team's manager is not one of its members
     if (memberIds.contains(managerId)) {
       throw BusinessException.onField(
           "RG-05-05",
@@ -272,7 +272,7 @@ public class TeamService {
           "field.team.manager-not-member");
     }
 
-    // RG-05-04 : au plus une équipe par compte, pas de transfert implicite (H10)
+    // RG-05-04: at most one team per account, no implicit transfer (H10)
     if (!memberIds.isEmpty()) {
       Map<Long, TeamMember> existing =
           members.findWithTeamByUserIds(memberIds).stream()

@@ -88,7 +88,7 @@ describe('composants partagés', () => {
     expect(fixture.nativeElement.textContent).toContain('Unable to load the data.');
     expect(fixture.nativeElement.textContent).not.toContain('Service indisponible.');
 
-    // Un nouveau message reçu dans la langue courante est affiché tel quel.
+    // A new message received in the current language is shown as is.
     fixture.componentRef.setInput('message', 'Service unavailable.');
     await fixture.whenStable();
     expect(fixture.nativeElement.textContent).toContain('Service unavailable.');

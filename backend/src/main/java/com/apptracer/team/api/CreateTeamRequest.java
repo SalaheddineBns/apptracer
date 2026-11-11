@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 
 public record CreateTeamRequest(
-    // RG-05-01 : 2 à 100 caractères, espaces de bord retirés par le service
+    // RG-05-01: 2 to 100 characters, surrounding spaces removed by the service
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, minLength = 2, maxLength = 100)
         @NotNull
         @Size(min = 2, max = 100, message = "{validation.team.name.size}")
         String name,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull Long managerId,
-    // RG-05-07 : peut être vide
+    // RG-05-07: may be empty
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull List<@NotNull Long> memberIds) {}

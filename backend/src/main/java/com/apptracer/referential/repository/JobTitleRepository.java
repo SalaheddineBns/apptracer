@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface JobTitleRepository extends JpaRepository<JobTitle, Long> {
 
-  // RG-09-08 : tri alphabétique par libellé, sans tenir compte de la casse
+  // RG-09-08: sorted alphabetically by label, case-insensitive
   @Query("select j from JobTitle j order by lower(j.label), j.code")
   List<JobTitle> findAllSorted();
 
@@ -17,7 +17,7 @@ public interface JobTitleRepository extends JpaRepository<JobTitle, Long> {
   @Query("select j from JobTitle j where j.active = true order by lower(j.label), j.code")
   List<JobTitle> findActiveSorted();
 
-  // RG-09-05 : unicité insensible à la casse
+  // RG-09-05: case-insensitive uniqueness
   @Query("select count(j) > 0 from JobTitle j where lower(j.code) = lower(:code)")
   boolean existsByCode(@Param("code") String code);
 

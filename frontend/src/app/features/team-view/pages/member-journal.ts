@@ -52,7 +52,7 @@ export class MemberJournalPage {
   });
   /** Back to E1, keeping the week and, once known, the member's team (RG-04-04). */
   protected readonly backParams = computed(() => {
-    // L'équipe renvoyée par l'API prime ; sinon celle d'origine, portée par l'URL du lien de membre.
+    // The team returned by the API wins; otherwise the original one, carried by the member link's URL.
     const requested = Number(this.params().get('team'));
     const fromUrl = Number.isInteger(requested) && requested > 0 ? requested : null;
     const team = this.store.memberJournal()?.team?.id ?? fromUrl;

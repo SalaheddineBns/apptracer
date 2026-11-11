@@ -38,8 +38,8 @@ export class FieldError {
   );
 
   constructor() {
-    // RG-08-04 : un message venu du serveur est écrit dans la langue de la requête ; au changement de langue on l'efface
-    // (il se retrouve traduit à la prochaine action de l'utilisateur) en recalculant la validité depuis les seuls validateurs.
+    // RG-08-04: a message from the server is written in the request's language; on a language change it is cleared (it
+    // comes back translated on the user's next action) by recomputing validity from the validators alone.
     let previous = this.i18n.lang();
     effect(() => {
       const lang = this.i18n.lang();

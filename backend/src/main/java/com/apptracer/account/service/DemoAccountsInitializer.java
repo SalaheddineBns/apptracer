@@ -91,7 +91,7 @@ public class DemoAccountsInitializer implements ApplicationRunner {
     if (!enabled()) {
       return 0;
     }
-    // RG-03-02 : même règle de mot de passe que pour tout compte (seuls les motifs sont affichés)
+    // RG-03-02: same password rule as for any account (only the reasons are shown)
     List<String> violations = PasswordPolicy.violations(properties.password());
     if (!violations.isEmpty()) {
       LOG.warn(
@@ -143,8 +143,8 @@ public class DemoAccountsInitializer implements ApplicationRunner {
       return false;
     }
     Long adminId = admin.get().getId();
-    // RG-00-04 : created_by / updated_by viennent de l'utilisateur courant ; on agit au nom de
-    // l'ADMIN le temps de la création.
+    // RG-00-04: created_by / updated_by come from the current user; we act on behalf of the ADMIN
+    // during the creation.
     SecurityContext context = SecurityContextHolder.createEmptyContext();
     context.setAuthentication(
         UsernamePasswordAuthenticationToken.authenticated(

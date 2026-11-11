@@ -10,8 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long> {
 
-  // RG-01-11 : une saisie supprimée logiquement n'est plus lisible ; type et projet chargés pour
-  // l'affichage (RG-02-05)
+  // RG-01-11: a logically deleted time entry can no longer be read; type and project loaded for
+  // display (RG-02-05)
   @Query(
       """
       select e from TimeEntry e

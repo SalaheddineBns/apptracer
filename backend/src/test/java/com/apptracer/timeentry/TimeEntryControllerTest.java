@@ -71,7 +71,7 @@ class TimeEntryControllerTest {
 
   @AfterEach
   void cleanUp() {
-    // saisies avant comptes ; types et projets de test avant comptes ; installation restaurée
+    // time entries before accounts; test types and projects before accounts; installation restored
     jdbc.execute("DELETE FROM time_entries");
     jdbc.execute(
         "UPDATE app_settings SET standard_day_minutes = 480, version = 0,"
@@ -164,7 +164,7 @@ class TimeEntryControllerTest {
         .andExpect(jsonPath("$.activityType.active").value(true))
         .andExpect(jsonPath("$.project").doesNotExist())
         .andExpect(jsonPath("$.endDate").doesNotExist());
-    // RG-01-11, RG-00-03 : propriétaire = utilisateur du jeton, traçabilité
+    // RG-01-11, RG-00-03: owner = the token's user, traceability
     TimeEntry saved = entries.findAll().get(0);
     assertThat(saved.getUserId()).isEqualTo(user.getId());
     assertThat(saved.getCreatedBy()).isEqualTo(user.getId());
@@ -369,7 +369,7 @@ class TimeEntryControllerTest {
         .andExpect(jsonPath("$.code").value("RG-01-07"))
         .andExpect(jsonPath("$.errors[0].field").value("startDate"));
     create(user, dayBody(today.toString())).andExpect(status().isCreated());
-    // RG-01-07 : seule dateDebut compte, une plage peut finir dans le futur
+    // RG-01-07: only the start date counts; a range may end in the future
     create(
             user,
             rangeBody(
@@ -454,7 +454,7 @@ class TimeEntryControllerTest {
         .perform(as(get(URL + "/" + id), user, null))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("RG-01-10"));
-    // un MANAGER n'a pas non plus accès à la saisie d'autrui par cet endpoint
+    // a MANAGER cannot reach someone else's time entry through this endpoint either
     mockMvc
         .perform(as(get(URL + "/" + id), manager, null))
         .andExpect(status().isForbidden())

@@ -63,7 +63,7 @@ public class TimeEntryController {
   public WeeklyTimeEntriesResponse listMyTimeEntries(
       @RequestParam @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "Un lundi")
           LocalDate weekStart) {
-    // RG-00-03 : toujours le compte du jeton
+    // RG-00-03: always the token's account
     return mapper.toResponse(service.listWeek(currentUser.currentUserId(), weekStart));
   }
 
@@ -90,7 +90,7 @@ public class TimeEntryController {
       content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
   public ResponseEntity<TimeEntryResponse> createTimeEntry(
       @Valid @RequestBody CreateTimeEntryRequest request) {
-    // RG-00-03 : le propriétaire vient du jeton
+    // RG-00-03: the owner comes from the token
     TimeEntry entry = service.create(currentUser.currentUserId(), mapper.toCommand(request));
     URI location =
         ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").build(entry.getId());

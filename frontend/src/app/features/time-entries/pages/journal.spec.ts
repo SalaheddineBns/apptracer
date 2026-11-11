@@ -121,7 +121,7 @@ describe('JournalPage', () => {
     listMyTimeEntries.mockReturnValue(of(week([], 0)));
     await open();
     expect(cy('etat-vide')?.textContent).toContain('Aucune activité cette semaine.');
-    // Un seul « Nouvelle saisie », en haut à droite : l'état vide n'en répète pas.
+    // A single New time entry button, top right: the empty state does not repeat it.
     expect(cy('btn-nouvelle-saisie-vide')).toBeNull();
     expect(root.querySelectorAll('[data-cy^="btn-nouvelle-saisie"]')).toHaveLength(1);
     expect(cy('btn-nouvelle-saisie')).not.toBeNull();
@@ -157,11 +157,11 @@ describe('JournalPage', () => {
     await open();
     const card = cy('saisie-1') as HTMLElement;
     expect(card.querySelector('[data-cy="saisie-duree"]')).toBeNull();
-    // Texte exact : aucune espace ni ligne vide ajoutée autour du commentaire.
+    // Exact text: no space or blank line added around the comment.
     expect(card.querySelector('[data-cy="saisie-commentaire"]')?.textContent).toBe(
       'Point hebdo avec l’équipe',
     );
-    // Description longue limitée à 3 lignes, texte complet au survol et dans le DOM.
+    // Long description limited to 3 lines, full text on hover and in the DOM.
     const longComment = cy('saisie-2')?.querySelector('[data-cy="saisie-commentaire"]');
     expect(longComment?.classList).toContain('line-clamp-3');
     expect(longComment?.getAttribute('title')).toBe(long);
@@ -286,7 +286,7 @@ describe('JournalPage', () => {
     const options = confirm.mock.calls[0][0];
     expect(options.message).toBe('Supprimer la saisie « Réunion » du 05/10 (1 h 30) ?');
     expect(options.acceptLabel).toBe('Supprimer');
-    // Échap doit annuler : la confirmation ne doit jamais désactiver `closable`.
+    // Escape must cancel: the confirmation must never disable `closable`.
     expect(options.closable).not.toBe(false);
     expect(deleteTimeEntry).not.toHaveBeenCalled();
     expect(cy('saisie-1')).not.toBeNull();
@@ -402,11 +402,11 @@ describe('JournalPage', () => {
       const header = cy('jour-2026-10-05')?.firstElementChild as HTMLElement;
       const h2 = header.querySelector('h2') as HTMLElement;
       const totalCell = cy('total-jour-2026-10-05')?.parentElement as HTMLElement;
-      // Le total est le voisin direct du titre du jour, avant la date (colonnes) et le « + ».
+      // The total is the day title's direct neighbour, before the date (columns) and the +.
       expect(h2.nextElementSibling).toBe(totalCell);
       const shortName = h2.querySelector('[aria-hidden="true"]');
       expect(shortName?.textContent).toBe('lun.');
-      // Le nom complet reste dans le titre pour les lecteurs d'écran.
+      // The full name stays in the title for screen readers.
       expect(h2.textContent).toContain('lundi');
       expect(h2.textContent).toContain('05/10');
     });

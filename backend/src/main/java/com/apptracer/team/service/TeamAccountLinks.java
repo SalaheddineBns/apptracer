@@ -31,11 +31,11 @@ public class TeamAccountLinks implements AccountTeamLinks {
 
   @Override
   public void removeFromTeam(Long actorId, Long userId) {
-    // RG-05-04 : au plus un rattachement par compte
+    // RG-05-04: at most one link per account
     for (TeamMember link : members.findWithTeamByUserIds(List.of(userId))) {
       Team team = link.getTeam();
       members.delete(link);
-      // RG-05-14 : le retrait est une modification de l'équipe (date, auteur, version)
+      // RG-05-14: the removal is a change of the team (date, author, version)
       team.touch(Instant.now(clock), actorId);
       teams.saveAndFlush(team);
     }

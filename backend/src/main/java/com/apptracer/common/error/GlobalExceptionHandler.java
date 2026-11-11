@@ -161,7 +161,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
               "RG-09-05", "error.job-title.code-duplicate", "code", "field.code-duplicate"));
     }
     if (violates(ex, "ex_time_entries_no_overlap")) {
-      // RG-01-06 : deux requêtes simultanées ont passé le contrôle de service
+      // RG-01-06: two concurrent requests passed the service check
       return handleBusiness(new BusinessException("RG-01-06", "error.time-entry.overlap.generic"));
     }
     if (violates(ex, "ux_teams_name_lower")) {
@@ -171,7 +171,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
               "RG-05-01", "error.team.name-duplicate", "name", "field.team.name-duplicate"));
     }
     if (violates(ex, "pk_team_members")) {
-      // RG-05-04 : deux requêtes simultanées ont rattaché le même compte
+      // RG-05-04: two concurrent requests linked the same account
       return handleBusiness(
           BusinessException.onField(
               "RG-05-04",

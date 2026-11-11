@@ -16,8 +16,8 @@ export const AppTracerPreset = definePreset(Aura, {
       800: '{indigo.800}',
       900: '{indigo.900}',
       950: '{indigo.950}',
-      // Contraste AA : blanc sur indigo 500 ne fait que 4,47:1, le clair part de 600.
-      // Aura 3.x définit ces jetons en `light-dark(clair, sombre)` : le sombre reste celui d'Aura.
+      // AA contrast: white on indigo 500 is only 4.47:1, so light mode starts from 600. Aura 3.x defines these tokens
+      // as `light-dark(light, dark)`: the dark value stays Aura's.
       color: 'light-dark({primary.600}, {primary.400})',
       contrastColor: 'light-dark(#ffffff, {surface.900})',
       hoverColor: 'light-dark({primary.700}, {primary.300})',
@@ -25,13 +25,14 @@ export const AppTracerPreset = definePreset(Aura, {
     },
   },
   components: {
-    // Contraste AA du message d'erreur (jeton Aura `message.error.color`, par défaut red.600 / red.500).
+    // AA contrast of the error message (Aura token `message.error.color`, red.600 / red.500 by default).
     message: {
       error: { color: 'light-dark({red.700}, {red.400})' },
       // Contraste AA de l'avertissement (jeton Aura `message.warn.color` yellow.600 en clair : 2,84:1).
       warn: { color: 'light-dark({yellow.800}, {yellow.500})' },
     },
-    // Contraste AA du bouton danger (blanc sur red.500 = 3,76:1) : le clair part de 600, le sombre reste celui d'Aura.
+    // AA contrast of the danger button (white on red.500 = 3.76:1): light mode starts from 600, the dark value stays
+    // Aura's.
     button: {
       root: {
         danger: {
@@ -44,9 +45,9 @@ export const AppTracerPreset = definePreset(Aura, {
         },
       },
     },
-    // Contraste AA du choix non sélectionné (jeton Aura `togglebutton.color` surface.500 en clair : 4,34:1 sur surface.100) :
-    // le clair part de surface.600, le sombre reste celui d'Aura. Le choix actif est de plus cerclé de la couleur primaire,
-    // pour qu'il se distingue sans comparer les couleurs de texte (WCAG 1.4.1).
+    // AA contrast of the unselected option (Aura token `togglebutton.color` surface.500 in light mode: 4.34:1 on
+    // surface.100): light mode starts from surface.600, the dark value stays Aura's. The active option is also outlined
+    // in the primary colour, so that it stands out without comparing text colours (WCAG 1.4.1).
     togglebutton: {
       root: { color: 'light-dark({surface.600}, {surface.400})' },
       icon: { color: 'light-dark({surface.600}, {surface.400})' },
@@ -55,7 +56,8 @@ export const AppTracerPreset = definePreset(Aura, {
           '0 0 0 1px {primary.color}, 0px 1px 2px 0px rgba(0, 0, 0, 0.02), 0px 1px 2px 0px rgba(0, 0, 0, 0.04)',
       },
     },
-    // Contraste AA des titres de toast (jetons Aura `toast.success.color` green.600 et `toast.error.color` red.600 en clair).
+    // AA contrast of the toast titles (Aura tokens `toast.success.color` green.600 and `toast.error.color` red.600 in
+    // light mode).
     toast: {
       success: { color: 'light-dark({green.700}, {green.500})' },
       error: { color: 'light-dark({red.700}, {red.400})' },

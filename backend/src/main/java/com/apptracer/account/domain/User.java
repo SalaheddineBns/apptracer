@@ -23,7 +23,7 @@ public class User extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-03-01 : unique sans tenir compte de la casse (index ux_users_email_lower)
+  // RG-03-01: unique, case-insensitive (index ux_users_email_lower)
   @Column(nullable = false, length = 254)
   private String email;
 
@@ -33,11 +33,11 @@ public class User extends AuditableEntity {
   @Column(name = "last_name", nullable = false, length = 100)
   private String lastName;
 
-  // RG-03-03 : hachage BCrypt, jamais le mot de passe en clair
+  // RG-03-03: BCrypt hash, never the plain password
   @Column(name = "password_hash", nullable = false, length = 100)
   private String passwordHash;
 
-  // RG-03-10 : exactement un rôle
+  // RG-03-10: exactly one role
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 10)
   private Role role;
@@ -45,8 +45,7 @@ public class User extends AuditableEntity {
   @Column(nullable = false)
   private boolean active = true;
 
-  // RG-09-02 : au plus une fonction, facultative, jamais pour un ADMIN ; RG-09-01 : sans effet sur
-  // les droits
+  // RG-09-02: at most one job title, optional, never for an ADMIN; RG-09-01: no effect on rights
   @ManyToOne
   @JoinColumn(name = "job_title_id")
   private JobTitle jobTitle;

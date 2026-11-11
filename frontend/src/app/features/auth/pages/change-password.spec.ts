@@ -128,7 +128,7 @@ describe('ChangePasswordPage', () => {
     expect(input('champ-nouveau-mot-de-passe').type).toBe('text');
     input('champ-confirmation-mot-de-passe').focus();
     await submit();
-    // Une tabulation retire le focus du champ actif.
+    // A Tab moves the focus out of the active field.
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }

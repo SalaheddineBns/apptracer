@@ -213,7 +213,7 @@ class UserJobTitleControllerTest {
         .andExpect(jsonPath("$.length()").value(1));
     assertThat(manager.getJobTitle().getCode()).isEqualTo("TECH_LEAD");
 
-    // une modification qui garde le rôle MANAGER laisse la fonction
+    // an update that keeps the MANAGER role leaves the job title
     mockMvc
         .perform(
             json(
@@ -227,7 +227,7 @@ class UserJobTitleControllerTest {
   @DisplayName(
       "CA-09-06 : une fonction pour un ADMIN est refusée (409 RG-09-02, champ jobTitleCode)")
   void jobTitleForAdminIs409() throws Exception {
-    // création d'un ADMIN avec une fonction
+    // creation of an ADMIN with a job title
     mockMvc
         .perform(
             json(as(post("/api/v1/users"), admin), createBody("adm2@example.com", "ADMIN", "QA")))
@@ -244,7 +244,7 @@ class UserJobTitleControllerTest {
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.code").value("RG-09-02"))
         .andExpect(jsonPath("$.errors[0].field").value("jobTitleCode"));
-    // promotion d'un USER en ADMIN en lui envoyant une fonction
+    // promotion of a USER to ADMIN while sending a job title
     mockMvc
         .perform(
             json(
@@ -267,12 +267,12 @@ class UserJobTitleControllerTest {
         .perform(as(post("/api/v1/job-titles/" + qa.getId() + "/deactivation"), admin))
         .andExpect(status().isOk());
 
-    // le porteur affiche « QA » inactive
+    // the holder shows QA as inactive
     mockMvc
         .perform(as(get("/api/v1/users/" + jean.getId()), admin))
         .andExpect(jsonPath("$.jobTitle.code").value("QA"))
         .andExpect(jsonPath("$.jobTitle.active").value(false));
-    // un autre compte ne peut pas la recevoir (modification et création)
+    // another account cannot receive it (update and creation)
     mockMvc
         .perform(
             json(
@@ -285,7 +285,7 @@ class UserJobTitleControllerTest {
         .perform(json(as(post("/api/v1/users"), admin), createBody("n1@example.com", "USER", "QA")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.errors[0].field").value("jobTitleCode"));
-    // le porteur peut la garder à la modification, ou en choisir une active
+    // the holder can keep it on update, or choose an active one
     mockMvc
         .perform(
             json(
@@ -301,7 +301,7 @@ class UserJobTitleControllerTest {
                 updateBody("MANAGER", "DEVELOPER", version(jean))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.jobTitle.code").value("DEVELOPER"));
-    // une fois réactivée, elle est de nouveau attribuable
+    // once reactivated, it can be assigned again
     mockMvc
         .perform(as(post("/api/v1/job-titles/" + qa.getId() + "/reactivation"), admin))
         .andExpect(status().isOk());

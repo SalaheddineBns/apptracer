@@ -69,7 +69,7 @@ class AppSettingsServiceTest {
     assertThat(view.standardDayMinutes()).isEqualTo(450);
     assertThat(view.lastModifiedAt()).isNull();
     assertThat(view.lastModifiedBy()).isNull();
-    verifyNoInteractions(users); // H7 : le compte n'est pas même lu
+    verifyNoInteractions(users); // H7: the account is not even read
   }
 
   @Test

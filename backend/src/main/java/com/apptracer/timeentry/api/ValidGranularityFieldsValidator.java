@@ -9,19 +9,19 @@ class ValidGranularityFieldsValidator
   @Override
   public boolean isValid(TimeEntryShape r, ConstraintValidatorContext ctx) {
     if (r.granularity() == null) {
-      return true; // déjà signalé par @NotNull
+      return true; // already reported by @NotNull
     }
     ctx.disableDefaultConstraintViolation();
     boolean valid = true;
     switch (r.granularity()) {
       case HOUR -> {
-        // RG-01-01 : heures requises, pas de date de fin
+        // RG-01-01: times required, no end date
         valid &= required(ctx, r.startTime() != null, "startTime");
         valid &= required(ctx, r.endTime() != null, "endTime");
         valid &= forbidden(ctx, r.endDate() == null, "endDate");
       }
       case DAY -> {
-        // RG-01-02 : journée entière de startDate
+        // RG-01-02: the whole day of startDate
         valid &= forbidden(ctx, r.endDate() == null, "endDate");
         valid &= forbidden(ctx, r.startTime() == null, "startTime");
         valid &= forbidden(ctx, r.endTime() == null, "endTime");

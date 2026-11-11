@@ -50,15 +50,15 @@ public class AppSettingsService {
   @Transactional
   public AppSettingsView update(int minutes, long version, long adminId) {
     AppSettings s = load();
-    // Modification concurrente : la version lue par l'ADMIN n'est plus celle de la base
+    // Concurrent change: the version read by the ADMIN is no longer the one in the database
     if (s.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(AppSettings.class, s.getId());
     }
-    // RG-06-06 : valeur identique, sans effet et non tracée (ni auteur, ni date, ni version)
+    // RG-06-06: identical value, no effect and not recorded (no author, no date, no version)
     if (s.getStandardDayMinutes() == minutes) {
       return toView(s, true);
     }
-    // RG-06-05, RG-00-04 : dernière modification tracée, seulement quand la valeur change
+    // RG-06-05, RG-00-04: last change recorded, only when the value changes
     s.changeStandardDayMinutes(minutes, clock.instant(), adminId);
     return toView(settings.saveAndFlush(s), true);
   }
@@ -79,7 +79,7 @@ public class AppSettingsService {
   }
 
   private AppSettings load() {
-    // RG-06-01 : la ligne unique existe dès l'installation (migration)
+    // RG-06-01: the single row exists from installation (migration)
     return settings
         .findById(AppSettings.SINGLETON_ID)
         .orElseThrow(() -> new IllegalStateException("Paramètres de l'application absents"));

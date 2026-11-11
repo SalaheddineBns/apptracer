@@ -48,12 +48,12 @@ public class TeamViewService {
 
   @Transactional(readOnly = true)
   public TeamWeek getTeamWeekSummary(Long managerId, Long teamId, LocalDate weekStart) {
-    // RG-04-02 : contrôle d'appartenance avant tout
+    // RG-04-02: membership check before anything else
     Team team = scope.requireTeam(managerId, teamId);
     requireMonday(weekStart);
-    // RG-04-09, RG-04-10 : membres triés par nom puis prénom, le manager n'est pas membre
+    // RG-04-09, RG-04-10: members sorted by last name then first name; the manager is not a member
     List<TeamMember> links = teamMembers.findByTeamIdsSorted(List.of(team.getId()));
-    // RG-04-05, RG-01-11 : saisies non supprimées de la semaine, en une requête
+    // RG-04-05, RG-01-11: non-deleted time entries of the week, in one query
     Map<Long, List<TimeEntry>> entries =
         reader.readAll(links.stream().map(TeamMember::getUserId).toList(), weekStart);
     List<MemberWeek> members =
@@ -61,9 +61,9 @@ public class TeamViewService {
             .map(
                 l ->
                     new MemberWeek(
-                        // RG-04-07 : le compte inactif reste listé, signalé par active
+                        // RG-04-07: the inactive account stays listed, flagged by active
                         l.getUser(),
-                        // RG-04-05 : mêmes calculs que le journal du membre
+                        // RG-04-05: same computations as the member's journal
                         calculator.compute(
                             entries.getOrDefault(l.getUserId(), List.of()), weekStart)))
             .toList();
@@ -75,7 +75,7 @@ public class TeamViewService {
     // RG-04-02, RG-04-06 : appartenance actuelle, 403 sinon
     TeamMember link = scope.requireMember(managerId, userId);
     requireMonday(weekStart);
-    // RG-04-05, RG-04-07 : même lecture que le journal du membre, y compris compte inactif
+    // RG-04-05, RG-04-07: same read as the member's journal, inactive account included
     List<TimeEntry> entries = reader.read(userId, weekStart);
     var totals = calculator.compute(entries, weekStart);
     return new MemberJournal(
@@ -89,7 +89,7 @@ public class TeamViewService {
             entries));
   }
 
-  // RG-04-04 : la semaine va du lundi au dimanche
+  // RG-04-04: the week runs from Monday to Sunday
   private static void requireMonday(LocalDate weekStart) {
     if (weekStart.getDayOfWeek() != DayOfWeek.MONDAY) {
       throw new InvalidRequestException("error.week.not-monday", "weekStart", "field.not-monday");

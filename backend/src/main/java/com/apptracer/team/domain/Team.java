@@ -23,11 +23,11 @@ public class Team extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-05-01 : unique sans tenir compte de la casse (index ux_teams_name_lower)
+  // RG-05-01: unique, case-insensitive (index ux_teams_name_lower)
   @Column(nullable = false, length = 100)
   private String name;
 
-  // RG-05-02 : exactement un manager ; RG-05-06 : plusieurs équipes possibles
+  // RG-05-02: exactly one manager; RG-05-06: several teams possible
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "manager_id", nullable = false)
   private User manager;
@@ -36,7 +36,7 @@ public class Team extends AuditableEntity {
   @Column(nullable = false)
   private long version;
 
-  // RG-05-09, RG-05-14 : suppression tracée
+  // RG-05-09, RG-05-14: deletion recorded
   @Column(name = "deleted_at")
   private Instant deletedAt;
 

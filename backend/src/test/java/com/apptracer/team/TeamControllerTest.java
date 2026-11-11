@@ -110,7 +110,7 @@ class TeamControllerTest {
             .andExpect(jsonPath("$.manager.id").value(manager.getId()))
             .andExpect(jsonPath("$.manager.role").value("MANAGER"))
             .andExpect(jsonPath("$.memberCount").value(2))
-            // RG-05-13 : membres triés par nom
+            // RG-05-13: members sorted by name
             .andExpect(jsonPath("$.members[0].id").value(alice.getId()))
             .andExpect(jsonPath("$.members[1].id").value(bob.getId()))
             .andReturn()
@@ -272,7 +272,7 @@ class TeamControllerTest {
                 admin,
                 createBody("Équipe A", manager.getId(), alice.getId())))
         .andExpect(status().isCreated());
-    // le contrôle de service ne voit pas le rattachement existant : seule la base le refuse
+    // the service check does not see the existing link: only the database refuses it
     Mockito.doReturn(List.of()).when(members).findWithTeamByUserIds(Mockito.anyCollection());
 
     mockMvc

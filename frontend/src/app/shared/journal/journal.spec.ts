@@ -177,13 +177,13 @@ describe('WeekJournal', () => {
   });
 
   it('RG-01-13 : une PLAGE est affichée sur chaque jour couvert, week-end compris, et le total vient de l’API', async () => {
-    // Plage du jeudi 08/10 au mardi 13/10 : 4 jours ouvrés au total, dont 2 dans la semaine affichée.
+    // Range from Thursday 08/10 to Tuesday 13/10: 4 working days in total, 2 of them in the displayed week.
     const { root, entriesOf } = await render(week([range()], 960));
     expect(entriesOf('2026-10-07')).toEqual([]);
     for (const iso of ['2026-10-08', '2026-10-09', '2026-10-10', '2026-10-11']) {
       expect(entriesOf(iso)).toEqual(['saisie-3']);
     }
-    // Le front n'additionne pas la durée enregistrée de la plage (32 h) : il affiche le total de l'API (16 h).
+    // The front end does not add up the range's recorded duration (32 h): it shows the API's total (16 h).
     expect(root.querySelector('[data-cy="total-semaine"]')?.textContent).toContain('16 h');
   });
 
@@ -227,7 +227,7 @@ describe('WeekJournal', () => {
       '[data-cy="btn-ajouter-saisie-2026-10-07"] button',
     );
     expect(button?.getAttribute('aria-label')).toBe('Ajouter une saisie le mercredi 07/10');
-    // Bouton carré bordé : icône seule, contour visible.
+    // Square bordered button: icon only, visible outline.
     expect(button?.classList).toContain('p-button-icon-only');
     expect(button?.classList).toContain('p-button-outlined');
     button?.click();

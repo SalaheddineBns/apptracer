@@ -26,11 +26,11 @@ public final class DurationCalculator {
       LocalTime endTime,
       int standardDayMinutes) {
     return switch (granularity) {
-      // RG-01-08 : HEURE = écart en minutes
+      // RG-01-08: HOUR = gap in minutes
       case HOUR -> (int) Duration.between(startTime, endTime).toMinutes();
-      // RG-01-08 : JOURNEE = 1 journée standard, week-end compris
+      // RG-01-08: DAY = 1 standard day, weekends included
       case DAY -> standardDayMinutes;
-      // RG-01-08 : PLAGE = jours ouvrés (lundi-vendredi) x journée standard, 0 sans jour ouvré
+      // RG-01-08: RANGE = working days (Monday-Friday) x standard day, 0 without a working day
       case RANGE -> countWeekdays(startDate, endDate) * standardDayMinutes;
     };
   }

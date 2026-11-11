@@ -36,7 +36,7 @@ public class ProblemDetailAccessDeniedHandler implements AccessDeniedHandler {
       HttpServletResponse response,
       AccessDeniedException accessDeniedException)
       throws IOException {
-    // RG-03-09, RG-08-06 : message dans la langue de la requête
+    // RG-03-09, RG-08-06: message in the request's language
     Locale locale = localeResolver.resolveLocale(request);
     response.setStatus(HttpStatus.FORBIDDEN.value());
     response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

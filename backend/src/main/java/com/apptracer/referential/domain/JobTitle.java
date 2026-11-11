@@ -18,14 +18,14 @@ public class JobTitle extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-09-05 : unique (insensible à la casse), immuable après création (pas de setter)
+  // RG-09-05: unique (case-insensitive), cannot change after creation (no setter)
   @Column(nullable = false, updatable = false, length = 30)
   private String code;
 
   @Column(nullable = false, length = 100)
   private String label;
 
-  // RG-09-06 : jamais supprimée, seulement désactivée
+  // RG-09-06: never deleted, only deactivated
   @Column(nullable = false)
   private boolean active = true;
 

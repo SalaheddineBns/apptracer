@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
  * @param teamId RG-10-01, RG-10-02: optional team; when absent, the project has no team
  */
 public record CreateProjectRequest(
-    // RG-02-01 : contrôlé tel que saisi, jamais transformé (CA-02-04)
+    // RG-02-01: checked as entered, never transformed (CA-02-04)
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, pattern = "^[A-Z0-9_]{2,30}$")
         @NotNull
         @Pattern(regexp = "^[A-Z0-9_]{2,30}$", message = "{validation.code.pattern}")

@@ -10,12 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProjectRepository extends JpaRepository<Project, Long> {
 
-  // RG-02-01 : unicité du code dans le référentiel des projets
-  // RG-02-10 : tri alphabétique par nom, sans tenir compte de la casse
+  // RG-02-01: code unique within the projects. RG-02-10: sorted alphabetically by name,
+  // case-insensitive
   @Query("select p from Project p order by lower(p.name), p.code")
   List<Project> findAllSorted();
 
-  // RG-02-06, RG-02-09 : éléments actifs seulement
+  // RG-02-06, RG-02-09: active items only
   @Query("select p from Project p where p.active = true order by lower(p.name), p.code")
   List<Project> findActiveSorted();
 

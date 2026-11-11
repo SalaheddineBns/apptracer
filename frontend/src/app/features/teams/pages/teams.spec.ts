@@ -41,7 +41,7 @@ describe('TeamsPage', () => {
   const cy = (name: string) => root.querySelector<HTMLElement>(`[data-cy="${name}"]`);
 
   beforeEach(() => {
-    // jsdom n'a pas ResizeObserver, utilisé par la colonne figée (pFrozenColumn).
+    // jsdom has no ResizeObserver, used by the frozen column (pFrozenColumn).
     vi.stubGlobal('ResizeObserver', class { observe = vi.fn(); unobserve = vi.fn(); disconnect = vi.fn(); });
     listTeams.mockReset();
     add.mockReset();

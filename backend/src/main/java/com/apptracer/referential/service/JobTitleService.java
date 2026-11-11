@@ -23,18 +23,18 @@ public class JobTitleService {
   /** RG-09-07: ADMIN only (checked by the controller). */
   @Transactional
   public JobTitle create(String code, String label) {
-    // RG-09-05 : code unique sans tenir compte de la casse (l'index unique couvre les créations
-    // concurrentes ; sa violation est traduite en 409 RG-09-05 par le handler global)
+    // RG-09-05: code unique, case-insensitive (the unique index covers concurrent creations; its
+    // violation is translated into a 409 RG-09-05 by the global handler)
     if (titles.existsByCode(code)) {
       throw BusinessException.onField(
           "RG-09-05", "error.job-title.code-duplicate", "code", "field.code-duplicate");
     }
-    // RG-09-05 : le code est en majuscules
+    // RG-09-05: the code is in capitals
     if (!code.equals(code.toUpperCase(Locale.ROOT))) {
       throw new InvalidRequestException(
           "error.job-title.code-format", "code", "validation.code.pattern");
     }
-    // RG-09-06 : active à la création ; RG-09-11 : created_by / updated_by via l'audit JPA
+    // RG-09-06: active on creation; RG-09-11: created_by / updated_by through JPA auditing
     return titles.saveAndFlush(new JobTitle(code, label.strip()));
   }
 
@@ -49,7 +49,7 @@ public class JobTitleService {
   @Transactional
   public JobTitle update(Long id, String label, long version) {
     JobTitle title = get(id);
-    // Modification concurrente : la version lue par l'ADMIN n'est plus la version en base
+    // Concurrent change: the version read by the ADMIN is no longer the version in the database
     if (title.getVersion() != version) {
       throw new ObjectOptimisticLockingFailureException(JobTitle.class, id);
     }

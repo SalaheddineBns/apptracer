@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 public record ChangePasswordRequest(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 72)
         String currentPassword,
-    // RG-03-02 : 12 caractères, une lettre, un chiffre (72 octets au plus)
+    // RG-03-02: 12 characters, one letter, one digit (72 bytes at most)
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @ValidPassword
         String newPassword) {
 

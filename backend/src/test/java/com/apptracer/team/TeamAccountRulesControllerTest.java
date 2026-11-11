@@ -237,7 +237,7 @@ class TeamAccountRulesControllerTest {
         .andExpect(jsonPath("$.memberCount").value(1))
         .andExpect(jsonPath("$.members[0].id").value(alice.getId()))
         .andExpect(jsonPath("$.members[0].active").value(false));
-    // la version de l'équipe n'a pas bougé : l'équipe n'est pas modifiée
+    // the team's version has not moved: the team is not changed
     assertThat(teams.findActiveById(produit.getId()).orElseThrow().getVersion()).isZero();
   }
 

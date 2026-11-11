@@ -74,7 +74,7 @@ public class TimeEntryService {
   public TimeEntry create(Long userId, TimeEntryCommand cmd) {
     TimeEntry entry = new TimeEntry(userId);
     applyChecked(entry, cmd, NO_ENTRY);
-    // RG-01-11, RG-00-04 : créé par / le alimenté par l'audit JPA
+    // RG-01-11, RG-00-04: created by / at filled in by JPA auditing
     return entries.saveAndFlush(entry);
   }
 
@@ -108,7 +108,7 @@ public class TimeEntryService {
     Project project = resolveProject(type, cmd.projectCode(), entry);
     checkNoOverlap(entry.getUserId(), cmd, excludedId);
 
-    // endDate renseignée en base pour toutes les granularités (= startDate hors RANGE)
+    // endDate stored in the database for every granularity (= startDate except for RANGE)
     boolean range = cmd.granularity() == Granularity.RANGE;
     boolean hour = cmd.granularity() == Granularity.HOUR;
     LocalDate endDate = range ? cmd.endDate() : cmd.startDate();
@@ -120,9 +120,8 @@ public class TimeEntryService {
         hour ? cmd.endTime() : null);
     entry.setActivityType(type);
     entry.setProject(project);
-    entry.setComment(cmd.comment()); // RG-01-09 : longueur contrôlée par Bean Validation
-    // RG-01-08, RG-06-04, RG-00-02 : journée standard lue à l'enregistrement, puis figée avec la
-    // durée
+    entry.setComment(cmd.comment()); // RG-01-09: length checked by Bean Validation
+    // RG-01-08, RG-06-04, RG-00-02: standard day read on save, then frozen with the duration
     int standardDay = settings.getStandardDayMinutes();
     entry.setDuration(
         durationCalculator.compute(
@@ -144,7 +143,7 @@ public class TimeEntryService {
   public void delete(Long userId, Long id) {
     TimeEntry entry = getOwn(userId, id);
     entry.markDeleted(userId, clock.instant());
-    // la saisie sort du contrôle de chevauchement (RG-01-06) et de la contrainte partielle
+    // the entry leaves the overlap check (RG-01-06) and the partial constraint
     entries.saveAndFlush(entry);
   }
 
@@ -155,7 +154,7 @@ public class TimeEntryService {
    */
   @Transactional(readOnly = true)
   public WeeklyTimeEntries listWeek(Long userId, LocalDate weekStart) {
-    // le paramètre doit être un lundi (architecture §4.5) : 400 sur le champ weekStart
+    // the parameter must be a Monday (architecture §4.5): 400 on the weekStart field
     if (weekStart.getDayOfWeek() != java.time.DayOfWeek.MONDAY) {
       throw new InvalidRequestException("error.week.not-monday", "weekStart", "field.not-monday");
     }
@@ -168,7 +167,7 @@ public class TimeEntryService {
   /** RG-01-10, RG-00-03: only the owner reads their time entry; a deleted entry is missing. */
   @Transactional(readOnly = true)
   public TimeEntry getOwn(Long userId, Long id) {
-    // RG-01-11 : saisie absente ou supprimée logiquement
+    // RG-01-11: missing or logically deleted time entry
     TimeEntry entry =
         entries
             .findActiveById(id)
@@ -210,13 +209,13 @@ public class TimeEntryService {
       case HOUR -> checkHours(cmd.startTime(), cmd.endTime());
       case RANGE -> checkRange(cmd.startDate(), cmd.endDate());
       case DAY -> {
-        // RG-01-02 : la journée entière de startDate, rien à contrôler
+        // RG-01-02: the whole day of startDate, nothing to check
       }
     }
   }
 
   private static void checkHours(LocalTime start, LocalTime end) {
-    // RG-01-01 : pas de 15 minutes
+    // RG-01-01: 15-minute steps
     if (!isQuarter(start)) {
       throw BusinessException.onField(
           "RG-01-01", "error.hours.quarter", "startTime", "field.hours.quarter");
@@ -225,7 +224,7 @@ public class TimeEntryService {
       throw BusinessException.onField(
           "RG-01-01", "error.hours.quarter", "endTime", "field.hours.quarter");
     }
-    // RG-01-01 : même jour, fin strictement après le début
+    // RG-01-01: same day, end strictly after start
     if (!end.isAfter(start)) {
       throw BusinessException.onField(
           "RG-01-01", "error.hours.end-after-start", "endTime", "field.hours.end-after-start");
@@ -237,12 +236,12 @@ public class TimeEntryService {
   }
 
   private static void checkRange(LocalDate start, LocalDate end) {
-    // RG-01-03 : fin strictement après le début
+    // RG-01-03: end strictly after start
     if (!end.isAfter(start)) {
       throw BusinessException.onField(
           "RG-01-03", "error.range.end-after-start", "endDate", "field.range.end-after-start");
     }
-    // RG-01-03 : 31 jours calendaires au plus, bornes incluses
+    // RG-01-03: 31 calendar days at most, bounds included
     if (ChronoUnit.DAYS.between(start, end) > MAX_RANGE_GAP_DAYS) {
       throw BusinessException.onField(
           "RG-01-03", "error.range.max-days", "endDate", "field.range.max-days");
@@ -250,7 +249,7 @@ public class TimeEntryService {
   }
 
   private void checkStartDateNotInFuture(LocalDate startDate) {
-    // RG-01-07, RG-00-01 : seule la date de début est contrôlée, à la date du jour Europe/Paris
+    // RG-01-07, RG-00-01: only the start date is checked, against today's date in Europe/Paris
     if (startDate.isAfter(LocalDate.now(clock))) {
       throw BusinessException.onField(
           "RG-01-07", "error.start-date.future", "startDate", "field.start-date.future");
@@ -258,7 +257,7 @@ public class TimeEntryService {
   }
 
   private ActivityType resolveType(String code) {
-    // RG-01-04 : le type existe et est actif (RG-02-06)
+    // RG-01-04: the type exists and is active (RG-02-06)
     return types
         .findByCode(code)
         .filter(ActivityType::isActive)
@@ -277,7 +276,7 @@ public class TimeEntryService {
    * RG-10-05: on update, the project already on the entry is still accepted.
    */
   private Project resolveProject(ActivityType type, String projectCode, TimeEntry entry) {
-    // RG-01-05 : projet obligatoire si le type l'exige, interdit sinon
+    // RG-01-05: project required if the type requires it, forbidden otherwise
     if (type.isProjectRequired() && projectCode == null) {
       throw BusinessException.onField(
           "RG-01-05", "error.project.required", "projectCode", "field.project.required");
@@ -289,7 +288,7 @@ public class TimeEntryService {
       }
       return null;
     }
-    // RG-02-06 : le projet existe et est actif
+    // RG-02-06: the project exists and is active
     Project project =
         projects
             .findByCode(projectCode)

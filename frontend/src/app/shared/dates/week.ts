@@ -7,7 +7,7 @@ import { INTL_LOCALE, Lang } from '../../core/i18n/lang';
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const DAY_MS = 86_400_000;
 
-// RG-00-01 : la date du jour est celle de Paris, quel que soit le fuseau du navigateur.
+// RG-00-01: today's date is Paris's, whatever the browser's time zone.
 const PARIS_TODAY = new Intl.DateTimeFormat('en-CA', {
   timeZone: 'Europe/Paris',
   year: 'numeric',
@@ -27,7 +27,7 @@ function toUtc(iso: string): number | null {
   const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
   const time = Date.UTC(year, month - 1, day);
   const date = new Date(time);
-  // Refuse les dates impossibles (2026-02-31), que Date.UTC reporterait sur le mois suivant.
+  // Refuses impossible dates (2026-02-31), which Date.UTC would carry over to the next month.
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
     ? time
     : null;

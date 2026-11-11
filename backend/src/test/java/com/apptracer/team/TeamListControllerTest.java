@@ -81,7 +81,7 @@ class TeamListControllerTest {
   }
 
   private Team team(String name, User teamManager, User... teamMembers) {
-    // RG-00-04 : les écritures de mise en place sont attribuées à l'ADMIN
+    // RG-00-04: the set-up writes are attributed to the ADMIN
     SecurityContextHolder.getContext()
         .setAuthentication(
             UsernamePasswordAuthenticationToken.authenticated(
@@ -106,13 +106,13 @@ class TeamListControllerTest {
         .perform(as(get("/api/v1/teams"), admin))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2))
-        // RG-05-13 : tri par nom, insensible à la casse
+        // RG-05-13: sorted by name, case-insensitive
         .andExpect(jsonPath("$[0].name").value("produit"))
         .andExpect(jsonPath("$[1].name").value("Technique"))
         .andExpect(jsonPath("$[0].manager.id").value(manager.getId()))
         .andExpect(jsonPath("$[0].memberCount").value(2))
         .andExpect(jsonPath("$[1].memberCount").value(1))
-        // RG-05-13 : membres triés par nom puis prénom (Aa, Cc)
+        // RG-05-13: members sorted by last name then first name (Aa, Cc)
         .andExpect(jsonPath("$[0].members[0].id").value(alice.getId()))
         .andExpect(jsonPath("$[0].members[1].id").value(inactiveMember.getId()));
   }
@@ -148,7 +148,7 @@ class TeamListControllerTest {
         .perform(as(get("/api/v1/teams/manager-candidates"), admin))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.email == 'tl-mgr@example.com')]").exists())
-        // ni USER, ni ADMIN, ni manager désactivé
+        // no USER, no ADMIN, no deactivated manager
         .andExpect(jsonPath("$[?(@.email == 'tl-user@example.com')]").doesNotExist())
         .andExpect(jsonPath("$[?(@.email == 'tl-admin@example.com')]").doesNotExist())
         .andExpect(jsonPath("$[?(@.email == 'tl-mgr2@example.com')]").doesNotExist())
@@ -166,11 +166,11 @@ class TeamListControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.role == 'ADMIN')]").doesNotExist())
         .andExpect(jsonPath("$[?(@.email == 'tl-admin@example.com')]").doesNotExist())
-        // USER et MANAGER, y compris inactifs (H9)
+        // USER and MANAGER, inactive ones included (H9)
         .andExpect(jsonPath("$[?(@.email == 'tl-user@example.com')]").exists())
         .andExpect(jsonPath("$[?(@.email == 'tl-mgr@example.com')]").exists())
         .andExpect(jsonPath("$[?(@.email == 'tl-in@example.com')].active").value(false))
-        // RG-05-04 : équipe actuelle de chaque candidat
+        // RG-05-04: current team of each candidate
         .andExpect(
             jsonPath("$[?(@.email == 'tl-alice@example.com')].currentTeam.name").value("Produit"))
         .andExpect(

@@ -33,7 +33,7 @@ export class JobTitlesPage {
   protected readonly editing = signal<JobTitleResponse | null>(null);
 
   constructor() {
-    // RG-09-07 : la liste de l'ADMIN (avec les inactives) est relue à chaque ouverture de l'écran.
+    // RG-09-07: the ADMIN's list (inactive ones included) is re-read each time the screen opens.
     this.store.load();
   }
 
@@ -73,7 +73,7 @@ export class JobTitlesPage {
 
   /** RG-09-06: reversible, without confirmation. */
   protected reactivate(jobTitle: JobTitleResponse): void {
-    // Le bouton est désactivé pendant l'appel puis remplacé par « Désactiver » : le focus le suit.
+    // The button is disabled during the call, then replaced by Deactivate: the focus follows it.
     const anchor = this.focus.capture();
     this.store
       .reactivate(jobTitle.id)

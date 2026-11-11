@@ -168,7 +168,7 @@ class TimeEntryWeekTest {
   @Test
   @DisplayName("RG-01-13 : dimanche et lundi aux bornes, la semaine voisine ne les contient pas")
   void weekBounds() throws Exception {
-    create(user, hour("2026-10-04", "09:00", "10:00")); // dimanche précédent
+    create(user, hour("2026-10-04", "09:00", "10:00")); // previous Sunday
     create(user, hour("2026-10-05", "09:00", "10:00")); // lundi
     create(user, hour("2026-10-11", "09:00", "10:00")); // dimanche
     create(user, hour("2026-10-12", "09:00", "10:00")); // lundi suivant

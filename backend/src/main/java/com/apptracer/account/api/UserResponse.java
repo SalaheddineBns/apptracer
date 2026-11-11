@@ -11,7 +11,7 @@ public record UserResponse(
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) String lastName,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, enumAsRef = true) Role role,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) boolean active,
-    // RG-09-02 : fonction facultative ; RG-09-06 : affichée même inactive
+    // RG-09-02: optional job title; RG-09-06: shown even when inactive
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true)
         UserJobTitleResponse jobTitle,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) long version) {}

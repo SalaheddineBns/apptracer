@@ -3,7 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthStore } from './auth.store';
 
-// RG-03-09 : ces appels ne portent pas de jeton et ne déclenchent jamais de renouvellement.
+// RG-03-09: these calls carry no token and never trigger a renewal.
 const PUBLIC_PATHS = ['/api/v1/auth/login', '/api/v1/auth/refresh', '/api/v1/auth/logout'];
 
 function withToken(req: HttpRequest<unknown>, token: string | null): HttpRequest<unknown> {
@@ -27,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next: HttpHandlerFn) => 
       if (!(error instanceof HttpErrorResponse) || error.status !== 401) {
         return throwError(() => error);
       }
-      // Un renouvellement a déjà eu lieu pendant que cette requête était en vol : simple rejeu.
+      // A renewal already happened while this request was in flight: just replay.
       const current = auth.accessToken;
       const replay = (token: string) => next(withToken(req, token));
       if (current && current !== sentToken) {

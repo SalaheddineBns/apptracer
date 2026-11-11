@@ -51,7 +51,7 @@ public class InitialAdminInitializer implements ApplicationRunner {
 
   /** Returns true if the ADMIN account was created. */
   public boolean createIfAbsent() {
-    // RG-03-16 : création seulement si aucun compte ADMIN n'existe
+    // RG-03-16: created only if no ADMIN account exists
     if (users.existsByRole(Role.ADMIN)) {
       return false;
     }
@@ -60,13 +60,13 @@ public class InitialAdminInitializer implements ApplicationRunner {
     String lastName = trim(properties.lastName());
     validate(email, properties.password(), firstName, lastName);
 
-    // RG-03-01 : l'e-mail est unique ; un compte existant n'est jamais modifié
+    // RG-03-01: the e-mail is unique; an existing account is never changed
     if (users.existsByEmail(email)) {
       throw new IllegalStateException(
           "Configuration du compte ADMIN initial invalide : ADMIN_EMAIL correspond à un compte "
               + "existant qui n'est pas ADMIN.");
     }
-    // RG-03-03 : mot de passe haché en BCrypt ; created_by / updated_by restent NULL (système)
+    // RG-03-03: password hashed with BCrypt; created_by / updated_by stay NULL (system)
     User admin =
         new User(
             email, firstName, lastName, passwordEncoder.encode(properties.password()), Role.ADMIN);
@@ -79,13 +79,13 @@ public class InitialAdminInitializer implements ApplicationRunner {
 
   private void validate(String email, String password, String firstName, String lastName) {
     List<String> problems = new ArrayList<>();
-    // RG-03-01 : format e-mail valide, 254 caractères au plus
+    // RG-03-01: valid e-mail format, 254 characters at most
     if (email.isEmpty()) {
       problems.add("ADMIN_EMAIL est obligatoire");
     } else if (email.length() > 254 || !validator.validate(new EmailHolder(email)).isEmpty()) {
       problems.add("ADMIN_EMAIL n'est pas une adresse e-mail valide");
     }
-    // RG-03-02 : règle de mot de passe (seuls les motifs sont affichés, jamais la valeur)
+    // RG-03-02: password rule (only the reasons are shown, never the value)
     List<String> passwordViolations = PasswordPolicy.violations(password);
     if (!passwordViolations.isEmpty()) {
       problems.add("ADMIN_PASSWORD invalide (" + String.join(" ", passwordViolations) + ")");

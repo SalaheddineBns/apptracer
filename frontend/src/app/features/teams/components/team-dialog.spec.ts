@@ -92,7 +92,7 @@ describe('TeamDialog', () => {
   }
 
   beforeEach(() => {
-    // jsdom n'a pas matchMedia, utilisé par les panneaux déroulants de PrimeNG (p-select, p-multiselect), ainsi que scrollIntoView.
+    // jsdom has no matchMedia, used by the PrimeNG dropdown panels (p-select, p-multiselect), nor scrollIntoView.
     vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn() }));
     HTMLElement.prototype.scrollIntoView = vi.fn();
     for (const fn of [createTeam, updateTeam, conflict, listTeams, listTeamManagerCandidates, listTeamMemberCandidates, add, saved]) {

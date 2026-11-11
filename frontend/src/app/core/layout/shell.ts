@@ -29,7 +29,7 @@ export class Shell {
   private anchor: FocusAnchor | null = null;
 
   constructor() {
-    // p-confirmdialog ne rend pas le focus à la fermeture : on le rend au bouton d'origine (clavier, accessibilité).
+    // p-confirmdialog does not return focus on close: we return it to the original button (keyboard, accessibility).
     inject(ConfirmationService)
       .requireConfirmation$.pipe(takeUntilDestroyed())
       .subscribe(() => (this.anchor = this.focus.capture()));
@@ -54,25 +54,25 @@ export class Shell {
     return user ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase() : '';
   });
 
-  // RG-03-10 : « Mon journal » pour USER et MANAGER (hiérarchie), « Comptes » pour ADMIN uniquement.
+  // RG-03-10: My journal for USER and MANAGER (hierarchy), Accounts for ADMIN only.
   protected readonly showJournal = computed(() => this.auth.hasRole(Role.User));
-  // RG-04-01, CA-04-05, CA-04-06 : « Mon équipe » réservé au MANAGER (absent pour USER et ADMIN).
+  // RG-04-01, CA-04-05, CA-04-06: My team reserved for the MANAGER (absent for USER and ADMIN).
   protected readonly showTeamView = computed(() => this.auth.hasRole(Role.Manager));
   protected readonly showAccounts = computed(() => this.auth.hasRole(Role.Admin));
-  // RG-05-08, CA-05-11 : « Équipes » réservé à l'ADMIN.
+  // RG-05-08, CA-05-11: Teams reserved for the ADMIN.
   protected readonly showTeams = computed(() => this.auth.hasRole(Role.Admin));
-  // RG-02-08, CA-02-09 : « Types d'activité » réservé à l'ADMIN.
+  // RG-02-08, CA-02-09: Activity types reserved for the ADMIN.
   protected readonly showActivityTypes = computed(() => this.auth.hasRole(Role.Admin));
-  // RG-02-08, CA-02-09 : « Projets » réservé à l'ADMIN.
+  // RG-02-08, CA-02-09: Projects reserved for the ADMIN.
   protected readonly showProjects = computed(() => this.auth.hasRole(Role.Admin));
 
-  // RG-09-07, CA-09-09 : « Fonctions » réservé à l'ADMIN.
+  // RG-09-07, CA-09-09: Job titles reserved for the ADMIN.
   protected readonly showJobTitles = computed(() => this.auth.hasRole(Role.Admin));
 
-  // RG-06-03, CA-06-07 : « Paramètres » réservé à l'ADMIN.
+  // RG-06-03, CA-06-07: Settings reserved for the ADMIN.
   protected readonly showSettings = computed(() => this.auth.hasRole(Role.Admin));
 
-  // SFD-08 E1 : choix de la langue, à côté de « Changer mon mot de passe » ; la langue en vigueur est cochée (`current`).
+  // SFD-08 E1: language choice, next to Change my password; the language in force is checked (`current`).
   protected readonly menuItems = computed<MenuItem[]>(() => {
     const current = this.i18n.lang();
     return [

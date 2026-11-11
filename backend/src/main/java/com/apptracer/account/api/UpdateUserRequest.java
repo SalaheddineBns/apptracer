@@ -15,6 +15,6 @@ public record UpdateUserRequest(
         String firstName,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotBlank @Size(max = 100) String lastName,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED, enumAsRef = true) @NotNull Role role,
-    // RG-09-04 : fonction facultative (code) ; absente, le compte n'a pas de fonction
+    // RG-09-04: optional job title (code); when absent, the account has no job title
     @Schema(requiredMode = Schema.RequiredMode.NOT_REQUIRED, nullable = true) String jobTitleCode,
     @Schema(requiredMode = Schema.RequiredMode.REQUIRED) @NotNull Long version) {}

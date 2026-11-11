@@ -113,24 +113,24 @@ export class TimeEntryDialog {
   /** RG-01-07: last day offered for the start date (today in Paris). */
   protected readonly today = signal(isoToLocalDate(todayInParis()));
 
-  // Les contrôles portent le nom des champs de l'API : ses `errors[]` s'affichent sous le champ concerné.
+  // The controls carry the API's field names: its `errors[]` are shown under the matching field.
   protected readonly form = inject(FormBuilder).nonNullable.group({
     granularity: [Granularity.Hour, [Validators.required]],
-    // RG-01-07 : pas de date de début dans le futur (le back reste la référence).
+    // RG-01-07: no start date in the future (the back end remains the reference).
     startDate: [null as Date | null, [Validators.required, notFutureValidator]],
-    // RG-01-03 : après la date de début, 31 jours au plus bornes incluses.
+    // RG-01-03: after the start date, 31 days at most, bounds included.
     endDate: [null as Date | null, [Validators.required, endDateValidator]],
-    // RG-01-01 : même jour, par pas de 15 minutes, fin après le début.
+    // RG-01-01: same day, in steps of 15 minutes, end after start.
     startTime: [null as Date | null, [Validators.required, quarterHourValidator]],
     endTime: [
       null as Date | null,
       [Validators.required, quarterHourValidator, endTimeAfterStartValidator],
     ],
-    // RG-01-04 : type obligatoire, choisi parmi les types actifs.
+    // RG-01-04: type required, chosen among the active types.
     activityTypeCode: ['', [Validators.required]],
-    // RG-01-05 : projet obligatoire si le type l'exige ; le contrôle est désactivé sinon.
+    // RG-01-05: project required if the type requires it; the control is disabled otherwise.
     projectCode: [null as string | null, [Validators.required]],
-    // RG-01-09 : 500 caractères au plus.
+    // RG-01-09: 500 characters at most.
     comment: ['', [Validators.maxLength(COMMENT_MAX_LENGTH)]],
   });
 
@@ -208,7 +208,8 @@ export class TimeEntryDialog {
   private originCy: string | null = null;
 
   constructor() {
-    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    // p-dialog evaluates `closeOnEscape` only on opening: while sending, Escape is intercepted before its listener
+    // (document).
     const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
       if (event.key === 'Escape' && this.submitting()) {
         event.stopImmediatePropagation();
@@ -220,16 +221,16 @@ export class TimeEntryDialog {
     );
 
     const { granularity, startDate, endDate, startTime, endTime } = this.form.controls;
-    // Les champs de période s'adaptent à la granularité : un champ hors sujet est désactivé, donc ni validé ni envoyé.
+    // The period fields follow the granularity: an irrelevant field is disabled, so neither validated nor sent.
     granularity.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe((value) => this.applyGranularity(value));
-    // Les contrôles croisés sont rejoués quand la borne de début change.
+    // The cross-field checks run again when the start bound changes.
     startTime.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => endTime.updateValueAndValidity());
     startDate.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => endDate.updateValueAndValidity());
 
     effect(() => {
-      // RG-01-05 : projet interdit pour un type qui ne l'exige pas ; la valeur n'est alors ni validée ni envoyée.
+      // RG-01-05: project forbidden for a type that does not require it; the value is then neither validated nor sent.
       const required = this.projectRequired();
       untracked(() => {
         const control = this.form.controls.projectCode;
@@ -255,17 +256,17 @@ export class TimeEntryDialog {
         ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null)
         : null;
     this.submitting.set(false);
-    // RG-02-06 : seuls les types et projets actifs sont proposés ; les listes sont relues à chaque ouverture.
+    // RG-02-06: only active types and projects are offered; the lists are re-read on each opening.
     this.types.load();
     this.projects.load();
-    // CA-06-03 : la journée standard est rechargée à chaque ouverture pour suivre une modification du paramètre.
+    // CA-06-03: the standard day is reloaded on each opening to follow a change of the setting.
     this.settings.load();
     this.today.set(isoToLocalDate(todayInParis()));
     this.openedAt.set(quarterHourFloor(new Date()));
     const entry = this.entry();
     const initialDate = this.initialDate();
-    // RG-01-12 : tous les champs sont repris, granularité comprise. RG-02-06 : un type ou un projet désactivé n'est
-    // plus proposé, sa valeur n'est pas reprise et l'utilisateur doit en choisir un actif.
+    // RG-01-12: every field is taken over, granularity included. RG-02-06: a deactivated type or project is no longer
+    // offered; its value is not taken over and the user must choose an active one.
     this.form.reset({
       granularity: entry?.granularity ?? Granularity.Hour,
       startDate: isoToLocalDate(entry?.startDate ?? initialDate ?? todayInParis()),
@@ -315,7 +316,7 @@ export class TimeEntryDialog {
     this.submitting.set(true);
     const editing = this.entry();
     const request = this.toRequest();
-    // RG-01-12 : mêmes champs et mêmes contrôles qu'à la création, avec la version lue.
+    // RG-01-12: same fields and same checks as on creation, with the version read.
     const request$ = editing
       ? this.store.update(editing.id, { ...request, version: editing.version })
       : this.store.create(request);
@@ -328,9 +329,9 @@ export class TimeEntryDialog {
       error: (error: unknown) => {
         this.submitting.set(false);
         const problem = toProblem(error);
-        // RG-01-06 (chevauchement, CA-01-04) n'a pas d'erreur de champ : son message est affiché en toast par l'intercepteur.
+        // RG-01-06 (overlap, CA-01-04) has no field error: its message is shown as a toast by the interceptor.
         this.showFieldErrors(problem.fieldErrors);
-        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        // Concurrent change (409 without a code or errors[]): the message is shown by the interceptor; we reload.
         if (
           editing &&
           problem.status === 409 &&
@@ -355,7 +356,7 @@ export class TimeEntryDialog {
       ...(hour && value.startTime ? { startTime: toTimeString(value.startTime) } : {}),
       ...(hour && value.endTime ? { endTime: toTimeString(value.endTime) } : {}),
       activityTypeCode: value.activityTypeCode,
-      // RG-01-05 : le projet n'est envoyé que pour un type qui l'exige.
+      // RG-01-05: the project is sent only for a type that requires it.
       ...(this.projectRequired() && value.projectCode ? { projectCode: value.projectCode } : {}),
       ...(value.comment.trim() === '' ? {} : { comment: value.comment }),
     };

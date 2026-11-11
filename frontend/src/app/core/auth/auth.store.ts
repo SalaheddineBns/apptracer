@@ -6,7 +6,7 @@ import { AuthenticationService, AuthTokensResponse, CurrentUserResponse, Role } 
 import { SKIP_ERROR_TOAST } from '../errors/error.interceptor';
 import { roleSatisfies } from './roles';
 
-// Clés utilisées aussi par la commande Cypress `cy.login`.
+// Keys also used by the Cypress command `cy.login`.
 const ACCESS_TOKEN_KEY = 'accessToken';
 const REFRESH_TOKEN_KEY = 'refreshToken';
 
@@ -53,7 +53,7 @@ export class AuthStore {
   }
 
   login(email: string, password: string): Observable<CurrentUserResponse> {
-    // Les erreurs de connexion sont affichées par l'écran (message générique RG-03-04), pas dans un toast.
+    // Sign-in errors are shown by the screen (generic message RG-03-04), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     return this.api.login({ email, password }, 'body', false, { context }).pipe(
       tap((tokens) => this.storeSession(tokens)),

@@ -123,7 +123,7 @@ describe('SFD-08 E1 : sélecteur de langue dans le menu utilisateur', () => {
     await harness.fixture.whenStable();
     expect(localStorage.getItem('lang')).toBe('en');
 
-    // Déconnexion : seules les clés de session sont effacées, pas la langue (RG-08-03).
+    // Sign-out: only the session keys are cleared, not the language (RG-08-03).
     await openMenu();
     cy('menu-se-deconnecter')?.click();
     await harness.fixture.whenStable();

@@ -141,7 +141,7 @@ class TimeEntryUpdateTest {
         .andExpect(jsonPath("$.startTime").value("14:00"))
         .andExpect(jsonPath("$.durationMinutes").value(150))
         .andExpect(jsonPath("$.version").value(1));
-    // RG-01-11, RG-00-04 : modifié par / le, créé par inchangé
+    // RG-01-11, RG-00-04: modified by / at, created by unchanged
     TimeEntry e = entries.findById(id).orElseThrow();
     assertThat(e.getUpdatedBy()).isEqualTo(user.getId());
     assertThat(e.getCreatedBy()).isEqualTo(user.getId());
@@ -163,7 +163,7 @@ class TimeEntryUpdateTest {
     update(user, id, hour("2026-10-05", "13:00", "14:00", 0))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("RG-01-10"));
-    // y compris pour un MANAGER
+    // including for a MANAGER
     update(manager, id, hour("2026-10-05", "13:00", "14:00", 0))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.code").value("RG-01-10"));
@@ -176,7 +176,7 @@ class TimeEntryUpdateTest {
   void selfOverlapAccepted() throws Exception {
     long id = create(user, createHour("2026-10-05", "09:00", "10:00"));
     update(user, id, hour("2026-10-05", "09:30", "10:30", 0)).andExpect(status().isOk());
-    // identique à elle-même
+    // identical to itself
     update(user, id, hour("2026-10-05", "09:30", "10:30", 1)).andExpect(status().isOk());
   }
 
@@ -190,7 +190,7 @@ class TimeEntryUpdateTest {
         .andExpect(jsonPath("$.code").value("RG-01-06"))
         .andExpect(jsonPath("$.detail").value(containsString("05/10/2026")));
     assertThat(row(id).get("start_time").toString()).isEqualTo("10:00:00");
-    // contiguë : acceptée
+    // adjacent: accepted
     update(user, id, hour("2026-10-05", "10:00", "10:15", 0)).andExpect(status().isOk());
   }
 
@@ -272,7 +272,7 @@ class TimeEntryUpdateTest {
                 + "\"activityTypeCode\":\"REUNION\"}");
     assertThat(row(id).get("duration_minutes")).isEqualTo(480);
     jdbc.update("UPDATE app_settings SET standard_day_minutes = 450");
-    // tant qu'elle n'est pas modifiée, la saisie garde 480
+    // as long as it is not changed, the time entry keeps 480
     assertThat(row(id).get("standard_day_minutes")).isEqualTo(480);
     update(user, id, day("2026-10-05", 0))
         .andExpect(status().isOk())

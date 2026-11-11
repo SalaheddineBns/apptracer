@@ -62,7 +62,7 @@ class InitialAdminInitializerTest {
   void doesNothingWhenAdminExists() {
     when(users.existsByRole(Role.ADMIN)).thenReturn(true);
 
-    // même avec une configuration invalide : aucune validation, aucun accès en écriture
+    // even with an invalid configuration: no validation, no write access
     assertThat(initializer("", "", "", "").createIfAbsent()).isFalse();
 
     verify(users, never()).save(any());

@@ -32,7 +32,7 @@ public class PasswordChangeService {
   public void changePassword(
       Long userId, UUID currentSessionId, String currentPassword, String newPassword) {
     User user = users.findById(userId).orElseThrow(InvalidCredentialsException::new);
-    // RG-03-15 : l'ancien mot de passe est exigé (409, et non 401, pour mettre le champ en erreur)
+    // RG-03-15: the old password is required (409, not 401, so that the field is flagged in error)
     if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
       throw BusinessException.onField(
           "RG-03-15",
@@ -40,10 +40,10 @@ public class PasswordChangeService {
           "currentPassword",
           "error.current-password.incorrect");
     }
-    // RG-03-03 : stocké haché en BCrypt ; RG-00-04 : updated_by = l'utilisateur lui-même
+    // RG-03-03: stored hashed with BCrypt; RG-00-04: updated_by = the user themselves
     user.setPasswordHash(passwordEncoder.encode(newPassword));
     users.saveAndFlush(user);
-    // RG-03-15 : le changement révoque les autres sessions, pas la session courante
+    // RG-03-15: the change revokes the other sessions, not the current one
     refreshTokens.revokeOtherSessions(userId, currentSessionId);
   }
 }

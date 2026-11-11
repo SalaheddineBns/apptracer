@@ -27,30 +27,31 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    // Ordre = du plus externe au plus interne : l'intercepteur JWT renouvelle et rejoue avant que le 401 n'atteigne errorInterceptor.
+    // Order = from outermost to innermost: the JWT interceptor renews and replays before the 401 reaches
+    // errorInterceptor.
     provideHttpClient(withInterceptors([errorInterceptor, languageInterceptor, authInterceptor])),
-    // RG-08-05 : la langue (document, titre, PrimeNG) est appliquée avant le premier affichage.
+    // RG-08-05: the language (document, title, PrimeNG) is applied before the first render.
     provideAppInitializer(() => void inject(I18n)),
     provideAppInitializer(() => inject(AuthStore).init()),
     provideApiBasePath(),
     MessageService,
     ConfirmationService,
-    // Aucun pipe Angular dépendant de la locale (date, number…) n'est utilisé : les formats passent par `Intl` et le service de langue
-    // (RG-08-08). La locale du framework est celle de la langue au démarrage, pour ne pas laisser un « fr » figé.
+    // No locale-dependent Angular pipe (date, number…) is used: formats go through `Intl` and the language service
+    // (RG-08-08). The framework's locale is the language's at start-up, so as not to leave a fixed fr.
     { provide: LOCALE_ID, useFactory: () => inject(I18n).lang() },
     providePrimeNG({
       license: PRIMEUI_LICENSE,
-      // Pas de `translation` ici : la traduction PrimeNG appartient au service `I18n`, qui la pose au démarrage et à chaque
-      // changement de langue (RG-08-05). Une valeur fixe écraserait la sienne après l'initialiseur.
-      // Le déclencheur de `p-select` porte un `aria-label="dropdown trigger"` codé en dur (anglais dans les deux langues).
-      // Il est redondant : le champ `combobox` voisin porte déjà le nom, l'état ouvert/fermé et la liste. On le masque donc
-      // aux lecteurs d'écran plutôt que de le traduire.
+      // No `translation` here: the PrimeNG translation belongs to the `I18n` service, which sets it at start-up and on
+      // each language change (RG-08-05). A fixed value would overwrite it after the initialiser. The `p-select` trigger
+      // has a hard-coded `aria-label="dropdown trigger"` (English in both languages). It is redundant: the neighbouring
+      // `combobox` field already carries the name, the open/closed state and the list. So it is hidden from screen
+      // readers rather than translated.
       pt: { select: { dropdown: { 'aria-hidden': 'true' } } },
       theme: {
         preset: AppTracerPreset,
         options: {
           darkModeSelector: '.app-dark',
-          // Place les styles PrimeNG dans un layer CSS pour que les utilitaires Tailwind priment
+          // Puts the PrimeNG styles in a CSS layer so that the Tailwind utilities take precedence
           cssLayer: { name: 'primeng', order: 'theme, base, primeng' },
         },
       },

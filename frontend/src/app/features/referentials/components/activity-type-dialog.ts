@@ -49,13 +49,13 @@ export class ActivityTypeDialog {
   );
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
-    // RG-02-01 : format du code (le back reste la référence), immuable après la création.
+    // RG-02-01: code format (the back end remains the reference), cannot change after creation.
     code: ['', referentialCodeValidators],
-    // SFD-02 données : libellé obligatoire, 100 caractères au plus.
+    // Spec data: label required, 100 characters at most.
     label: ['', [Validators.required, Validators.maxLength(100)]],
-    // RG-02-04 : couleur de la palette.
+    // RG-02-04: palette colour.
     color: [TagColor.Info, [Validators.required]],
-    // RG-02-03, RG-02-07 : le front ignore si le type est utilisé, l'API répond 409 le cas échéant.
+    // RG-02-03, RG-02-07: the front end does not know whether the type is in use; the API answers 409 if so.
     projectRequired: [false],
   });
 
@@ -65,7 +65,7 @@ export class ActivityTypeDialog {
     return { label: value.label?.trim() || this.i18n.t('activityTypes.dialog.previewLabel'), color: value.color ?? TagColor.Info, code: this.form.controls.code.value };
   });
 
-  // L'exemple est traduit (RG-08-05) : « REUNION_CLIENT » en français, « CLIENT_MEETING » en anglais.
+  // The example is translated (RG-08-05): 'REUNION_CLIENT' in French, 'CLIENT_MEETING' in English.
   protected readonly codeExample = computed(() => this.i18n.t('referentialCode.activityTypeExample'));
   protected readonly codeMessages = computed(() => referentialCodeMessages(this.codeExample()));
   protected readonly labelMessages: FieldMessages = {
@@ -77,7 +77,8 @@ export class ActivityTypeDialog {
   private originCy: string | null = null;
 
   constructor() {
-    // p-dialog n'évalue `closeOnEscape` qu'à l'ouverture : pendant l'envoi, on intercepte Échap avant son écouteur (document).
+    // p-dialog evaluates `closeOnEscape` only on opening: while sending, Escape is intercepted before its listener
+    // (document).
     const blockEscapeWhileSubmitting = (event: KeyboardEvent): void => {
       if (event.key === 'Escape' && this.submitting()) {
         event.stopImmediatePropagation();
@@ -104,7 +105,7 @@ export class ActivityTypeDialog {
       color: type?.color ?? TagColor.Info,
       projectRequired: type?.projectRequired ?? false,
     });
-    // CA-02-05, RG-02-01 : le code n'est plus modifiable après la création.
+    // CA-02-05, RG-02-01: the code can no longer be changed after creation.
     if (type) {
       this.form.controls.code.disable();
     } else {
@@ -160,11 +161,11 @@ export class ActivityTypeDialog {
       error: (error: unknown) => {
         this.submitting.set(false);
         const problem = toProblem(error);
-        // RG-02-01 (code), RG-02-07 (projectRequired) : les errors[] s'affichent sous le champ, le dialogue reste ouvert.
+        // RG-02-01 (code), RG-02-07 (projectRequired): the errors[] are shown under the field; the dialog stays open.
         for (const e of applyFieldErrors(this.form, problem.fieldErrors)) {
           this.messages.add({ severity: 'error', summary: this.i18n.t('common.error'), detail: e.message, life: 5000 });
         }
-        // Modification concurrente (409 sans code ni errors[]) : le message est affiché par l'intercepteur ; on recharge.
+        // Concurrent change (409 without a code or errors[]): the message is shown by the interceptor; we reload.
         if (type && problem.status === 409 && problem.code === null && problem.fieldErrors.length === 0) {
           this.visible.set(false);
           this.conflict.emit();

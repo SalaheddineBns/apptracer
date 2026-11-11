@@ -124,7 +124,7 @@ class RefreshAndLogoutTest {
     assertThat(second.get("refreshToken").asText()).isNotEqualTo(oldRefresh);
     assertThat(second.get("user").get("email").asText()).isEqualTo("jean@example.com");
 
-    // le nouvel access token permet de rejouer l'action
+    // the new access token lets the action be replayed
     mockMvc
         .perform(
             get("/api/v1/auth/me")
@@ -132,7 +132,7 @@ class RefreshAndLogoutTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(jean.getId()));
 
-    // l'ancien refresh token est invalidé, le nouveau est actif, même session
+    // the old refresh token is invalidated, the new one is active, same session
     assertThat(call("refresh", oldRefresh).getResponse().getStatus()).isEqualTo(401);
     List<String> sessions =
         jdbc.queryForList("SELECT DISTINCT session_id::text FROM refresh_tokens", String.class);
@@ -150,7 +150,7 @@ class RefreshAndLogoutTest {
 
     assertThat(reused.getResponse().getStatus()).isEqualTo(401);
     assertThat(reused.getResponse().getContentAsString()).contains("Identifiants invalides");
-    // même réponse que pour un jeton inconnu
+    // same response as for an unknown token
     assertThat(reused.getResponse().getContentAsString())
         .isEqualTo(unknown.getResponse().getContentAsString());
   }

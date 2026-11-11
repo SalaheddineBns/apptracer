@@ -28,7 +28,7 @@ public class TimeEntry extends AuditableEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  // RG-01-10 : compte propriétaire
+  // RG-01-10: owner account
   @Column(name = "user_id", nullable = false, updatable = false)
   private Long userId;
 
@@ -39,11 +39,11 @@ public class TimeEntry extends AuditableEntity {
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
 
-  // égale à startDate hors RANGE
+  // equal to startDate except for RANGE
   @Column(name = "end_date", nullable = false)
   private LocalDate endDate;
 
-  // RG-01-01 : renseignées en HOUR seulement
+  // RG-01-01: filled in for HOUR only
   @Column(name = "start_time")
   private LocalTime startTime;
 
@@ -54,7 +54,7 @@ public class TimeEntry extends AuditableEntity {
   @JoinColumn(name = "activity_type_id", nullable = false)
   private ActivityType activityType;
 
-  // RG-01-05 : cohérence avec le type contrôlée par le service
+  // RG-01-05: consistency with the type checked by the service
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "project_id")
   private Project project;
@@ -63,7 +63,7 @@ public class TimeEntry extends AuditableEntity {
   @Column(length = 500)
   private String comment;
 
-  // RG-01-08 : figées à l'enregistrement
+  // RG-01-08: frozen on save
   @Column(name = "duration_minutes", nullable = false)
   private int durationMinutes;
 

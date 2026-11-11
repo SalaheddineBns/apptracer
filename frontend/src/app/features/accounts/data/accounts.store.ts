@@ -41,7 +41,7 @@ export class AccountsStore {
     this.loading.set(true);
     this.error.set(null);
     const sort = `${this.sortField()},${this.sortOrder() === 1 ? 'asc' : 'desc'}`;
-    // L'erreur est affichée par l'écran (état d'erreur « Réessayer »), pas dans un toast.
+    // The error is shown by the screen (error state with Retry), not in a toast.
     const context = new HttpContext().set(SKIP_ERROR_TOAST, true);
     this.api.listUsers(this.page(), this.size(), [sort], 'body', false, { context }).subscribe({
       next: (result) => {

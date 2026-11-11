@@ -37,7 +37,7 @@ import org.junit.jupiter.api.Test;
 
 class TimeEntryServiceTest {
 
-  // 14/10/2026 23:30 UTC = 15/10/2026 01:30 à Paris : le jour métier est le 15
+  // 14/10/2026 23:30 UTC = 15/10/2026 01:30 in Paris: the business day is the 15th
   private static final Clock CLOCK =
       Clock.fixed(Instant.parse("2026-10-14T23:30:00Z"), ZoneId.of("Europe/Paris"));
   private static final LocalDate TODAY = LocalDate.of(2026, 10, 15);
@@ -157,7 +157,7 @@ class TimeEntryServiceTest {
   @DisplayName("CA-01-07 : RG-01-07, date de début future refusée, aujourd'hui (Paris) acceptée")
   void startDateNotInFuture() {
     assertRejected(day(TODAY.plusDays(1)), "RG-01-07", "startDate");
-    service.create(USER, day(TODAY)); // 01:30 à Paris, encore le 14 en UTC
+    service.create(USER, day(TODAY)); // 01:30 in Paris, still the 14th in UTC
   }
 
   @Test
@@ -327,7 +327,7 @@ class TimeEntryServiceTest {
     TimeEntry updated = service.update(USER, 5L, 0L, range(D, D.plusDays(4)));
     assertThat(updated.getGranularity()).isEqualTo(Granularity.RANGE);
     assertThat(updated.getEndDate()).isEqualTo(D.plusDays(4));
-    assertThat(updated.getStartTime()).isNull(); // champs sans objet remis à vide
+    assertThat(updated.getStartTime()).isNull(); // fields that no longer apply are cleared
     assertThat(updated.getEndTime()).isNull();
     assertThat(updated.getDurationMinutes()).isEqualTo(5 * 480);
     TimeEntry back = service.update(USER, 5L, 0L, hour(LocalTime.of(14, 0), LocalTime.of(15, 0)));
@@ -458,7 +458,7 @@ class TimeEntryServiceTest {
   @Test
   @DisplayName("CA-01-09 : RG-00-03, la semaine est lue pour le compte donné, total = somme")
   void listWeekUsesGivenUser() {
-    TimeEntry a = existing(USER); // 60 min le 05/10
+    TimeEntry a = existing(USER); // 60 min on 05/10
     TimeEntry b = existing(USER);
     b.setDuration(90 - 60 + 60, 480);
     when(reader.read(USER, D)).thenReturn(List.of(a, b));

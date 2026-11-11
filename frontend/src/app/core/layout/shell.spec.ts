@@ -245,7 +245,7 @@ describe('coquille applicative (E2) et routes', () => {
     const origin = row.querySelector('#origine') as HTMLButtonElement;
     origin.focus();
     const swap = () => {
-      // Comme la page : bouton désactivé pendant l'appel, puis remplacé à la réponse.
+      // Like the page: button disabled during the call, then replaced on response.
       origin.disabled = true;
       setTimeout(() => {
         const replacement = document.createElement('button');
