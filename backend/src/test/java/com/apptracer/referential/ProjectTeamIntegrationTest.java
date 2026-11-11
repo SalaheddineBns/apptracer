@@ -251,4 +251,43 @@ class ProjectTeamIntegrationTest {
         .andExpect(jsonPath("$.code").value("RG-10-01"))
         .andExpect(jsonPath("$.errors[0].field").value("teamId"));
   }
+
+  private ResultActions myProjects(User user) throws Exception {
+    return mockMvc.perform(
+        get("/api/v1/projects/mine").header(HttpHeaders.AUTHORIZATION, bearer(user)));
+  }
+
+  @Test
+  @DisplayName(
+      "CA-10-09 : « Mes projets » groupe les projets par équipe puis les projets communs ; 403 pour l'ADMIN")
+  void myProjectsAreGroupedByTeam() throws Exception {
+    myProjects(alice)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.teams[*].team.name").value(contains("Dev")))
+        .andExpect(jsonPath("$.teams[0].projects[*].code").value(contains("ALPHA")))
+        .andExpect(jsonPath("$.sharedProjects[*].code").value(contains("COMMUN")));
+    myProjects(chloe)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.teams").isEmpty())
+        .andExpect(jsonPath("$.sharedProjects[*].code").value(contains("COMMUN")));
+    myProjects(marion)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.teams[*].team.name").value(contains("Dev")))
+        .andExpect(jsonPath("$.teams[0].projects[*].code").value(contains("ALPHA")))
+        .andExpect(jsonPath("$.sharedProjects[*].code").value(contains("COMMUN")));
+    myProjects(admin).andExpect(status().isForbidden());
+    mockMvc.perform(get("/api/v1/projects/mine")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  @DisplayName(
+      "RG-10-11 : une équipe sans projet actif reste affichée, vide ; les projets inactifs n'apparaissent pas")
+  void aTeamWithoutActiveProjectIsListedEmpty() throws Exception {
+    send(post("/api/v1/projects/" + alphaId + "/deactivation"), admin, "")
+        .andExpect(status().isOk());
+
+    myProjects(alice)
+        .andExpect(jsonPath("$.teams[*].team.name").value(contains("Dev")))
+        .andExpect(jsonPath("$.teams[0].projects").isEmpty());
+  }
 }

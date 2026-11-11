@@ -59,6 +59,24 @@ public class ProjectController {
         .toList();
   }
 
+  @GetMapping("/mine")
+  @PreAuthorize("hasAnyRole('USER', 'MANAGER')")
+  @Operation(
+      operationId = "listMyProjects",
+      summary = "Mes projets : projets de mes équipes, puis projets communs (RG-10-11)")
+  @ApiResponse(responseCode = "200", description = "Projets du compte, groupés par équipe")
+  @ApiResponse(
+      responseCode = "401",
+      description = "Access token absent ou invalide (RG-03-09)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  @ApiResponse(
+      responseCode = "403",
+      description = "Réservé aux comptes USER et MANAGER (RG-10-11)",
+      content = @Content(schema = @Schema(implementation = ProblemDetail.class)))
+  public MyProjectsResponse listMyProjects() {
+    return mapper.toResponse(service.mine(currentUser.currentUserId()));
+  }
+
   @PostMapping
   @PreAuthorize("hasRole('ADMIN')")
   @Operation(operationId = "createProject", summary = "Créer un projet")

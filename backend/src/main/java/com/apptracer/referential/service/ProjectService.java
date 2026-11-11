@@ -7,7 +7,9 @@ import com.apptracer.referential.repository.ProjectRepository;
 import com.apptracer.team.domain.Team;
 import com.apptracer.team.repository.TeamRepository;
 import com.apptracer.team.service.TeamProjectScope;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -123,6 +125,43 @@ public class ProjectService {
     }
     Set<Long> teamIds = teamScope.teamIdsOf(userId);
     return projects.findAllowedSorted(teamIds.isEmpty() ? Set.of(NO_TEAM) : teamIds);
+  }
+
+  /** Projects of one team, for "My projects". */
+  public record TeamProjects(Team team, List<Project> projects) {}
+
+  /** "My projects": one group per team, then the shared projects. */
+  public record MyProjects(List<TeamProjects> teams, List<Project> sharedProjects) {}
+
+  /**
+   * RG-10-11: one group per team the account belongs to or manages (teams sorted by name,
+   * RG-05-13), with its active projects, then the active projects without a team; projects are
+   * sorted by name (RG-10-09). These are exactly the allowed projects (RG-10-03).
+   */
+  @Transactional(readOnly = true)
+  public MyProjects mine(Long userId) {
+    Set<Long> teamIds = teamScope.teamIdsOf(userId);
+    List<Project> allowed =
+        projects.findAllowedSorted(teamIds.isEmpty() ? Set.of(NO_TEAM) : teamIds);
+    List<TeamProjects> groups =
+        teams.findAllById(teamIds).stream()
+            .filter(team -> team.getDeletedAt() == null)
+            .sorted(
+                Comparator.comparing((Team team) -> team.getName().toLowerCase(Locale.ROOT))
+                    .thenComparing(Team::getId))
+            .map(
+                team ->
+                    new TeamProjects(
+                        team,
+                        allowed.stream()
+                            .filter(
+                                project ->
+                                    project.getTeam() != null
+                                        && project.getTeam().getId().equals(team.getId()))
+                            .toList()))
+            .toList();
+    List<Project> shared = allowed.stream().filter(project -> project.getTeam() == null).toList();
+    return new MyProjects(groups, shared);
   }
 
   /** RG-10-01 : équipe existante (non supprimée), ou aucune. */

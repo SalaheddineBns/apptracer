@@ -3,6 +3,7 @@ package com.apptracer.referential.api;
 import com.apptracer.referential.domain.ActivityType;
 import com.apptracer.referential.domain.JobTitle;
 import com.apptracer.referential.domain.Project;
+import com.apptracer.referential.service.ProjectService;
 import com.apptracer.team.api.TeamRef;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +24,18 @@ public class ReferentialMapper {
   public JobTitleResponse toResponse(JobTitle title) {
     return new JobTitleResponse(
         title.getId(), title.getCode(), title.getLabel(), title.isActive(), title.getVersion());
+  }
+
+  public MyProjectsResponse toResponse(ProjectService.MyProjects mine) {
+    return new MyProjectsResponse(
+        mine.teams().stream()
+            .map(
+                group ->
+                    new TeamProjectsResponse(
+                        new TeamRef(group.team().getId(), group.team().getName()),
+                        group.projects().stream().map(this::toResponse).toList()))
+            .toList(),
+        mine.sharedProjects().stream().map(this::toResponse).toList());
   }
 
   public ProjectResponse toResponse(Project project) {

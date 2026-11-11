@@ -37,6 +37,7 @@ model/managedTeamResponse.ts
 model/memberWeekSummary.ts
 model/memberWeeklyTimeEntriesResponse.ts
 model/models.ts
+model/myProjectsResponse.ts
 model/pageUserResponse.ts
 model/problemDetail.ts
 model/projectResponse.ts
@@ -47,6 +48,7 @@ model/settingsAuthor.ts
 model/tagColor.ts
 model/teamAccountSummary.ts
 model/teamMemberCandidateResponse.ts
+model/teamProjectsResponse.ts
 model/teamRef.ts
 model/teamResponse.ts
 model/teamViewMember.ts
