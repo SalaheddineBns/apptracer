@@ -2,16 +2,20 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { MessageService } from 'primeng/api';
 import { of, Subject, throwError } from 'rxjs';
-import { ProjectResponse, ProjectsService } from '../../../core/api/generated';
+import { ProjectResponse, ProjectsService, Role, TeamResponse, TeamsService } from '../../../core/api/generated';
 import { ProjectDialog } from './project-dialog';
 
 const existing = (over: Partial<ProjectResponse> = {}): ProjectResponse => ({ id: 2, code: 'PORTAIL', name: 'Portail', active: true, version: 3, ...over });
 const httpError = (status: number, body: object) => throwError(() => new HttpErrorResponse({ status, error: body }));
+const marion = { id: 5, firstName: 'Marion', lastName: 'Leroy', email: 'marion@example.com', role: Role.Manager, active: true };
+const team = (id: number, name: string): TeamResponse => ({ id, name, manager: marion, members: [], memberCount: 0, version: 0 });
+const teams = [team(1, 'Dev'), team(2, 'QA')];
 
 describe('ProjectDialog', () => {
   const createProject = vi.fn();
   const updateProject = vi.fn();
   const listProjects = vi.fn();
+  const listTeams = vi.fn();
   const add = vi.fn();
   const saved = vi.fn();
   const conflict = vi.fn();
@@ -21,6 +25,7 @@ describe('ProjectDialog', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: ProjectsService, useValue: { createProject, updateProject, listProjects } },
+        { provide: TeamsService, useValue: { listTeams } },
         { provide: MessageService, useValue: { add } },
       ],
     });
@@ -51,10 +56,11 @@ describe('ProjectDialog', () => {
   }
 
   beforeEach(() => {
-    for (const fn of [createProject, updateProject, listProjects, add, saved, conflict]) {
+    for (const fn of [createProject, updateProject, listProjects, listTeams, add, saved, conflict]) {
       fn.mockReset();
     }
     listProjects.mockReturnValue(of([]));
+    listTeams.mockReturnValue(of(teams));
     TestBed.resetTestingModule();
     document.body.querySelectorAll('p-dialog, .p-dialog-mask').forEach((n) => n.remove());
   });
@@ -202,5 +208,65 @@ describe('ProjectDialog', () => {
     const help = document.body.querySelector('[data-cy="champ-code-projet"]')?.parentElement?.querySelector('small')?.textContent;
     expect(example(help)).toBe('PORTAIL_CLIENT');
     expect(example(el('erreur-champ-code-projet')?.textContent)).toBe(example(help));
+  });
+
+  describe('SFD-10 : équipe du projet', () => {
+    const teamControl = () => fixture.componentInstance['form'].controls.teamId;
+
+    it('CA-10-01 : les équipes sont proposées dans l’ordre reçu et l’équipe choisie est envoyée à la création', async () => {
+      createProject.mockReturnValue(of(existing({ id: 9, code: 'ALPHA', name: 'Alpha', team: { id: 1, name: 'Dev' } })));
+      await open(null);
+      expect(listTeams).toHaveBeenCalled();
+      expect(fixture.componentInstance['teamOptions']()).toEqual([
+        { label: 'Dev', value: 1 },
+        { label: 'QA', value: 2 },
+      ]);
+      await type('champ-code-projet', 'ALPHA');
+      await type('champ-nom-projet', 'Alpha');
+      teamControl().setValue(1);
+      await submit();
+      expect(createProject).toHaveBeenCalledWith({ code: 'ALPHA', name: 'Alpha', teamId: 1 });
+    });
+
+    it('RG-10-01 : sans équipe choisie, le projet est créé commun (aucune équipe envoyée)', async () => {
+      createProject.mockReturnValue(of(existing({ id: 9, code: 'COMMUN', name: 'Commun' })));
+      await open(null);
+      await type('champ-code-projet', 'COMMUN');
+      await type('champ-nom-projet', 'Commun');
+      await submit();
+      expect(createProject).toHaveBeenCalledWith({ code: 'COMMUN', name: 'Commun' });
+    });
+
+    it('RG-10-02 : en modification, l’équipe est reprise ; la vider retire l’équipe (rien n’est envoyé)', async () => {
+      updateProject.mockReturnValue(of(existing()));
+      await open(existing({ team: { id: 2, name: 'QA' } }));
+      expect(teamControl().value).toBe(2);
+      teamControl().setValue(null);
+      await submit();
+      expect(updateProject).toHaveBeenCalledWith(2, { name: 'Portail', version: 3 });
+    });
+
+    it('RG-10-01 : une équipe refusée par l’API s’affiche sous le champ équipe, dialogue ouvert', async () => {
+      createProject.mockReturnValue(
+        httpError(409, { status: 409, code: 'RG-10-01', detail: 'Équipe inconnue.', errors: [{ field: 'teamId', message: 'Choisissez une équipe existante.' }] }),
+      );
+      await open(null);
+      await type('champ-code-projet', 'ALPHA');
+      await type('champ-nom-projet', 'Alpha');
+      teamControl().setValue(99);
+      await submit();
+      expect(error('champ-equipe-projet')?.textContent).toContain('équipe existante');
+      expect(fixture.componentInstance.visible()).toBe(true);
+    });
+
+    it('chargement des équipes en échec : message et bouton Réessayer qui relance le chargement', async () => {
+      listTeams.mockReturnValue(httpError(500, { status: 500, detail: 'Erreur' }));
+      await open(null);
+      expect(el('erreur-chargement-equipes')).not.toBeNull();
+      listTeams.mockReturnValue(of(teams));
+      el('btn-recharger-equipes')?.querySelector('button')?.click();
+      await fixture.whenStable();
+      expect(el('erreur-chargement-equipes')).toBeNull();
+    });
   });
 });

@@ -588,6 +588,25 @@ describe('TimeEntryDialog', () => {
       expect(duration()).toBe('1 h 30');
     });
 
+    const projectCodes = () =>
+      (fixture.componentInstance as unknown as { projectOptions: () => { code: string }[] }).projectOptions().map((p) => p.code);
+
+    it('CA-10-02 : à la création, seuls les projets autorisés renvoyés par l’API sont proposés', async () => {
+      await open(null);
+      expect(projectCodes()).toEqual(['APOLLO', 'GEMINI']);
+    });
+
+    it('RG-10-05 : en modification, le projet porté par la saisie reste proposé même s’il n’est plus autorisé', async () => {
+      await open({ ...projectEntry, project: { code: 'ALPHA', name: 'ALPHA', active: true } });
+      expect(projectCodes()).toEqual(['ALPHA', 'APOLLO', 'GEMINI']);
+      expect(form().get('projectCode')?.value).toBe('ALPHA');
+    });
+
+    it('RG-10-05 : un projet porté mais désactivé n’est pas ajouté (RG-02-06)', async () => {
+      await open({ ...projectEntry, project: { code: 'CLOS', name: 'Clos', active: false } });
+      expect(projectCodes()).toEqual(['APOLLO', 'GEMINI']);
+    });
+
     it('RG-01-12 : le projet d’une saisie est repris et reste modifiable', async () => {
       await open(projectEntry);
       expect(el('select-projet')).not.toBeNull();

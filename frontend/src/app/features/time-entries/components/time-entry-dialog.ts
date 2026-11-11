@@ -90,6 +90,19 @@ export class TimeEntryDialog {
 
   protected readonly submitting = signal(false);
   protected readonly isEdit = computed(() => this.entry() !== null);
+  /**
+   * RG-10-03 : projets autorisés pour la saisie (filtrés par le back). RG-10-05 : en modification, le projet déjà porté
+   * par la saisie reste proposé s'il est actif, même s'il n'est plus autorisé. RG-10-09 : ordre alphabétique des noms.
+   */
+  protected readonly projectOptions = computed(() => {
+    const options = this.projects.activeItems().map(({ code, name }) => ({ code, name }));
+    const current = this.entry()?.project;
+    if (current?.active && !options.some((option) => option.code === current.code)) {
+      options.push({ code: current.code, name: current.name });
+      options.sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return options;
+  });
   protected readonly Granularity = Granularity;
   protected readonly timeStep = TIME_STEP_MINUTES;
   protected readonly granularityOptions = computed(() => [

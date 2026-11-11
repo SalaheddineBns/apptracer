@@ -454,6 +454,15 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       expect(text('erreur-champ-nom-projet')).toBe('The name is required.');
       expectNoFrench();
     });
+
+    it('CA-10-08 : la colonne et le champ équipe s’intitulent « Team »', async () => {
+      await start(Role.Admin, '/admin/projects');
+      expect(text('table-projets')).toContain('Team');
+      await click('btn-nouveau-projet');
+      expect(document.body.querySelector('label[for="project-team"]')?.textContent?.trim()).toBe('Team');
+      expect(document.body.textContent).toContain('Without a team, the project is offered to everyone.');
+      expectNoFrench();
+    });
   });
 
   describe('SFD-09 : fonctions', () => {

@@ -4,6 +4,8 @@ import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { SelectModule } from 'primeng/select';
 import { ProjectResponse } from '../../../core/api/generated';
 import { toProblem } from '../../../core/errors/problem';
 import { I18n } from '../../../core/i18n/i18n.service';
@@ -11,6 +13,7 @@ import { TPipe } from '../../../core/i18n/t.pipe';
 import { FieldError, FieldMessages } from '../../../shared/components/field-error';
 import { applyFieldErrors } from '../../../shared/forms/apply-field-errors';
 import { referentialCodeMessages, referentialCodeValidators } from '../../../shared/forms/referential-code';
+import { TeamsStore } from '../../teams/data/teams.store';
 import { ProjectsStore } from '../data/projects.store';
 
 export interface ProjectSaved {
@@ -21,12 +24,13 @@ export interface ProjectSaved {
 /** SFD-02 E4 Dialogue projet : création (project = null) ou modification d'un projet existant. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, FieldError, TPipe],
+  imports: [ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, MessageModule, SelectModule, FieldError, TPipe],
   selector: 'app-project-dialog',
   templateUrl: './project-dialog.html',
 })
 export class ProjectDialog {
   private readonly store = inject(ProjectsStore);
+  private readonly teams = inject(TeamsStore);
   private readonly messages = inject(MessageService);
   private readonly i18n = inject(I18n);
 
@@ -45,7 +49,15 @@ export class ProjectDialog {
     code: ['', referentialCodeValidators],
     // SFD-02 données : nom obligatoire, 100 caractères au plus.
     name: ['', [Validators.required, Validators.maxLength(100)]],
+    teamId: [null as number | null],
   });
+
+  /**
+   * RG-10-01 : équipe facultative du projet (champ `teamId`, nommé comme `errors[].field`) ; vide, le projet est commun.
+   * RG-10-09 : équipes existantes, dans l'ordre du back (nom alphabétique, RG-05-13).
+   */
+  protected readonly teamOptions = computed(() => this.teams.items().map((team) => ({ label: team.name, value: team.id })));
+  protected readonly teamsError = computed(() => this.teams.error());
 
   // L'exemple est traduit (RG-08-05) : « REUNION_CLIENT » en français, « CLIENT_MEETING » en anglais.
   protected readonly codeExample = computed(() => this.i18n.t('referentialCode.projectExample'));
@@ -79,7 +91,8 @@ export class ProjectDialog {
     const active = document.activeElement;
     this.originCy = active instanceof HTMLElement ? (active.closest('[data-cy]')?.getAttribute('data-cy') ?? null) : null;
     this.submitting.set(false);
-    this.form.reset({ code: project?.code ?? '', name: project?.name ?? '' });
+    this.form.reset({ code: project?.code ?? '', name: project?.name ?? '', teamId: project?.team?.id ?? null });
+    this.teams.load();
     // CA-02-05, RG-02-01 : le code n'est plus modifiable après la création.
     if (project) {
       this.form.controls.code.disable();
@@ -113,6 +126,12 @@ export class ProjectDialog {
     }
   }
 
+  /** Relance le chargement des équipes après une erreur. */
+  protected reloadTeams(): void {
+    this.teams.load();
+  }
+
+  /** Enregistre le projet. RG-10-02 : à la modification, une équipe absente retire l'équipe du projet. */
   protected submit(): void {
     if (this.submitting()) {
       return;
@@ -124,9 +143,10 @@ export class ProjectDialog {
     this.submitting.set(true);
     const project = this.project();
     const value = this.form.getRawValue();
+    const team = value.teamId !== null ? { teamId: value.teamId } : {};
     const request$ = project
-      ? this.store.update(project.id, { name: value.name, version: project.version })
-      : this.store.create({ code: value.code, name: value.name });
+      ? this.store.update(project.id, { name: value.name, ...team, version: project.version })
+      : this.store.create({ code: value.code, name: value.name, ...team });
     request$.subscribe({
       next: (saved) => {
         this.submitting.set(false);

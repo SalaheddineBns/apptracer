@@ -195,7 +195,7 @@
           >
           <p-select
             formControlName="projectCode"
-            [options]="projects.activeItems()"
+            [options]="projectOptions()"
             optionLabel="name"
             optionValue="code"
             [placeholder]="'timeEntry.dialog.chooseProject' | t"

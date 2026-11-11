@@ -90,6 +90,14 @@ describe('ProjectsPage', () => {
     expect(cy('statut-projet-2')?.textContent).toContain('Actif');
   });
 
+  it('CA-10-01 : la colonne « Équipe » affiche l’équipe du projet, vide pour un projet commun', async () => {
+    listProjects.mockReturnValue(of([project(1, { name: 'Alpha', team: { id: 3, name: 'Dev' } }), project(2, { name: 'Commun' })]));
+    await open();
+    expect(root.querySelector('th:nth-child(3)')?.textContent).toContain('Équipe');
+    expect(cy('equipe-projet-1')?.textContent?.trim()).toBe('Dev');
+    expect(cy('equipe-projet-2')?.textContent?.trim()).toBe('');
+  });
+
   it('RG-02-05 : la désactivation demande confirmation (conséquence de RG-02-06), annulée elle n’appelle pas l’API', async () => {
     listProjects.mockReturnValue(of([project(1, { name: 'Alpha' })]));
     await open();

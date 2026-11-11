@@ -28,6 +28,40 @@
       <app-field-error [control]="form.controls.name" [messages]="nameMessages" cy="erreur-champ-nom-projet" />
     </div>
 
+    <div class="flex flex-col gap-2">
+      <label id="project-team-label" for="project-team" class="text-sm font-medium text-color">{{ 'projects.dialog.team' | t }}</label>
+      <p-select
+        formControlName="teamId"
+        [options]="teamOptions()"
+        optionLabel="label"
+        optionValue="value"
+        inputId="project-team"
+        ariaLabelledBy="project-team-label"
+        [placeholder]="'projects.dialog.noTeam' | t"
+        [emptyMessage]="'projects.dialog.noTeams' | t"
+        [showClear]="true"
+        [panelStyle]="{ maxWidth: 'min(95vw, 30rem)' }"
+        appendTo="body"
+        fluid
+        data-cy="champ-equipe-projet"
+      >
+        <ng-template #item let-option>
+          <span class="whitespace-normal wrap-anywhere" [attr.data-cy]="'option-equipe-' + option.value">{{ option.label }}</span>
+        </ng-template>
+      </p-select>
+      @if (teamsError()) {
+        <p-message severity="error" size="small" data-cy="erreur-chargement-equipes">
+          <span class="flex flex-wrap items-center gap-2">
+            {{ 'projects.dialog.teamsLoadError' | t }}
+            <p-button type="button" [label]="'common.retry' | t" [text]="true" size="small" (onClick)="reloadTeams()" data-cy="btn-recharger-equipes" />
+          </span>
+        </p-message>
+      } @else {
+        <small class="text-xs text-muted-color">{{ 'projects.dialog.teamHint' | t }}</small>
+      }
+      <app-field-error [control]="form.controls.teamId" cy="erreur-champ-equipe-projet" />
+    </div>
+
     <div class="flex justify-end gap-2">
       <p-button type="button" [label]="'common.cancel' | t" [text]="true" severity="secondary" [disabled]="submitting()" (onClick)="close()" data-cy="btn-annuler-dialogue" />
       <p-button type="submit" [label]="'common.save' | t" [loading]="submitting()" data-cy="btn-enregistrer" />

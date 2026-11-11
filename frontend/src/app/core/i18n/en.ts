@@ -322,6 +322,7 @@ export const en: Dictionary = {
     title: 'Projects',
     new: 'New project',
     empty: 'No projects to display.',
+    team: 'Team',
     editAria: 'Edit project {name}',
     deactivateAria: 'Deactivate project {name}',
     reactivateAria: 'Reactivate project {name}',
@@ -341,6 +342,11 @@ export const en: Dictionary = {
     dialog: {
       createTitle: 'New project',
       editTitle: 'Edit project',
+      team: 'Team',
+      noTeam: 'None (shared project)',
+      noTeams: 'No teams.',
+      teamHint: 'Without a team, the project is offered to everyone.',
+      teamsLoadError: 'Unable to load teams.',
       errors: {
         nameRequired: 'The name is required.',
         nameTooLong: 'The name must not exceed 100 characters.',

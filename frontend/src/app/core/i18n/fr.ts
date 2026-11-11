@@ -320,6 +320,7 @@ export const fr = {
     title: 'Projets',
     new: 'Nouveau projet',
     empty: 'Aucun projet à afficher.',
+    team: 'Équipe',
     editAria: 'Modifier le projet {name}',
     deactivateAria: 'Désactiver le projet {name}',
     reactivateAria: 'Réactiver le projet {name}',
@@ -339,6 +340,11 @@ export const fr = {
     dialog: {
       createTitle: 'Nouveau projet',
       editTitle: 'Modifier le projet',
+      team: 'Équipe',
+      noTeam: 'Aucune (projet commun)',
+      noTeams: 'Aucune équipe.',
+      teamHint: 'Sans équipe, le projet est proposé à tous.',
+      teamsLoadError: 'Impossible de charger les équipes.',
       errors: {
         nameRequired: 'Le nom est obligatoire.',
         nameTooLong: 'Le nom ne doit pas dépasser 100 caractères.',
