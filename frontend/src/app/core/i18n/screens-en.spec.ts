@@ -183,7 +183,14 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
         },
         {
           provide: ProjectsService,
-          useValue: { listProjects: () => of([{ id: 1, code: 'APOLLO', name: 'Apollo', active: true, version: 0 }]) },
+          useValue: {
+            listProjects: () => of([{ id: 1, code: 'APOLLO', name: 'Apollo', active: true, version: 0 }]),
+            listMyProjects: () =>
+              of({
+                teams: [{ team: { id: 7, name: 'Dev' }, projects: [{ id: 1, code: 'APOLLO', name: 'Apollo', active: true, version: 0 }] }],
+                sharedProjects: [],
+              }),
+          },
         },
         {
           provide: AppSettingsService,
@@ -300,7 +307,17 @@ describe('SFD-08 : les écrans passés en anglais ne contiennent plus de frança
       await start(Role.Manager, '/journal?week=2026-10-05');
       await click('btn-menu-utilisateur');
       expect(text('nav-mon-journal')).toBe('My journal');
+      expect(text('nav-mes-projets')).toBe('My projects');
       expect(text('nav-mon-equipe')).toBe('My team');
+      expectNoFrench();
+    });
+
+    it('SFD-10 E1 : « My projects » en anglais, groupes et projets communs', async () => {
+      await start(Role.User, '/projects');
+      expect(document.body.querySelector('h1')?.textContent).toContain('My projects');
+      expect(text('groupe-equipe-7')).toContain('Projects of team Dev');
+      expect(text('groupe-projets-communs')).toContain('Shared projects');
+      expect(text('groupe-projets-communs')).toContain('No shared projects.');
       expectNoFrench();
     });
 

@@ -16,6 +16,16 @@
                 >{{ 'nav.journal' | t }}</a
               >
             </li>
+            <li>
+              <a
+                routerLink="/projects"
+                routerLinkActive="bg-surface-100 dark:bg-surface-800 font-medium"
+                ariaCurrentWhenActive="page"
+                class="block rounded-md px-3 py-2 text-sm text-color no-underline hover:bg-surface-100 dark:hover:bg-surface-800"
+                data-cy="nav-mes-projets"
+                >{{ 'nav.myProjects' | t }}</a
+              >
+            </li>
           }
           @if (showTeamView()) {
             <li>

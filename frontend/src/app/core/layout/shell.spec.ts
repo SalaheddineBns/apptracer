@@ -180,11 +180,11 @@ describe('coquille applicative (E2) et routes', () => {
     expect(listMyManagedTeams).toHaveBeenCalledTimes(shown ? 1 : 0);
   });
 
-  it('l’entrée « Mon équipe » suit « Mon journal » pour un MANAGER', async () => {
+  it('CA-10-09 : pour un MANAGER, « Mes projets » suit « Mon journal », puis « Mon équipe »', async () => {
     await start(Role.Manager);
     await harness.navigateByUrl('/journal');
     const order = Array.from(document.body.querySelectorAll('nav [data-cy^="nav-"]')).map((a) => a.getAttribute('data-cy'));
-    expect(order).toEqual(['nav-mon-journal', 'nav-mon-equipe']);
+    expect(order).toEqual(['nav-mon-journal', 'nav-mes-projets', 'nav-mon-equipe']);
   });
 
   it('les entrées ADMIN sont dans l’ordre de l’architecture : Comptes, Équipes, Types d’activité, Projets, Fonctions, Paramètres', async () => {

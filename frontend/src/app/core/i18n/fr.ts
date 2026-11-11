@@ -45,6 +45,7 @@ export const fr = {
   nav: {
     main: 'Navigation principale',
     journal: 'Mon journal',
+    myProjects: 'Mes projets',
     team: 'Mon équipe',
     accounts: 'Comptes',
     teams: 'Équipes',
@@ -315,6 +316,15 @@ export const fr = {
         labelTooLong: 'Le libellé ne doit pas dépasser 100 caractères.',
       },
     },
+  },
+  myProjects: {
+    title: 'Mes projets',
+    teamGroup: 'Projets de l’équipe {name}',
+    shared: 'Projets communs',
+    noTeam: 'Vous ne faites partie d’aucune équipe.',
+    noTeamProject: 'Aucun projet pour cette équipe.',
+    noSharedProject: 'Aucun projet commun.',
+    empty: 'Aucun projet ne vous est proposé pour l’instant.',
   },
   projects: {
     title: 'Projets',

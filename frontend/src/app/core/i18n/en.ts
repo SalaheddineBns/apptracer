@@ -46,6 +46,7 @@ export const en: Dictionary = {
   nav: {
     main: 'Main navigation',
     journal: 'My journal',
+    myProjects: 'My projects',
     team: 'My team',
     accounts: 'Accounts',
     teams: 'Teams',
@@ -317,6 +318,15 @@ export const en: Dictionary = {
         labelTooLong: 'The label must not exceed 100 characters.',
       },
     },
+  },
+  myProjects: {
+    title: 'My projects',
+    teamGroup: 'Projects of team {name}',
+    shared: 'Shared projects',
+    noTeam: 'You are not part of any team.',
+    noTeamProject: 'No projects for this team.',
+    noSharedProject: 'No shared projects.',
+    empty: 'No projects are offered to you yet.',
   },
   projects: {
     title: 'Projects',

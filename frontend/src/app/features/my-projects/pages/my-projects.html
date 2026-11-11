@@ -1,0 +1,53 @@
+<div class="flex flex-col gap-6">
+  <h1 class="text-2xl font-semibold text-color">{{ 'myProjects.title' | t }}</h1>
+
+  <section class="bg-surface-0 dark:bg-surface-900 rounded-xl p-6" data-cy="mes-projets">
+    @if (store.error(); as message) {
+      <app-error-state [message]="message" (retry)="store.load()" />
+    } @else if (store.data(); as data) {
+      @if (empty()) {
+        <app-empty-state icon="pi pi-folder-open" [message]="'myProjects.empty' | t" />
+      } @else {
+        <div class="flex flex-col gap-6">
+          @if (data.teams.length === 0) {
+            <p class="text-sm text-muted-color m-0" data-cy="aucune-equipe">{{ 'myProjects.noTeam' | t }}</p>
+          }
+          @for (group of data.teams; track group.team.id) {
+            <section class="flex flex-col gap-2" [attr.data-cy]="'groupe-equipe-' + group.team.id">
+              <h2 class="text-lg font-medium text-color m-0">{{ 'myProjects.teamGroup' | t: { name: group.team.name } }}</h2>
+              @if (group.projects.length === 0) {
+                <p class="text-sm text-muted-color m-0" data-cy="equipe-sans-projet">{{ 'myProjects.noTeamProject' | t }}</p>
+              } @else {
+                <ul class="list-none m-0 p-0 flex flex-col gap-2">
+                  @for (project of group.projects; track project.id) {
+                    <li class="flex flex-wrap items-baseline gap-x-3 gap-y-1" [attr.data-cy]="'mon-projet-' + project.code">
+                      <span class="text-sm text-color">{{ project.name }}</span>
+                      <span class="text-xs text-muted-color">{{ project.code }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+          }
+          <section class="flex flex-col gap-2" data-cy="groupe-projets-communs">
+            <h2 class="text-lg font-medium text-color m-0">{{ 'myProjects.shared' | t }}</h2>
+            @if (data.sharedProjects.length === 0) {
+              <p class="text-sm text-muted-color m-0">{{ 'myProjects.noSharedProject' | t }}</p>
+            } @else {
+              <ul class="list-none m-0 p-0 flex flex-col gap-2">
+                @for (project of data.sharedProjects; track project.id) {
+                  <li class="flex flex-wrap items-baseline gap-x-3 gap-y-1" [attr.data-cy]="'mon-projet-' + project.code">
+                    <span class="text-sm text-color">{{ project.name }}</span>
+                    <span class="text-xs text-muted-color">{{ project.code }}</span>
+                  </li>
+                }
+              </ul>
+            }
+          </section>
+        </div>
+      }
+    } @else {
+      <app-loading-state [rows]="4" />
+    }
+  </section>
+</div>
