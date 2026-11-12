@@ -4,6 +4,8 @@ All notable changes to AppTracer are listed here. The format follows [Keep a Cha
 and versions follow [Semantic Versioning](https://semver.org/). Each feature refers to its functional specification in
 [`docs/sfd/`](docs/sfd/00-vue-ensemble.md).
 
+## [Unreleased]
+
 ## [1.0.0] — 2026-11-11
 
 First complete version: employees log their time, managers follow their team, administrators run the application.
@@ -43,4 +45,5 @@ First complete version: employees log their time, managers follow their team, ad
   and in the test names.
 - Screens reviewed for accessibility (keyboard, screen readers, AA contrast) and usable from 375 px wide.
 
+[Unreleased]: https://github.com/SalaheddineBns/apptracer/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/SalaheddineBns/apptracer/releases/tag/v1.0.0
