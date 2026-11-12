@@ -68,8 +68,20 @@ Angular TypeScript client is generated from it.
 
 ## Getting started
 
-Prerequisites: Docker, Java 21, Node.js 22.22+ or 24.15+ (required by the Angular CLI), and a `.env` file at the
-root with the variables below.
+For the complete application, you only need Docker and a root-level `.env` file. Copy `.env.example`
+to `.env` and replace the example credentials; use a unique `JWT_SECRET` of at least 32 bytes.
+If your frontend build requires a PrimeUI licence, set `PRIMEUI_LICENSE` in `.env`.
+Never commit `.env`.
+
+```bash
+docker compose up --build                 # PostgreSQL + Spring Boot API serving Angular
+```
+
+Open http://localhost:8080. Compose waits for PostgreSQL to be healthy before starting the API.
+The API connects to the Compose database, even if the local `.env` contains a localhost datasource URL.
+
+For development without a containerized API, you also need Java 21 and Node.js 22.22+ or 24.15+.
+Run the following commands in separate terminals:
 
 ```bash
 docker compose up -d db                   # PostgreSQL on port 5432
