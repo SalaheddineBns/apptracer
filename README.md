@@ -110,7 +110,7 @@ The full list, with defaults, is in
 
 </details>
 
-Want to contribute? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, conventions and checks.
+Want to contribute? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the workflow, conventions and checks. New here? Start with a [good first issue](https://github.com/SalaheddineBns/apptracer/labels/good%20first%20issue).
 
 ## Roles and permissions
 
