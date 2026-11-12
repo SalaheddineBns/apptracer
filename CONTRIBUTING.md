@@ -60,8 +60,6 @@ New to the project? Look for issues labelled **good first issue**.
 
 - REST endpoints live under `/api/v1`, with plural, kebab-case resources (`/api/v1/time-entries`).
 - Every endpoint declares its `operationId` and its error responses for OpenAPI.
-- A violated business rule returns **409** with the rule ID in `code`; the server checks every right and every rule,
-  whatever the screen allows.
 - **Never edit a committed Flyway migration**: add a new `V{n+1}__description.sql`.
 - Format the code before committing: `cd backend && ./mvnw spotless:apply`.
 
